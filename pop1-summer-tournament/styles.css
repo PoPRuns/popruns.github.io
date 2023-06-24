@@ -1,6 +1,6 @@
 body {
     font-family: 'Istok Web', sans-serif;
-    background: url('https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4aYyFLkVPIx2XdHuFecdxp/b7c267a2f15d2cd9f2e38fdcb8507f35/Memory_textured_background.png') no-repeat center center fixed;
+    background: #000000 url('https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4aYyFLkVPIx2XdHuFecdxp/b7c267a2f15d2cd9f2e38fdcb8507f35/Memory_textured_background.png') no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -12,6 +12,116 @@ body {
 ul {
     margin-block-start: 0.5rem;
     margin-block-end: 0.5rem;
+}
+
+#loader-5{
+    display: flex;
+    justify-content: center;
+}
+
+#loader-5 span:nth-child(1) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.05s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(2) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.1s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(3) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.15s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(4) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.2s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(5) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.25s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(6) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.3s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(7) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.35s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(8) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.4s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(9) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.45s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+#loader-5 span:nth-child(10) {
+    border-radius: 500px;
+    transform-origin: 50% 0%;
+    animation: rotateZ 1s 0.5s infinite cubic-bezier(0.005, 0.560, 0.580, 1.590);
+    width: 2.5px;
+    height: 30px;
+    margin: 0 2.5px;
+}
+
+@keyframes rotateZ {
+    0% {
+        transform: rotateZ(-20deg);
+    }
+
+    50% {
+        transform: rotateZ(20deg) scaleY(1.2);
+        background: #FFDCAA;
+    }
+
+    100% {
+        transform: rotateZ(-20deg);
+    }
 }
 
 .hero {
@@ -63,7 +173,7 @@ ul {
 
 #bracket {
     overflow: hidden;
-    /* background-color: #e1e1e1; */
+    display: none;
     padding-top: 20px;
     font-size: 12px;
     padding: 40px 0;
@@ -271,6 +381,13 @@ li.player-bottom {
 
 li.active {
     opacity: 1;
+    font-style: normal;
+    color: black;
+}
+
+li.winner {
+    opacity: 1;
+    background-color: rgb(250, 220, 209);
     font-style: normal;
     color: black;
 }
