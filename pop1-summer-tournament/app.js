@@ -1,5 +1,6 @@
 const loaderElement = document.getElementById('loader');
 const bracketElement = document.getElementById('bracket');
+const leaderboardElement = document.getElementById('leaderboard');
 const roundOneMatches = document.querySelectorAll('.round-one .match-wrap');
 const roundTwoMatches = document.querySelectorAll('.round-two .match-wrap');
 const roundThreeMatches = document.querySelectorAll('.round-three .match-wrap');
@@ -50,6 +51,45 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const matchElement = secChanceRoundFourMatches[index];
       updateMatchData(matchElement, match, 1, 1);
     });
+    
+    const tableBody = leaderboardElement.querySelector('#table-body')
+    data.stats.forEach(function(stat) {
+      var playerName = stat.player;
+
+      var playerLives = ` <span style="color:red; text-shadow: 2px 2px 5px black;">${'&#9654;'.repeat(stat.lives)}${'&#9655;'.repeat(2 - stat.lives)}</span>`;
+      var times = stat.times;
+
+      // Calculate average time
+      var averageTime = times.reduce(function(acc, val) {
+        return acc + val;
+      }, 0) / times.length;
+
+      // Find fastest time
+      var fastestTime = Math.min.apply(null, times);
+
+      // Find slowest time
+      var slowestTime = Math.max.apply(null, times);
+
+      // Calculate standard deviation
+      var sumOfSquaredDifferences = times.reduce(function(acc, val) {
+        var difference = val - averageTime;
+        return acc + (difference * difference);
+      }, 0);
+      var variance = sumOfSquaredDifferences / times.length;
+      var standardDeviation = Math.sqrt(variance);
+
+      // Create a new row in the table
+      var newRow = document.createElement('tr');
+      newRow.innerHTML = '<td>' + playerName + playerLives + '</td>' +
+                         '<td>' + times.length + '</td>' +
+                         '<td>' + formatTime(averageTime) + '</td>' +
+                         '<td>' + formatTime(standardDeviation) + '</td>' +
+                         '<td>' + formatTime(fastestTime) + '</td>' +
+                         '<td>' + formatTime(slowestTime) + '</td>'
+      // Append the new row to the table body
+      tableBody.appendChild(newRow);
+    });
+    
     loaderElement.style.display = "none";
     bracketElement.style.display = "initial";
   })
@@ -93,4 +133,21 @@ function setPlayerData(playerElement, playerData, life) {
       playerElement.classList.add('active');
     }
   }
+}
+
+function formatTime(seconds) {
+  var minutes = Math.floor(seconds / 60);
+  var remainingSeconds = seconds % 60;
+  var formattedTime = `${minutes}:${remainingSeconds}`;
+  return formattedTime;
+}
+
+function showBracket() {
+  leaderboardElement.style.display = "none";
+  bracketElement.style.display = "initial";
+}
+
+function showLB() {
+  bracketElement.style.display = "none";
+  leaderboardElement.style.display = "initial";
 }

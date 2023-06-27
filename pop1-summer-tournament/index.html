@@ -22,6 +22,14 @@
         </div>
     </header>
 
+    <div class="header-flex">
+        <div class="header-left">
+            &#10087; <a class="section-link" onclick="showBracket()">BRACKET</a> &#9753;
+        </div>
+        <div class="header-right">
+            &#10087; <a class="section-link" onclick="showLB()">LEADERBOARD</a> &#9753;
+        </div>
+    </div>
 
     <section id="loader">
         <div id="loader-5">
@@ -38,6 +46,7 @@
         </div>
     </section>
     <section id="bracket">
+        <div class="section-title">BRACKET</div>
         <div class="container">
             <div class="split split-one">
                 <div class="round round-one">
@@ -277,24 +286,24 @@
                 <div class="round round-five">
                     <div class="round-details">Final<br /><span class="date">TBD</span></div>
                     <div class="match-wrap">
-                    <ul class="matchup">
-                        <li class="player player-top">
-                            <span class="seed"></span>
-                            <span class="player-name">Winner of 19</span>
-                            <span class="life"></span>
-                            <span class="score"></span>
-                        </li>
-                        <li class="match-data">
-                            <span class="match-time">TBD</span>
-                        </li>
-                        <li class="player player-bottom">
-                            <span class="seed"></span>
-                            <span class="player-name">Winner of 20</span>
-                            <span class="life"></span>
-                            <span class="score"></span>
-                        </li>
-                    </ul>
-                </div>
+                        <ul class="matchup">
+                            <li class="player player-top">
+                                <span class="seed"></span>
+                                <span class="player-name">Winner of 19</span>
+                                <span class="life"></span>
+                                <span class="score"></span>
+                            </li>
+                            <li class="match-data">
+                                <span class="match-time">TBD</span>
+                            </li>
+                            <li class="player player-bottom">
+                                <span class="seed"></span>
+                                <span class="player-name">Winner of 20</span>
+                                <span class="life"></span>
+                                <span class="score"></span>
+                            </li>
+                        </ul>
+                    </div>
                 </div> <!-- END ROUND FIVE -->
             </div>
         </div>
@@ -501,6 +510,24 @@
             </div>
         </div>
         </div>
+    </section>
+    <section id="leaderboard">
+        <div class="section-title">LEADERBOARD</div>
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>No. of Runs</th>
+                    <th>Average Time</th>
+                    <th>Standard Deviation</th>
+                    <th>Fastest Time</th>
+                    <th>Slowest Time</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Table data will be dynamically populated here -->
+            </tbody>
+        </table>
     </section>
     <script src="app.js"></script>
 
