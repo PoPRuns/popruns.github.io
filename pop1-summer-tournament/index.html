@@ -2,34 +2,34 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" type="image/x-icon"
-        href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
+    <link rel="icon" type="image/x-icon" href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href='https://fonts.googleapis.com/css?family=Istok+Web|Roboto+Condensed:700' rel='stylesheet'
-        type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Istok+Web|Roboto+Condensed:700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="styles.css">
 
     <title>PoP1 Summer Tournament</title>
 </head>
 
 <body>
-    <header class="hero">
-        <div class="hero-wrap">
-            <!-- <img src="https://static.wikia.nocookie.net/logopedia/images/5/55/Prince_of_Persia_1989.svg" width="400" height="125"></img> -->
-            <h1 id="headline">Summer Tournament</h1>
-            <p class="year">2023</p>
-            <p>Glory for Pizza!</p>
-        </div>
-    </header>
-
     <div class="header-flex">
         <div class="header-left">
             &#10087; <a class="section-link" onclick="showBracket()">BRACKET</a> &#9753;
+        </div>
+        <div class="header-left">
+            &#10087; <a class="section-link" onclick="showSchedule()">SCHEDULE & RESULTS</a> &#9753;
         </div>
         <div class="header-right">
             &#10087; <a class="section-link" onclick="showLB()">LEADERBOARD</a> &#9753;
         </div>
     </div>
+    <header class="hero">
+        <div class="hero-wrap">
+            <!-- <img src="https://static.wikia.nocookie.net/logopedia/images/5/55/Prince_of_Persia_1989.svg" width=400 height=125></img> -->
+            <h1 id="headline">Summer Tournament</h1>
+            <p class="year">2023</p>
+            <p>Glory for Pizza!</p>
+        </div>
+    </header>
 
     <section id="loader">
         <div id="loader-5">
@@ -47,487 +47,512 @@
     </section>
     <section id="bracket">
         <div class="section-title">BRACKET</div>
-        <div class="container">
-            <div class="split split-one">
-                <div class="round round-one">
-                    <div class="round-details">Round 1<br /><span class="date">Week 1</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">1</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">2</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">3</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">4</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND ONE -->
+        <div class="scroll-wrap">
+            <div class="container">
+                <div class="split split-one">
+                    <div class="round round-one">
+                        <div class="round-details">Round 1<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">1</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">2</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">3</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">4</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND ONE -->
 
-                <div class="round round-two">
-                    <div class="round-details">Round 2<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">5</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 1</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">6</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 2</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">7</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 3</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">8</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 4</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name"></span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND TWO -->
+                    <div class="round round-two">
+                        <div class="round-details">Round 2<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">5</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 1</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">6</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 2</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">7</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 3</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">8</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 4</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name"></span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND TWO -->
 
-                <div class="round round-three">
-                    <div class="round-details">Round 3<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">15</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 5</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 6</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">16</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 7</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 8</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND THREE -->
-                <div class="round round-four">
-                    <div class="round-details">Semi-Final<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">19</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 15</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 16</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND FOUR -->
-                <div class="round round-five">
-                    <div class="round-details">Final<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 19</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 20</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND FIVE -->
+                    <div class="round round-three">
+                        <div class="round-details">Round 3<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">15</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 5</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 6</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">16</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 7</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 8</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND THREE -->
+                    <div class="round round-four">
+                        <div class="round-details">Semi-Final<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">19</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 15</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 16</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND FOUR -->
+                    <div class="round round-five">
+                        <div class="round-details">Final<br /></div>
+                        <div class="match-wrap">
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 19</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 20</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND FIVE -->
+                </div>
             </div>
-        </div>
-        <div class="container second-chance">
-            <div class="split split-one">
-                <div class="round sec-chance-round-one">
-                    <div class="round-details">2nd Chance Round 1<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">9</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 7</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 1</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">10</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 8</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 2</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">11</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 6</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 3</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">12</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 5</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 4</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND ONE -->
+            <div class="container second-chance">
+                <div class="split split-one">
+                    <div class="round sec-chance-round-one">
+                        <div class="round-details">2nd Chance Round 1<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">9</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 7</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 1</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">10</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 8</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 2</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">11</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 6</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 3</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">12</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 5</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 4</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND ONE -->
 
-                <div class="round sec-chance-round-two">
-                    <div class="round-details">2nd Chance Round 2<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">13</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 9</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 10</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">14</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 11</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 12</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND TWO -->
+                    <div class="round sec-chance-round-two">
+                        <div class="round-details">2nd Chance Round 2<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">13</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 9</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 10</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">14</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 11</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 12</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND TWO -->
 
-                <div class="round sec-chance-round-three">
-                    <div class="round-details">2nd Chance Round 3<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">17</span>
+                    <div class="round sec-chance-round-three">
+                        <div class="round-details">2nd Chance Round 3<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">17</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 15</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 13</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <span class="match-number">18</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Loser of 16</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 14</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND THREE -->
+                    <div class="round sec-chance-round-four">
+                        <div class="round-details">Semi-Final<br /></div>
+                        <div class="match-wrap">
+                            <span class="match-number">20</span>
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 17</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of 18</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND FOUR -->
+                    <div class="round sec-chance-round-five">
                         <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 15</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 13</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
                         </ul>
-                    </div>
-                    <div class="match-wrap">
-                        <span class="match-number">18</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Loser of 16</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 14</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND THREE -->
-                <div class="round sec-chance-round-four">
-                    <div class="round-details">Semi-Final<br /><span class="date">TBD</span></div>
-                    <div class="match-wrap">
-                        <span class="match-number">20</span>
-                        <ul class="matchup">
-                            <li class="player player-top">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 17</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                            <li class="match-data">
-                                <span class="match-time">TBD</span>
-                            </li>
-                            <li class="player player-bottom">
-                                <span class="seed"></span>
-                                <span class="player-name">Winner of 18</span>
-                                <span class="life"></span>
-                                <span class="score"></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div> <!-- END ROUND FOUR -->
-                <div class="round sec-chance-round-five">
-                    <ul class="matchup">
-                    </ul>
-                </div> <!-- END ROUND FIVE -->
+                    </div> <!-- END ROUND FIVE -->
+                </div>
             </div>
         </div>
         </div>
     </section>
+
+    <section id="schedule-results">
+        <div class="section-title">SCHEDULE & RESULTS</div>
+        <div class="scroll-wrap">
+            <table id="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Date - Time</th>
+                        <th>Players</th>
+                        <th>Run 1</th>
+                        <th>Run 2</th>
+                        <th>Run 3</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table data will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
     <section id="leaderboard">
         <div class="section-title">LEADERBOARD</div>
-        <table id="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>No. of Runs</th>
-                    <th>Average Time</th>
-                    <th>Standard Deviation</th>
-                    <th>Fastest Time</th>
-                    <th>Slowest Time</th>
-                </tr>
-            </thead>
-            <tbody id="table-body">
-                <!-- Table data will be dynamically populated here -->
-            </tbody>
-        </table>
+        <div class="scroll-wrap">
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>No. of Runs</th>
+                        <th>Average Time</th>
+                        <th>Standard Deviation</th>
+                        <th>Fastest Time</th>
+                        <th>Slowest Time</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table data will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
     </section>
     <script src="app.js"></script>
 

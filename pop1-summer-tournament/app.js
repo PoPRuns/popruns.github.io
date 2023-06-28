@@ -1,5 +1,6 @@
 const loaderElement = document.getElementById('loader');
 const bracketElement = document.getElementById('bracket');
+const scheduleElement = document.getElementById('schedule-results');
 const leaderboardElement = document.getElementById('leaderboard');
 const roundOneMatches = document.querySelectorAll('.round-one .match-wrap');
 const roundTwoMatches = document.querySelectorAll('.round-two .match-wrap');
@@ -10,6 +11,9 @@ const secChanceRoundOneMatches = document.querySelectorAll('.sec-chance-round-on
 const secChanceRoundTwoMatches = document.querySelectorAll('.sec-chance-round-two .match-wrap');
 const secChanceRoundThreeMatches = document.querySelectorAll('.sec-chance-round-three .match-wrap');
 const secChanceRoundFourMatches = document.querySelectorAll('.sec-chance-round-four .match-wrap'); //Semi-Final
+
+var leaderboardData = [];
+var scheduleResults = [];
 
 fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
   .then(response => response.json())
@@ -39,7 +43,6 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       updateMatchData(matchElement, match, 1, 1);
     });
     data.secChanceRoundTwoMatches.forEach((match, index) => {
-      console.log(match);
       const matchElement = secChanceRoundTwoMatches[index];
       updateMatchData(matchElement, match, 1, 1);
     });
@@ -51,47 +54,100 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const matchElement = secChanceRoundFourMatches[index];
       updateMatchData(matchElement, match, 1, 1);
     });
-    
-    const tableBody = leaderboardElement.querySelector('#table-body')
-    data.stats.forEach(function(stat) {
-      var playerName = stat.player;
 
-      var playerLives = ` <span style="color:red; text-shadow: 2px 2px 5px black;">${'&#9654;'.repeat(stat.lives)}${'&#9655;'.repeat(2 - stat.lives)}</span>`;
-      var times = stat.times;
+    const tableBody = leaderboardElement.querySelector('#table-body');
+    const scheduleBody = scheduleElement.querySelector('#table-body');
+    // Create an array to store the stats
+    var sortedStats = [];
+
+    leaderboardData.forEach(function (stat) {
+      let playerName = stat.player;
+      const lives = data.stats.find(player => player.player === playerName)?.lives ?? 2;
+      let playerLives = ` <span style="color:red; text-shadow: 2px 2px 5px black;">${'&#9654;'.repeat(lives)}${'&#9655;'.repeat(2 - lives)}</span>`;
+      let times = stat.times;
 
       // Calculate average time
-      var averageTime = times.reduce(function(acc, val) {
+      let averageTime = times.reduce(function (acc, val) {
         return acc + val;
       }, 0) / times.length;
 
+      // Push the stat object to the sortedStats array
+      sortedStats.push({
+        playerName: playerName,
+        playerLives: playerLives,
+        times: times,
+        averageTime: averageTime,
+      });
+    });
+
+    // Sort the stats by average time in ascending order
+    sortedStats.sort(function (a, b) {
+      return a.averageTime - b.averageTime;
+    });
+
+    // Iterate through the sorted stats and assign them to the HTML elements
+    sortedStats.forEach(function (stat) {
+      let playerName = stat.playerName;
+      let playerLives = stat.playerLives;
+      let times = stat.times;
+      let averageTime = stat.averageTime;
+
       // Find fastest time
-      var fastestTime = Math.min.apply(null, times);
+      let fastestTime = Math.min.apply(null, times);
 
       // Find slowest time
-      var slowestTime = Math.max.apply(null, times);
+      let slowestTime = Math.max.apply(null, times);
 
       // Calculate standard deviation
-      var sumOfSquaredDifferences = times.reduce(function(acc, val) {
-        var difference = val - averageTime;
+      let sumOfSquaredDifferences = times.reduce(function (acc, val) {
+        let difference = val - averageTime;
         return acc + (difference * difference);
       }, 0);
-      var variance = sumOfSquaredDifferences / times.length;
-      var standardDeviation = Math.sqrt(variance);
+      let letiance = sumOfSquaredDifferences / times.length;
+      let standardDeviation = Math.sqrt(letiance);
 
       // Create a new row in the table
-      var newRow = document.createElement('tr');
+      let newRow = document.createElement('tr');
       newRow.innerHTML = '<td>' + playerName + playerLives + '</td>' +
-                         '<td>' + times.length + '</td>' +
-                         '<td>' + formatTime(averageTime) + '</td>' +
-                         '<td>' + formatTime(standardDeviation) + '</td>' +
-                         '<td>' + formatTime(fastestTime) + '</td>' +
-                         '<td>' + formatTime(slowestTime) + '</td>'
+        '<td>' + times.length + '</td>' +
+        '<td>' + formatTime(averageTime) + '</td>' +
+        '<td>' + formatTime(standardDeviation) + '</td>' +
+        '<td>' + formatTime(fastestTime) + '</td>' +
+        '<td>' + formatTime(slowestTime) + '</td>';
+
       // Append the new row to the table body
       tableBody.appendChild(newRow);
     });
-    
+
+    scheduleResults.sort(function (a, b) {
+      return a.timestamp - b.timestamp;
+    });
+
+    scheduleResults.forEach(function (item) {
+      let dateTimeString = item.dateTimeString;
+      // console.log(item);
+
+      let players = `<ul><li>${item.topPlayer}</li><li>${item.bottomPlayer}</li></ul>`;
+
+      let run1 = generateTimeListMarkup(item.times[0]?.[0], item.times[1]?.[0]);
+      let run2 = generateTimeListMarkup(item.times[0]?.[1], item.times[1]?.[1]);
+      let run3 = generateTimeListMarkup(item.times[0]?.[2], item.times[1]?.[2]);
+
+      // Create a new row in the table
+      let newRow = document.createElement('tr');
+      newRow.innerHTML = '<td>' + dateTimeString + '</td>' +
+        '<td>' + players + '</td>' +
+        '<td>' + run1 + '</td>' +
+        '<td>' + run2 + '</td>' +
+        '<td>' + run3 + '</td>'
+
+      // Append the new row to the table body
+      scheduleBody.appendChild(newRow);
+    });
+
     loaderElement.style.display = "none";
-    bracketElement.style.display = "initial";
+    bracketElement.style.display = "block";
+    console.log(scheduleResults);
   })
   .catch(error => {
     loaderElement.style.textAlign = "center";
@@ -109,10 +165,18 @@ function updateMatchData(matchElement, match, topLife, bottomLife) {
   setPlayerData(bottomPlayerElement, match.bottom, bottomLife);
 
   if (match.timestamp) {
+    let scheduleResult = {}
     const date = new Date(match.timestamp * 1000);
-    const options = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    const options = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };
     const localTime = date.toLocaleString('en-US', options);
     matchDataElement.querySelector('.match-time').textContent = localTime;
+    scheduleResult.timestamp = match.timestamp;
+    scheduleResult.dateTimeString = localTime;
+    scheduleResult.topPlayer = match.top.player;
+    scheduleResult.bottomPlayer = match.bottom.player;
+    scheduleResult.times = [match.top.times, match.bottom.times];
+    console.log(match);
+    scheduleResults.push(scheduleResult);
   }
 }
 
@@ -132,22 +196,52 @@ function setPlayerData(playerElement, playerData, life) {
     } else {
       playerElement.classList.add('active');
     }
+    if (playerData.times) {
+      let existingPlayer = leaderboardData.find(player => player.player === playerData.player);
+      if (existingPlayer) {
+        // Append times to the existing player's times array
+        existingPlayer.times.push(...playerData.times);
+      } else {
+        // Create a new leaderboard object for the player
+        const lbObj = {
+          player: playerData.player,
+          times: playerData.times
+        };
+        leaderboardData.push(lbObj); // Add the new player to the leaderboard
+      }
+    }
   }
 }
 
 function formatTime(seconds) {
-  var minutes = Math.floor(seconds / 60);
-  var remainingSeconds = seconds % 60;
-  var formattedTime = `${minutes}:${remainingSeconds}`;
+  if (typeof seconds === 'undefined') return '-';
+  let minutes = Math.floor(seconds / 60);
+  let remainingSeconds = Math.round(seconds % 60);
+  let formattedTime = `${minutes}:${remainingSeconds}`;
   return formattedTime;
 }
 
 function showBracket() {
   leaderboardElement.style.display = "none";
-  bracketElement.style.display = "initial";
+  scheduleElement.style.display = "none";
+  bracketElement.style.display = "block";
+}
+
+function showSchedule() {
+  leaderboardElement.style.display = "none";
+  bracketElement.style.display = "none";
+  scheduleElement.style.display = "block";
 }
 
 function showLB() {
   bracketElement.style.display = "none";
-  leaderboardElement.style.display = "initial";
+  scheduleElement.style.display = "none";
+  leaderboardElement.style.display = "block";
+}
+
+function generateTimeListMarkup(time1, time2) {
+  let formattedTime1 = formatTime(time1);
+  let formattedTime2 = formatTime(time2);
+  let markup = `<ul><li>${time1 !== undefined && time1 <= time2 ? `<span style="color: #d39c0a;">${formattedTime1}</span>` : formattedTime1}</li><li>${time2 !== undefined && time2 < time1 ? `<span style="color: #d39c0a;">${formattedTime2}</span>` : formattedTime2}</li></ul>`;
+  return markup;
 }
