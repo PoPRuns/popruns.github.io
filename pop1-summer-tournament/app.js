@@ -178,6 +178,9 @@ function updateMatchData(matchElement, match, topLife, bottomLife) {
     console.log(match);
     scheduleResults.push(scheduleResult);
   }
+  if (match.youtube) {
+    matchDataElement.querySelector('.youtube').innerHTML = `<i class="fa fa-youtube-play"></i><a href=${match.youtube}>Recap</a>`;
+  }
 }
 
 function setPlayerData(playerElement, playerData, life) {

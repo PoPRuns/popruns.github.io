@@ -212,7 +212,7 @@ ul {
 
 .container {
     text-align: left;
-    min-width: 1100px;
+    min-width: 1200px;
     overflow-x: auto;
     margin: 0 0 0 5%;
     display: block;
@@ -608,4 +608,14 @@ li.winner {
 
 #schedule-table ul {
     padding-left: 6px;
+}
+
+.fa-youtube-play {
+    color: red;
+    margin: 0 2 0 5;
+}
+
+.youtube a{
+    color: white;
+    text-decoration: none;
 }
