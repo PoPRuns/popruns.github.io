@@ -220,7 +220,7 @@ function formatTime(seconds) {
   if (typeof seconds === 'undefined') return '-';
   let minutes = Math.floor(seconds / 60);
   let remainingSeconds = Math.round(seconds % 60);
-  let formattedTime = `${minutes}:${remainingSeconds}`;
+  let formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   return formattedTime;
 }
 
