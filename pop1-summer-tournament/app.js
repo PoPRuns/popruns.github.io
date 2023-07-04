@@ -222,12 +222,12 @@ function setPlayerData(playerElement, playerData, life) {
       let existingPlayer = leaderboardData.find(player => player.player === playerData.player);
       if (existingPlayer) {
         // Append times to the existing player's times array
-        existingPlayer.times.push(...playerData.times);
+        existingPlayer.times.push(...playerData.times.slice());
       } else {
         // Create a new leaderboard object for the player
         const lbObj = {
           player: playerData.player,
-          times: playerData.times
+          times: playerData.times.slice()
         };
         leaderboardData.push(lbObj); // Add the new player to the leaderboard
       }
