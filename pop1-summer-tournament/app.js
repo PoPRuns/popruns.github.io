@@ -71,27 +71,6 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         return acc + val;
       }, 0) / times.length;
 
-      // Push the stat object to the sortedStats array
-      sortedStats.push({
-        playerName: playerName,
-        playerLives: playerLives,
-        times: times,
-        averageTime: averageTime,
-      });
-    });
-
-    // Sort the stats by average time in ascending order
-    sortedStats.sort(function (a, b) {
-      return a.averageTime - b.averageTime;
-    });
-
-    // Iterate through the sorted stats and assign them to the HTML elements
-    sortedStats.forEach(function (stat) {
-      let playerName = stat.playerName;
-      let playerLives = stat.playerLives;
-      let times = stat.times;
-      let averageTime = stat.averageTime;
-
       // Find fastest time
       let fastestTime = Math.min.apply(null, times);
 
@@ -105,6 +84,38 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       }, 0);
       let letiance = sumOfSquaredDifferences / times.length;
       let standardDeviation = Math.sqrt(letiance);
+
+      // Push the stat object to the sortedStats array
+      sortedStats.push({
+        playerName: playerName,
+        playerLives: playerLives,
+        times: times,
+        averageTime: averageTime,
+        standardDeviation: standardDeviation,
+        fastestTime: fastestTime,
+        slowestTime: slowestTime,
+      });
+    });
+
+    // Sort the stats by average time in ascending order
+    sortedStats.sort(function (a, b) {
+      return (
+        a.averageTime - b.averageTime ||
+        a.standardDeviation - b.standardDeviation ||
+        a.fastestTime - b.fastestTime ||
+        a.slowestTime - b.slowestTime
+      );
+    });
+
+    // Iterate through the sorted stats and assign them to the HTML elements
+    sortedStats.forEach(function (stat) {
+      let playerName = stat.playerName;
+      let playerLives = stat.playerLives;
+      let times = stat.times;
+      let averageTime = stat.averageTime;
+      let standardDeviation = stat.standardDeviation;
+      let fastestTime = stat.fastestTime;
+      let slowestTime = stat.slowestTime;
 
       // Create a new row in the table
       let newRow = document.createElement('tr');
@@ -123,6 +134,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       return a.timestamp - b.timestamp;
     });
 
+    const currentUnixTimestamp = Math.floor(Date.now() / 1000);
     scheduleResults.forEach(function (item) {
       let dateTimeString = item.dateTimeString;
       // console.log(item);
@@ -140,6 +152,13 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         '<td>' + run1 + '</td>' +
         '<td>' + run2 + '</td>' +
         '<td>' + run3 + '</td>'
+
+      // Check if the row is in the past or future
+      if (item.timestamp < currentUnixTimestamp) {
+        newRow.classList.add('past-row');
+      } else {
+        newRow.classList.add('future-row');
+      }
 
       // Append the new row to the table body
       scheduleBody.appendChild(newRow);
@@ -179,7 +198,7 @@ function updateMatchData(matchElement, match, topLife, bottomLife) {
     scheduleResults.push(scheduleResult);
   }
   if (match.youtube) {
-    matchDataElement.querySelector('.youtube').innerHTML = `<i class="fa fa-youtube-play"></i><a href=${match.youtube}>Recap</a>`;
+    matchDataElement.querySelector('.youtube').innerHTML = `<a href=${match.youtube}><i class="fa fa-youtube-play"></i>Recap</a>`;
   }
 }
 

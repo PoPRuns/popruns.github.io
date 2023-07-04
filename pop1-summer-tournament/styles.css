@@ -598,7 +598,7 @@ li.winner {
 }
 
 #schedule-table th {
-    padding: 30px 0px;
+    padding: 20px 0px;
 }
 
 #schedule-table td {
@@ -608,6 +608,7 @@ li.winner {
 
 #schedule-table ul {
     padding-left: 6px;
+    margin: auto;
 }
 
 .fa-youtube-play {
@@ -619,4 +620,20 @@ li.winner {
 .youtube a{
     color: white;
     text-decoration: none;
+}
+
+.youtube a:hover{
+    font-weight: 900;
+}
+
+#schedule-table thead tr {
+    background-color: #d39c0a30;
+}
+
+.past-row {
+    background-color: #ffdcaa20;
+}
+
+.future-row {
+    background-color: #ffffff10;
 }
