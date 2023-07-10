@@ -15,7 +15,8 @@ ul {
     margin-block-end: 0.5rem; */
 }
 
-.header-left, .header-right {
+.header-left,
+.header-right {
     color: #d39c0a;
     font-size: min(16px, 3.3vw);
 }
@@ -393,7 +394,8 @@ ul {
     padding: 130px 0;
 }
 
-.sec-chance-round-four .matchup {
+.sec-chance-round-four .matchup,
+.sec-chance-round-five .matchup {
     margin: 0;
     height: 60px;
     padding: 90px 0;
@@ -617,12 +619,12 @@ li.winner {
     margin: 0 3 0 5;
 }
 
-.youtube a{
+.youtube a {
     color: white;
     text-decoration: none;
 }
 
-.youtube a:hover{
+.youtube a:hover {
     font-weight: 900;
 }
 
@@ -636,4 +638,9 @@ li.winner {
 
 .future-row {
     background-color: #ffffff10;
+}
+
+.overall-stats td {
+    padding-top: 15px !important;
+    font-weight: 600;
 }

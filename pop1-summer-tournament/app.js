@@ -10,7 +10,8 @@ const roundFiveMatches = document.querySelectorAll('.round-five .match-wrap'); /
 const secChanceRoundOneMatches = document.querySelectorAll('.sec-chance-round-one .match-wrap');
 const secChanceRoundTwoMatches = document.querySelectorAll('.sec-chance-round-two .match-wrap');
 const secChanceRoundThreeMatches = document.querySelectorAll('.sec-chance-round-three .match-wrap');
-const secChanceRoundFourMatches = document.querySelectorAll('.sec-chance-round-four .match-wrap'); //Semi-Final
+const secChanceRoundFourMatches = document.querySelectorAll('.sec-chance-round-four .match-wrap');
+const secChanceRoundFiveMatches = document.querySelectorAll('.sec-chance-round-five .match-wrap'); //Semi-Final
 
 var leaderboardData = [];
 var scheduleResults = [];
@@ -54,17 +55,29 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const matchElement = secChanceRoundFourMatches[index];
       updateMatchData(matchElement, match, 1, 1);
     });
+    data.secChanceRoundFiveMatches.forEach((match, index) => {
+      const matchElement = secChanceRoundFiveMatches[index];
+      updateMatchData(matchElement, match, 1, 1);
+    });
 
     const tableBody = leaderboardElement.querySelector('#table-body');
     const scheduleBody = scheduleElement.querySelector('#table-body');
     // Create an array to store the stats
     var sortedStats = [];
+    let overallStats = {
+      totalTimes: [],
+      totalAverageTime: 0,
+      totalStandardDeviation: 0,
+      totalFastestTime: Infinity,
+      totalSlowestTime: 0
+    };
 
     leaderboardData.forEach(function (stat) {
       let playerName = stat.player;
       const lives = data.stats.find(player => player.player === playerName)?.lives ?? 2;
       let playerLives = ` <span style="color:red; text-shadow: 2px 2px 5px black;">${'&#9654;'.repeat(lives)}${'&#9655;'.repeat(2 - lives)}</span>`;
       let times = stat.times;
+      overallStats.totalTimes = overallStats.totalTimes.concat(stat.times);
 
       // Calculate average time
       let averageTime = times.reduce(function (acc, val) {
@@ -107,6 +120,25 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       );
     });
 
+    // Calculate overall average time
+    overallStats.totalAverageTime = overallStats.totalTimes.reduce(function (acc, val) {
+      return acc + val;
+    }, 0) / overallStats.totalTimes.length;
+
+    // Find overall fastest time
+    overallStats.totalFastestTime = Math.min.apply(null, overallStats.totalTimes);
+
+    // Find overall slowest time
+    overallStats.totalSlowestTime = Math.max.apply(null, overallStats.totalTimes);
+
+    // Calculate overall standard deviation
+    let sumOfSquaredDifferences = overallStats.totalTimes.reduce(function (acc, val) {
+      let difference = val - overallStats.totalAverageTime;
+      return acc + (difference * difference);
+    }, 0);
+    let letiance = sumOfSquaredDifferences / overallStats.totalTimes.length;
+    overallStats.totalStandardDeviation = Math.sqrt(letiance);
+
     // Iterate through the sorted stats and assign them to the HTML elements
     sortedStats.forEach(function (stat) {
       let playerName = stat.playerName;
@@ -129,6 +161,19 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       // Append the new row to the table body
       tableBody.appendChild(newRow);
     });
+
+    // Create a new row for overall stats
+    let overallRow = document.createElement('tr');
+    overallRow.innerHTML = '<td>Overall</td>' +
+      '<td>' + overallStats.totalTimes.length + '</td>' +
+      '<td>' + formatTime(overallStats.totalAverageTime) + '</td>' +
+      '<td>' + formatTime(overallStats.totalStandardDeviation) + '</td>' +
+      '<td>' + formatTime(overallStats.totalFastestTime) + '</td>' +
+      '<td>' + formatTime(overallStats.totalSlowestTime) + '</td>';
+    overallRow.classList.add("overall-stats");
+    
+    // Append the overall row to the table body
+    tableBody.appendChild(overallRow);
 
     scheduleResults.sort(function (a, b) {
       return a.timestamp - b.timestamp;
@@ -198,7 +243,7 @@ function updateMatchData(matchElement, match, topLife, bottomLife) {
     scheduleResults.push(scheduleResult);
   }
   if (match.youtube) {
-    matchDataElement.querySelector('.youtube').innerHTML = `<a href=${match.youtube}><i class="fa fa-youtube-play"></i>Recap</a>`;
+    matchDataElement.querySelector('.youtube').innerHTML = `<a href=${match.youtube} target="_blank"><i class="fa fa-youtube-play"></i>Recap</a>`;
   }
 }
 
