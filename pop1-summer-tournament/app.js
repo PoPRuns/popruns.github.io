@@ -192,7 +192,6 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
     const currentUnixTimestamp = Math.floor(Date.now() / 1000);
     scheduleResults.forEach(function (item) {
       let dateTimeString = item.dateTimeString;
-      // console.log(item);
 
       let players = `<ul><li>${item.topPlayer}</li><li>${item.bottomPlayer}</li></ul>`;
 
@@ -221,7 +220,6 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
 
     loaderElement.style.display = "none";
     bracketElement.style.display = "block";
-    console.log(scheduleResults);
   })
   .catch(error => {
     loaderElement.style.textAlign = "center";
@@ -249,7 +247,6 @@ function updateMatchData(matchElement, match, topLife, bottomLife, final=false) 
     scheduleResult.topPlayer = match.top.player;
     scheduleResult.bottomPlayer = match.bottom.player;
     scheduleResult.times = [match.top.times, match.bottom.times];
-    console.log(match);
     scheduleResults.push(scheduleResult);
   }
   if (match.youtube) {
@@ -307,7 +304,7 @@ function formatTime(seconds) {
   if (typeof seconds === 'undefined') return '-';
   if (seconds === 3600) return 'DNF';
   let minutes = Math.floor(seconds / 60);
-  let remainingSeconds = Math.round(seconds % 60);
+  let remainingSeconds = Math.trunc(seconds % 60);
   let formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   return formattedTime;
 }
