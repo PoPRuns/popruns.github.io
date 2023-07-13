@@ -77,7 +77,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const lives = data.stats.find(player => player.player === playerName)?.lives ?? 2;
       let playerLives = ` <span style="color:red; text-shadow: 2px 2px 5px black;">${'&#9654;'.repeat(lives)}${'&#9655;'.repeat(2 - lives)}</span>`;
       let times = stat.times;
-      overallStats.totalTimes = overallStats.totalTimes.concat(stat.times);
+      overallStats.totalTimes = overallStats.totalTimes.concat(stat.times.filter(time => time !== 3600));
 
       // Calculate average time
       let averageTime = times.reduce(function (acc, val) {
@@ -282,6 +282,7 @@ function setPlayerData(playerElement, playerData, life) {
 
 function formatTime(seconds) {
   if (typeof seconds === 'undefined') return '-';
+  if (seconds === 3600) return 'DNF';
   let minutes = Math.floor(seconds / 60);
   let remainingSeconds = Math.round(seconds % 60);
   let formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
