@@ -37,7 +37,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
     });
     data.roundFiveMatches.forEach((match, index) => {
       const matchElement = roundFiveMatches[index];
-      updateMatchData(matchElement, match, 2, 1);
+      updateMatchData(matchElement, match, 2, 1, final=true);
     });
     data.secChanceRoundOneMatches.forEach((match, index) => {
       const matchElement = secChanceRoundOneMatches[index];
@@ -75,6 +75,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
     leaderboardData.forEach(function (stat) {
       let playerName = stat.player;
       const lives = data.stats.find(player => player.player === playerName)?.lives ?? 2;
+      const pbBefore = data.stats.find(player => player.player === playerName)?.pbBefore ?? '-';
+      const pbAfter = data.stats.find(player => player.player === playerName)?.pbAfter ?? '-';
       let playerLives = ` <span style="color:red; text-shadow: 2px 2px 5px black;">${'&#9654;'.repeat(lives)}${'&#9655;'.repeat(2 - lives)}</span>`;
       let times = stat.times;
       overallStats.totalTimes = overallStats.totalTimes.concat(stat.times.filter(time => time !== 3600));
@@ -106,6 +108,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         averageTime: averageTime,
         standardDeviation: standardDeviation,
         fastestTime: fastestTime,
+        pbBefore: pbBefore,
+        pbAfter: pbAfter,
         slowestTime: slowestTime,
       });
     });
@@ -148,6 +152,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       let standardDeviation = stat.standardDeviation;
       let fastestTime = stat.fastestTime;
       let slowestTime = stat.slowestTime;
+      let pbBefore = stat.pbBefore;
+      let pbAfter = stat.pbAfter;
 
       // Create a new row in the table
       let newRow = document.createElement('tr');
@@ -156,6 +162,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         '<td>' + formatTime(averageTime) + '</td>' +
         '<td>' + formatTime(standardDeviation) + '</td>' +
         '<td>' + formatTime(fastestTime) + '</td>' +
+        '<td>' + pbBefore + '</td>' +
+        '<td>' + pbAfter + '</td>' +
         '<td>' + formatTime(slowestTime) + '</td>';
 
       // Append the new row to the table body
@@ -169,6 +177,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       '<td>' + formatTime(overallStats.totalAverageTime) + '</td>' +
       '<td>' + formatTime(overallStats.totalStandardDeviation) + '</td>' +
       '<td>' + formatTime(overallStats.totalFastestTime) + '</td>' +
+      '<td>' + data.wrBefore + '</td>' +
+      '<td>' + data.wrAfter + '</td>' +
       '<td>' + formatTime(overallStats.totalSlowestTime) + '</td>';
     overallRow.classList.add("overall-stats");
     
@@ -220,13 +230,13 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
     console.error(error);
   });
 
-function updateMatchData(matchElement, match, topLife, bottomLife) {
+function updateMatchData(matchElement, match, topLife, bottomLife, final=false) {
   const topPlayerElement = matchElement.querySelector('.player-top');
   const bottomPlayerElement = matchElement.querySelector('.player-bottom');
   const matchDataElement = matchElement.querySelector('.match-data');
 
-  setPlayerData(topPlayerElement, match.top, topLife);
-  setPlayerData(bottomPlayerElement, match.bottom, bottomLife);
+  setPlayerData(topPlayerElement, match.top, topLife, final);
+  setPlayerData(bottomPlayerElement, match.bottom, bottomLife, final);
 
   if (match.timestamp) {
     let scheduleResult = {}
@@ -247,7 +257,7 @@ function updateMatchData(matchElement, match, topLife, bottomLife) {
   }
 }
 
-function setPlayerData(playerElement, playerData, life) {
+function setPlayerData(playerElement, playerData, life, final) {
   if (typeof playerData !== 'undefined') {
     playerElement.querySelector('.seed').textContent = playerData.seed;
     playerElement.querySelector('.player-name').textContent = playerData.player;
@@ -257,12 +267,25 @@ function setPlayerData(playerElement, playerData, life) {
     else {
       playerElement.querySelector('.life').innerHTML = '&#9654;&#9655;';
     }
-    playerElement.querySelector('.score').textContent = playerData.score;
-    if (playerData.score === 2) {
-      playerElement.classList.add('winner');
-    } else {
-      playerElement.classList.add('active');
+    
+    if (!final){
+      playerElement.querySelector('.score').textContent = playerData.score;
+      if (playerData.score === 2) {
+        playerElement.classList.add('winner');
+      } else {
+        playerElement.classList.add('active');
+      }
     }
+    else {
+      playerElement.querySelector('.pre-score').textContent = playerData.scoreOne;
+      playerElement.querySelector('.score').textContent = playerData.scoreTwo;
+      if (life + playerData.scoreOne >= 4 || playerData.scoreTwo === 2) {
+        playerElement.classList.add('winner');
+      } else {
+        playerElement.classList.add('active');
+      }
+    }
+    
     if (playerData.times) {
       let existingPlayer = leaderboardData.find(player => player.player === playerData.player);
       if (existingPlayer) {

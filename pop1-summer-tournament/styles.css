@@ -343,6 +343,17 @@ ul {
     right: 5px;
 }
 
+.pre-score {
+    font-size: 16px;
+    text-transform: uppercase;
+    float: right;
+    color: seagreen;
+    font-weight: bold;
+    font-family: 'Roboto Condensed', sans-serif;
+    position: absolute;
+    right: 25px;
+}
+
 .player {
     padding: 0 5px;
     margin: 1px 0;
@@ -588,7 +599,7 @@ li.winner {
 }
 
 #leaderboard-table td {
-    padding: 0px 30px;
+    padding: 5px 30px;
     color: white;
 }
 
