@@ -276,7 +276,7 @@ function setPlayerData(playerElement, playerData, life, final) {
     else {
       playerElement.querySelector('.pre-score').textContent = playerData.scoreOne;
       playerElement.querySelector('.score').textContent = playerData.scoreTwo;
-      if (life + playerData.scoreOne >= 4 || playerData.scoreTwo === 2) {
+      if (life + playerData.scoreOne >= 5 || playerData.scoreTwo === 3) {
         playerElement.classList.add('winner');
       } else {
         playerElement.classList.add('active');
