@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PoP1 IL Calculator</title>
+    <link rel="icon" type="image/x-icon"
+        href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
+</head>
+
+<script>
+    var ILTime = "";
+    function handleSubmit() {
+        var startMins = document.getElementById("start-minutes").value;
+        var startSecs = document.getElementById("start-seconds").value;
+        var startMS = document.getElementById("start-ms").value;
+        var durationMins = document.getElementById("duration-minutes").value;
+        var durationSecs = document.getElementById("duration-seconds").value;
+        var durationMS = document.getElementById("duration-ms").value;
+        
+        var startFrames = Math.floor(startMS/83) + startSecs*12 + startMins*720;
+        var durationFrames = Math.floor(durationMS/83) + durationSecs*12 + durationMins*720;
+
+        var endFrames = startFrames + durationFrames;
+        var actualTransitionCount = Math.floor(endFrames/720) - startMins;
+        var extraTransitionFrames = actualTransitionCount - durationMins;
+
+        durationFrames = Math.floor(durationMS/83);
+        if (durationFrames - extraTransitionFrames < 0) {
+            if (durationSecs - 1 < 0) {
+                durationMins = durationMins - 1;
+                durationSecs = 59;
+            }
+            else {
+                durationSecs = durationSecs - 1;
+            }
+            durationFrames = 12;
+        }
+        durationFrames = durationFrames - extraTransitionFrames;
+        durationMS = Math.floor(durationFrames * 1000 / 12);
+
+        ILTime = String(durationMins).padStart(2, '0') + ":" + String(durationSecs).padStart(2, '0') + "." + String(durationMS).padStart(3, '0');
+        document.getElementById("infobox").value = "Your IL time is " + ILTime;
+        var copyBtn = document.getElementById("copyBtn");
+        copyBtn.innerHTML = "Copy";
+        copyBtn.disabled = false;
+    }
+
+    function copyTime() {
+        navigator.clipboard.writeText(ILTime);
+        var copyBtn = document.getElementById("copyBtn");
+        copyBtn.innerHTML = "Copied!";
+        copyBtn.disabled = true;
+    }
+</script>
+
+<body>
+
+    <h1>PoP1 IL Time Calculator</h1>
+    <form action="javascript:handleSubmit()">
+        <label><b>Level Start Time:</b></label>
+        
+        <input type="number" id="start-minutes" name="start-minutes" value=0 min=0 max=60 style="width: 30px;">
+        <label for="start-minutes">m</label>
+
+        <input type="number" id="start-seconds" name="start-seconds" value=0 min=0 max=60 style="width: 30px; margin-left: 10px;">
+        <label for="start-seconds">s</label>
+
+        <select name="start-ms" id="start-ms" style="color:black; width: 50px; margin-left: 10px;">
+            <option value=0>000</option>
+            <option value=83>083</option>
+            <option value=166>166</option>
+            <option value=250>250</option>
+            <option value=333>333</option>
+            <option value=416>416</option>
+            <option value=500>500</option>
+            <option value=583>583</option>
+            <option value=666>666</option>
+            <option value=750>750</option>
+            <option value=833>833</option>
+            <option value=916>916</option>
+        </select>
+        <label for="start-ms">ms</label>
+
+        <br>
+
+        <label><b>Level Duration&nbsp;&nbsp;&nbsp;:</b></label>
+
+        <input type="number" id="duration-minutes" name="duration-minutes" value=0 min=0 max=60 style="width: 30px;">
+        <label for="duration-minutes">m</label>
+
+        <input type="number" id="duration-seconds" name="duration-seconds" value=0 min=0 max=60 style="width: 30px; margin-left: 10px;">
+        <label for="duration-seconds">s</label>
+
+        <select name="duration-ms" id="duration-ms" style="width: 50px; margin-left: 10px;">
+            <option value=0>000</option>
+            <option value=83>083</option>
+            <option value=166>166</option>
+            <option value=250>250</option>
+            <option value=333>333</option>
+            <option value=416>416</option>
+            <option value=500>500</option>
+            <option value=583>583</option>
+            <option value=666>666</option>
+            <option value=750>750</option>
+            <option value=833>833</option>
+            <option value=916>916</option>
+        </select>
+        <label for="duration-ms">ms</label>
+
+        <br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+    
+    <br>
+
+    <input type="text" id="infobox" disabled style="width: 300px; margin-left: 10px;">
+    <button id="copyBtn" disabled onclick="copyTime()">Copy</button>
+
+</body>
+
+</html>
