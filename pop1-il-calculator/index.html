@@ -3,7 +3,8 @@
 
 <head>
     <title>PoP1 IL Calculator</title>
-    <link rel="icon" type="image/x-icon" href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
+    <link rel="icon" type="image/x-icon"
+        href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -14,18 +15,81 @@
             padding: 10px 15px 0 0;
         }
 
-        #breadcrumbs {
-            border-right: 0.1px solid green;
-        }
-
-        #extracrumbs {
-            border-right: 3px solid red;
+        .frames-visual {
+            background-color: var(--bs-gray-300);
+            outline: 1px solid var(--bs-gray-400);
+            height: 10px;
         }
     </style>
 </head>
 
 <script>
     var ILTime = "";
+    const urlParams = new URLSearchParams(window.location.search);
+
+    function handleQueryParams() {
+        const startFrame = parseInt(urlParams.get('startFrame'));
+        const endFrame = parseInt(urlParams.get('endFrame'));
+
+        if (!startFrame || !endFrame) {
+            return;
+        }
+
+        if (startFrame % 720 === 0 || endFrame % 720 === 0) {
+            document.getElementsByTagName('body')[0].innerHTML = '<img src="https://media.tenor.com/ciNDyf6AgH0AAAAd/disappointed-disappointed-fan.gif"></img>';
+            return;
+        }
+
+        var resultsElement = document.getElementById("results");
+        var errorElement = document.getElementById("error");
+        resultsElement.style.display = 'none';
+        errorElement.style.display = 'none';
+
+        startMins = document.getElementById("start-minutes").value = Math.floor(startFrame / 720);
+        document.getElementById("start-seconds").value = Math.floor(startFrame / 12) % 60; handleChangeSecs('start-seconds', 'start-ms');
+        document.getElementById("start-ms").value = Math.floor((startFrame % 12) * 1000 / 12);
+        endMins = document.getElementById("end-minutes").value = Math.floor(endFrame / 720);
+        document.getElementById("end-seconds").value = Math.floor(endFrame / 12) % 60; handleChangeSecs('end-seconds', 'end-ms');
+        document.getElementById("end-ms").value = Math.floor((endFrame % 12) * 1000 / 12);
+
+        if (endFrame <= startFrame) {
+            errorElement.innerHTML = "'End TimeStamp' must be larger than 'Start Timestamp'";
+            errorElement.style.display = 'block';
+            return;
+        }
+        var segmentDuration = endFrame - startFrame;
+
+        var actualTransitionCount = endMins - startMins;
+        var extraTransitionFrames = actualTransitionCount - Math.floor((segmentDuration - 1) / 720);
+
+        var expectedBar = document.getElementById("frames-visual-exp");
+        var actualBar = document.getElementById("frames-visual-act");
+
+        actualBar.innerHTML = '';
+        expectedBar.innerHTML = '';
+        for (let i = startFrame; i <= endFrame; i++) {
+            if (i % 720 === 0) {
+                actualBar.innerHTML += `<div style="position: absolute; width: max(${100 / segmentDuration}%, 2px); height: 10px; left: ${(i - startFrame - 1) / segmentDuration * 100}%; background-color: var(--bs-danger);"></div>`;
+            }
+
+            if ((i - startFrame + 1) % 720 === 0) {
+                expectedBar.innerHTML += `<div style="position: absolute; width: max(${100 / segmentDuration}%, 2px); height: 10px; left: ${(i - startFrame - 1) / segmentDuration * 100}%; background-color: var(--bs-danger);"></div>`;
+            }
+        }
+
+        segmentDuration = segmentDuration - extraTransitionFrames;
+
+        durationMins = Math.floor(segmentDuration / 720);
+        durationSecs = Math.floor(segmentDuration / 12) % 60;
+        durationMS = Math.floor((segmentDuration % 12) * 1000 / 12);
+
+        ILTime = String(durationMins).padStart(2, '0') + ":" + String(durationSecs).padStart(2, '0') + "." + String(durationMS).padStart(3, '0');
+        document.getElementById("infobox").value = "Your IL time is " + ILTime;
+        var copyBtn = document.getElementById("copyBtn");
+        copyBtn.innerHTML = "Copy";
+        copyBtn.disabled = false;
+        resultsElement.style.display = 'block';
+    }
 
     function handleChangeSecs(secsElementId, msElementId) {
         var secsValue = document.getElementById(secsElementId).value;
@@ -60,58 +124,12 @@
         var endMins = document.getElementById("end-minutes").value;
         var endSecs = document.getElementById("end-seconds").value;
         var endMS = document.getElementById("end-ms").value;
-        var resultsElement = document.getElementById("results");
-        var errorElement = document.getElementById("error");
 
-        resultsElement.style.display = 'none';
-        errorElement.style.display = 'none';
-
-        var startFrames = Math.floor(startMS / 83) + startSecs * 12 + startMins * 720;
-        var endFrames = Math.floor(endMS / 83) + endSecs * 12 + endMins * 720;
-
-        if (endFrames <= startFrames) {
-            errorElement.innerHTML = "'End TimeStamp' must be larger than 'Start Timestamp'";
-            errorElement.style.display = 'block';
-            return;
-        }
-        var segmentDuration = endFrames - startFrames;
-
-        var actualTransitionCount = endMins - startMins;
-        var extraTransitionFrames = actualTransitionCount - Math.floor((segmentDuration - 1) / 720);
-
-        var expectedBar = "";
-        var actualBar = "";
-        for (let i = startFrames; i <= endFrames; i++) {
-            if (i % 720 === 0) {
-                actualBar += "<span id='extracrumbs'></span>";
-            }
-            else {
-                actualBar += "<span id='breadcrumbs'></span>";
-            }
-
-            if ((i - startFrames + 1) % 720 === 0) {
-                expectedBar += "<span id='extracrumbs'></span>";
-            }
-            else {
-                expectedBar += "<span id='breadcrumbs'></span>";
-            }
-        }
-
-        document.getElementById("frames-visual-exp").innerHTML = expectedBar;
-        document.getElementById("frames-visual-act").innerHTML = actualBar;
-
-        segmentDuration = segmentDuration - extraTransitionFrames;
-
-        durationMins = Math.floor(segmentDuration / 720);
-        durationSecs = Math.floor(segmentDuration / 12) % 60;
-        durationMS = Math.floor((segmentDuration % 12) * 1000 / 12);
-
-        ILTime = String(durationMins).padStart(2, '0') + ":" + String(durationSecs).padStart(2, '0') + "." + String(durationMS).padStart(3, '0');
-        document.getElementById("infobox").value = "Your IL time is " + ILTime;
-        var copyBtn = document.getElementById("copyBtn");
-        copyBtn.innerHTML = "Copy";
-        copyBtn.disabled = false;
-        resultsElement.style.display = 'block';
+        var startFrame = Math.floor(startMS / 83) + startSecs * 12 + startMins * 720;
+        var endFrame = Math.floor(endMS / 83) + endSecs * 12 + endMins * 720;
+        console.log("here");
+        window.history.replaceState('', '', `?startFrame=${startFrame}&endFrame=${endFrame}`);
+        window.location.reload();
     }
 
     function copyTime() {
@@ -122,7 +140,7 @@
     }
 </script>
 
-<body style="margin:20px">
+<body style="margin:20px" onload="handleQueryParams()">
 
     <h2>PoP1 IL Time Calculator</h2>
     <div>
@@ -133,12 +151,15 @@
 
                     <td>
                         <div class="d-inline-flex align-items-center">
-                            <input type="number" class="form-control" id="start-minutes" name="start-minutes" value="0" min="0" max="60" style="width: 60px;" onblur="reportValidity()">
+                            <input type="number" class="form-control" id="start-minutes" name="start-minutes" value="0"
+                                min="0" max="60" style="width: 60px;" onblur="reportValidity()">
                             <label class="form-label ms-1" for="start-minutes">m</label>
                         </div>
 
                         <div class="d-inline-flex ms-3 align-items-center">
-                            <input type="number" class="form-control" id="start-seconds" name="start-seconds" value="0" min="0" max="59" style="width: 60px;" onblur="reportValidity()" onchange="handleChangeSecs('start-seconds', 'start-ms')">
+                            <input type="number" class="form-control" id="start-seconds" name="start-seconds" value="0"
+                                min="0" max="59" style="width: 60px;" onblur="reportValidity()"
+                                onchange="handleChangeSecs('start-seconds', 'start-ms')">
                             <label class="form-label ms-1" for="start-seconds">s</label>
                         </div>
 
@@ -167,12 +188,15 @@
 
                     <td>
                         <div class="d-inline-flex align-items-center">
-                            <input type="number" class="form-control" id="end-minutes" name="end-minutes" value="0" min="0" max="60" style="width: 60px;" onblur="reportValidity()">
+                            <input type="number" class="form-control" id="end-minutes" name="end-minutes" value="0"
+                                min="0" max="60" style="width: 60px;" onblur="reportValidity()">
                             <label class="form-label ms-1" for="end-minutes">m</label>
                         </div>
 
                         <div class="d-inline-flex ms-3 align-items-center">
-                            <input type="number" class="form-control" id="end-seconds" name="end-seconds" value="0" min="0" max="59" style="width: 60px;" onblur="reportValidity()" onchange="handleChangeSecs('end-seconds', 'end-ms')">
+                            <input type="number" class="form-control" id="end-seconds" name="end-seconds" value="0"
+                                min="0" max="59" style="width: 60px;" onblur="reportValidity()"
+                                onchange="handleChangeSecs('end-seconds', 'end-ms')">
                             <label class="form-label ms-1" for="end-seconds">s</label>
                         </div>
 
@@ -211,10 +235,13 @@
 
         <br>
 
-        <div>Expected Timerbug Pattern:</div>
-        <div id="frames-visual-exp"></div>
-        <div>Actual Timerbug Pattern:</div>
-        <div id="frames-visual-act"></div>
+        <div style="position: relative; width: min(800px, 90%);">
+            <div>Expected Timerbug Pattern:</div>
+            <div class="frames-visual" id="frames-visual-exp"></div>
+            <br>
+            <div>Actual Timerbug Pattern:</div>
+            <div class="frames-visual" id="frames-visual-act"></div>
+        </div>
     </div>
 
     <div id="error" style="display: none; color: brown;"></div>
@@ -224,13 +251,18 @@
     <div>
         <h2>FAQ</h2>
         <h4>What is this for?</h4>
-        <p>This page is useful for calculating the equivalent IL time of the gold segments that you achieved in your full runs.</p>
+        <p>This page is useful for calculating the equivalent IL time of the gold segments that you achieved in your
+            full runs.</p>
         <h4>What levels are these applicable for?</h4>
-        <p>This is applicable for levels 2-13. For legacy reasons and simplicity, the split time will be used as is for level 1.</p>
+        <p>This is applicable for levels 2-13. For legacy reasons and simplicity, the split time will be used as is for
+            level 1.</p>
         <h4>Why is this IL time potentially different from the segment duration?</h4>
-        <p>This due a bug in the game's code due to which it skips a frame during every minute transition. For a more detailed explanation check the guide over at SRC.</p>
+        <p>This due a bug in the game's code due to which it skips a frame during every minute transition. For a more
+            detailed explanation check the guide over at SRC.</p>
         <h4>How do I get the level start and end timestamps?</h4>
-        <p>There are two ways. During the level transtion, the timer pauses for a small but clearly distingushable period of time. This frozen time is your timestamp. If you are using the updated autosplitter with scene splits, then your will directly be able to see the required timestamps in your splits.</p>
+        <p>There are two ways. During the level transtion, the timer pauses for a small but clearly distingushable
+            period of time. This frozen time is your timestamp. If you are using the updated autosplitter with scene
+            splits, then your will directly be able to see the required timestamps in your splits.</p>
     </div>
 
 </body>
