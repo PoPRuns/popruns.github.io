@@ -3,8 +3,17 @@
 
 <head>
     <title>PoP1 IL Calculator</title>
-    <link rel="icon" type="image/x-icon"
-        href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
+    <link rel="icon" type="image/x-icon" href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
+    <!-- Latest compiled and minified Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Latest compiled Bootstrap js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        td {
+            padding: 10px 15px 0 0;
+        }
+    </style>
 </head>
 
 <script>
@@ -16,15 +25,15 @@
         var durationMins = document.getElementById("duration-minutes").value;
         var durationSecs = document.getElementById("duration-seconds").value;
         var durationMS = document.getElementById("duration-ms").value;
-        
-        var startFrames = Math.floor(startMS/83) + startSecs*12 + startMins*720;
-        var durationFrames = Math.floor(durationMS/83) + durationSecs*12 + durationMins*720;
+
+        var startFrames = Math.floor(startMS / 83) + startSecs * 12 + startMins * 720;
+        var durationFrames = Math.floor(durationMS / 83) + durationSecs * 12 + durationMins * 720;
 
         var endFrames = startFrames + durationFrames;
-        var actualTransitionCount = Math.floor(endFrames/720) - startMins;
+        var actualTransitionCount = Math.floor(endFrames / 720) - startMins;
         var extraTransitionFrames = actualTransitionCount - durationMins;
 
-        durationFrames = Math.floor(durationMS/83);
+        durationFrames = Math.floor(durationMS / 83);
         if (durationFrames - extraTransitionFrames < 0) {
             if (durationSecs - 1 < 0) {
                 durationMins = durationMins - 1;
@@ -53,69 +62,93 @@
     }
 </script>
 
-<body>
+<body style="margin:20px">
 
-    <h1>PoP1 IL Time Calculator</h1>
-    <form action="javascript:handleSubmit()">
-        <label><b>Level Start Time:</b></label>
-        
-        <input type="number" id="start-minutes" name="start-minutes" value=0 min=0 max=60 style="width: 30px;">
-        <label for="start-minutes">m</label>
+    <h2>PoP1 IL Time Calculator</h2>
+    <div>
+        <table>
+            <tr>
+                <div class="mb-3">
+                    <td><label class="form-label"><b>Level Start Timestamp:</b></label></td>
 
-        <input type="number" id="start-seconds" name="start-seconds" value=0 min=0 max=60 style="width: 30px; margin-left: 10px;">
-        <label for="start-seconds">s</label>
+                    <td>
+                        <div class="d-inline-flex align-items-center">
+                            <input type="number" class="form-control" id="start-minutes" name="start-minutes" value="0" min="0" max="60" style="width: 60px;" onblur="reportValidity()">
+                            <label class="form-label ms-1" for="start-minutes">m</label>
+                        </div>
 
-        <select name="start-ms" id="start-ms" style="color:black; width: 50px; margin-left: 10px;">
-            <option value=0>000</option>
-            <option value=83>083</option>
-            <option value=166>166</option>
-            <option value=250>250</option>
-            <option value=333>333</option>
-            <option value=416>416</option>
-            <option value=500>500</option>
-            <option value=583>583</option>
-            <option value=666>666</option>
-            <option value=750>750</option>
-            <option value=833>833</option>
-            <option value=916>916</option>
-        </select>
-        <label for="start-ms">ms</label>
+                        <div class="d-inline-flex ms-3 align-items-center">
+                            <input type="number" class="form-control" id="start-seconds" name="start-seconds" value="0" min="0" max="59" style="width: 60px;" onblur="reportValidity()">
+                            <label class="form-label ms-1" for="start-seconds">s</label>
+                        </div>
+
+                        <div class="d-inline-flex ms-3 align-items-center">
+                            <select class="form-select" name="start-ms" id="start-ms" style="width: 80px;">
+                                <option value=0>000</option>
+                                <option value=83>083</option>
+                                <option value=166>166</option>
+                                <option value=250>250</option>
+                                <option value=333>333</option>
+                                <option value=416>416</option>
+                                <option value=500>500</option>
+                                <option value=583>583</option>
+                                <option value=666>666</option>
+                                <option value=750>750</option>
+                                <option value=833>833</option>
+                                <option value=916>916</option>
+                            </select>
+                            <label class="form-label ms-1" for="start-ms">ms</label>
+                        </div>
+                    </td>
+                </div>
+            </tr>
+            <tr>
+                <div class="mb-3">
+                    <td><label class="form-label"><b>Segment Duration:</b></label></td>
+
+                    <td>
+                        <div class="d-inline-flex align-items-center">
+                            <input type="number" class="form-control" id="duration-minutes" name="duration-minutes" value="0" min="0" max="60" style="width: 60px;">
+                            <label class="form-label ms-1" for="duration-minutes">m</label>
+                        </div>
+
+                        <div class="d-inline-flex ms-3 align-items-center">
+                            <input type="number" class="form-control" id="duration-seconds" name="duration-seconds" value="0" min="0" max="60" style="width: 60px;">
+                            <label class="form-label ms-1" for="duration-seconds">s</label>
+                        </div>
+
+                        <div class="d-inline-flex ms-3 align-items-center">
+                            <select class="form-select" name="duration-ms" id="duration-ms" style="width: 80px;">
+                                <option value=0>000</option>
+                                <option value=83>083</option>
+                                <option value=166>166</option>
+                                <option value=250>250</option>
+                                <option value=333>333</option>
+                                <option value=416>416</option>
+                                <option value=500>500</option>
+                                <option value=583>583</option>
+                                <option value=666>666</option>
+                                <option value=750>750</option>
+                                <option value=833>833</option>
+                                <option value=916>916</option>
+                            </select>
+                            <label class="form-label ms-1" for="duration-ms">ms</label>
+                        </div>
+                    </td>
+                </div>
+            </tr>
+        </table>
 
         <br>
+        <button class="btn btn-primary" onclick="handleSubmit()">Submit</button>
+    </div>
 
-        <label><b>Level Duration&nbsp;&nbsp;&nbsp;:</b></label>
-
-        <input type="number" id="duration-minutes" name="duration-minutes" value=0 min=0 max=60 style="width: 30px;">
-        <label for="duration-minutes">m</label>
-
-        <input type="number" id="duration-seconds" name="duration-seconds" value=0 min=0 max=60 style="width: 30px; margin-left: 10px;">
-        <label for="duration-seconds">s</label>
-
-        <select name="duration-ms" id="duration-ms" style="width: 50px; margin-left: 10px;">
-            <option value=0>000</option>
-            <option value=83>083</option>
-            <option value=166>166</option>
-            <option value=250>250</option>
-            <option value=333>333</option>
-            <option value=416>416</option>
-            <option value=500>500</option>
-            <option value=583>583</option>
-            <option value=666>666</option>
-            <option value=750>750</option>
-            <option value=833>833</option>
-            <option value=916>916</option>
-        </select>
-        <label for="duration-ms">ms</label>
-
-        <br><br>
-
-        <input type="submit" value="Submit">
-    </form>
-    
     <br>
 
-    <input type="text" id="infobox" disabled style="width: 300px; margin-left: 10px;">
-    <button id="copyBtn" disabled onclick="copyTime()">Copy</button>
+    <div style="display:flex; align-items: center; gap: 10px;">
+        <input class="form-control" type="text" id="infobox" disabled style="width: 300px;">
+        <button class="btn btn-dark" id="copyBtn" disabled onclick="copyTime()">Copy</button>
+    </div>
 
 </body>
 
