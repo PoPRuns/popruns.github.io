@@ -41,10 +41,11 @@
     const urlParams = new URLSearchParams(window.location.search);
 
     function handleQueryParams() {
-        const startFrame = parseInt(urlParams.get('startFrame'));
-        const endFrame = parseInt(urlParams.get('endFrame'));
+        const startFrame = Math.max(Math.min(parseInt(urlParams.get('startFrame')), 43200), 0);
+        const endFrame = Math.max(Math.min(parseInt(urlParams.get('endFrame')), 43200), 0);
 
-        if (!startFrame || !endFrame) {
+        console.log(startFrame, endFrame);
+        if (isNaN(startFrame) || isNaN(endFrame)) {
             return;
         }
 
