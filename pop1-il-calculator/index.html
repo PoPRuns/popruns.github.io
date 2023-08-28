@@ -38,13 +38,13 @@
 
 <script>
     var ILTime = "";
+    var oldSecValue = '0';
     const urlParams = new URLSearchParams(window.location.search);
 
     function handleQueryParams() {
         const startFrame = Math.max(Math.min(parseInt(urlParams.get('startFrame')), 43200), 0);
         const endFrame = Math.max(Math.min(parseInt(urlParams.get('endFrame')), 43200), 0);
 
-        console.log(startFrame, endFrame);
         if (isNaN(startFrame) || isNaN(endFrame)) {
             return;
         }
@@ -123,12 +123,15 @@
             <option value=916>916</option>
         `;
 
-        if (secsValue == 0) {
-            msElement.innerHTML = msOptions;
+        if ((secsValue === '0') !== (oldSecValue === '0')) {
+            if (secsValue === '0') {
+                msElement.innerHTML = msOptions;
+            }
+            else {
+                msElement.innerHTML = '<option value=0>000</option>' + msOptions;
+            }
         }
-        else {
-            msElement.innerHTML = '<option value=0>000</option>' + msOptions;
-        }
+        oldSecValue = secsValue;
     }
 
     function handleSubmit() {
@@ -141,7 +144,6 @@
 
         var startFrame = Math.floor(startMS / 83) + startSecs * 12 + startMins * 720;
         var endFrame = Math.floor(endMS / 83) + endSecs * 12 + endMins * 720;
-        console.log("here");
         window.history.replaceState('', '', `?startFrame=${startFrame}&endFrame=${endFrame}`);
         window.location.reload();
     }
