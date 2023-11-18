@@ -51,15 +51,24 @@
 
     <br /><br />
 
-    <table class="table table-striped" id="dataTable">
-        <thead>
-            <tr>
-                <th>Beam</th>
-                <th>Distance</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div id="results" style="display: none;">
+        <hr />
+        <label><b>Load Trigger Location*</b> - </label>
+        <label id="loadLocation"></label>
+        <hr />
+        <table class="table table-striped" id="dataTable">
+            <thead>
+                <tr>
+                    <th>Beam</th>
+                    <th>Location*</th>
+                    <th>Distance</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <label><b>*</b> - Calculates nearest Fertile Ground</label>
+    </div>
+
     <script>
         function processJSON() {
             const fileInput = document.getElementById('fileInput');
@@ -72,6 +81,8 @@
 
             const pointX = parseFloat(document.getElementById('pointX').value);
             const pointY = parseFloat(document.getElementById('pointY').value);
+
+            document.getElementById("loadLocation").textContent = estimateLocation(pointX, pointY);
 
             if (isNaN(pointX) || isNaN(pointY)) {
                 alert('Please select load trigger coordinates.');
@@ -86,6 +97,7 @@
             };
 
             reader.readAsText(file);
+            document.getElementById("results").style.display = "block";
         }
 
         function processData(data) {
@@ -119,6 +131,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
+                    <td>${estimateLocation(x1, y1)}</td>
                     <td>${distance}</td>
                 `;
 
@@ -130,15 +143,66 @@
             const a = y2 - y1;
             const b = x1 - x2;
             const c = x2 * y1 - x1 * y2;
+            const square = a * a + b * b;
+            const d = (x - x1) * (-b) + (y - y1) * (a);
 
-            const distance = (a * x + b * y + c) / Math.sqrt(a * a + b * b);
+            const distance = Math.abs(a * x + b * y + c) / Math.sqrt(square);
 
-            // If distance is negative, the point is behind the line
-            if (distance < 0) {
-                return Infinity;
+            if (d > square) {
+                return distance;
+            }
+            return Infinity;
+        }
+
+        function distanceBetweenPoints(x1, y1, x2, y2) {
+            const a = y2 - y1;
+            const b = x1 - x2;
+            return Math.sqrt(a * a + b * b)
+        }
+
+        function estimateLocation(x, y) {
+            const areaMapping = {
+                "Temple": [4.68, -147.53],
+                "King's Gate": [-413.54, -66.49],
+                "The Sun Temple": [-566.48, -43.91],
+                "Marshalling Ground": [-780.90, -17.71],
+                "The Windmills": [-775.92, 164.92],
+                "Hunter's Lair": [-929.43, 322.36],
+                "Martyrs' Tower": [-552.84, 202.43],
+                "The Cauldron": [-167.81, 225.33],
+                "Construction Yard": [-251.37, 456.49],
+                "Machinery Ground": [-395.26, 512.35],
+                "Heaven's Stair": [-303.65, 652.55],
+                "The Observatory": [-296.59, 697.24],
+                "Reservoir": [-157.00, 571.22],
+                "The Cavern": [155.28, 180.34],
+                "Royal Gardens": [265.01, 381.49],
+                "Spire of Dreams": [187.59, 550.25],
+                "Coronation Hall": [340.30, 582.45],
+                "The Palace Rooms": [351.24, 799.46],
+                "Royal Spire": [468.48, 425.92],
+                "City Gate": [421.11, -88.07],
+                "Tower of Ahriman": [598.56, 13.45],
+                "Tower of Ormazd": [654.07, 208.06],
+                "City of Light": [804.07, 113.09],
+                "Warrior's Fortress": [1039.05, 309.18],
+                "Queen's Tower": [786.82, -32.44],
             }
 
-            return distance;
+            let minDistance = Infinity;
+            let closestArea = "";
+
+            for (const area in areaMapping) {
+                const [areaX, areaY] = areaMapping[area];
+                const distance = distanceBetweenPoints(x, y, areaX, areaY);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestArea = area;
+                }
+            }
+
+            return closestArea;
         }
 
     </script>
