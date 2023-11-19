@@ -47,7 +47,15 @@
 
     <br /><br />
 
-    <button onclick="processJSON()">Process JSON</button>
+    <label>Select Mode of traversal:</label>&nbsp;
+    <select name="mode" id="mode">
+        <option value="airwalk">Air-Walk</option>
+        <option value="templewarp">Temple Warp</option>
+    </select>
+
+    <br /><br />
+
+    <button onclick="processJSON()">Calculate Distance</button>
 
     <br /><br />
 
@@ -62,6 +70,7 @@
                     <th>Beam</th>
                     <th>Location*</th>
                     <th>Distance</th>
+                    <th id="frameHeader" style="display: none;">Frame</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -82,12 +91,12 @@
             const pointX = parseFloat(document.getElementById('pointX').value);
             const pointY = parseFloat(document.getElementById('pointY').value);
 
-            document.getElementById("loadLocation").textContent = estimateLocation(pointX, pointY);
-
             if (isNaN(pointX) || isNaN(pointY)) {
                 alert('Please select load trigger coordinates.');
                 return;
             }
+
+            document.getElementById("loadLocation").textContent = estimateLocation(pointX, pointY);
 
             const reader = new FileReader();
 
@@ -110,33 +119,70 @@
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
 
-            const calculatedDistances = data.map(item => {
-                const { x1, y1, x2, y2 } = item;
-                return {
-                    x1,
-                    y1,
-                    x2,
-                    y2,
-                    distance: distanceFromLine(pointX, pointY, x1, y1, x2, y2)
-                };
-            });
+            const mode = document.getElementById("mode").value;
 
-            const filteredAndSortedData = calculatedDistances
-                .filter(item => item.distance !== Infinity)
-                .sort((a, b) => a.distance - b.distance);
+            if (mode === "airwalk") {
+                document.getElementById("frameHeader").style.display = "none";
+                const calculatedDistances = data.map(item => {
+                    const { x1, y1, x2, y2 } = item;
+                    return {
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                        distance: distanceFromLine(pointX, pointY, x1, y1, x2, y2)
+                    };
+                });
 
-            filteredAndSortedData.forEach(item => {
-                const { x1, y1, x2, y2, distance } = item;
+                const filteredAndSortedData = calculatedDistances
+                    .filter(item => item.distance !== Infinity)
+                    .sort((a, b) => a.distance - b.distance);
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                filteredAndSortedData.forEach(item => {
+                    const { x1, y1, x2, y2, distance } = item;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
                     <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
                     <td>${estimateLocation(x1, y1)}</td>
                     <td>${distance}</td>
                 `;
 
-                tableBody.appendChild(row);
-            });
+                    tableBody.appendChild(row);
+                });
+            }
+            else if (mode === "templewarp") {
+                document.getElementById("frameHeader").style.display = "block";
+                const calculatedDistances = data.map(item => {
+                    const { x1, y1, x2, y2 } = item;
+                    const [distance, frame] = closestTempleWarpDistance(x2, y2, pointX, pointY);
+                    return {
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                        distance,
+                        frame
+                    };
+                });
+
+                const filteredAndSortedData = calculatedDistances
+                    .sort((a, b) => a.distance - b.distance);
+
+                filteredAndSortedData.forEach(item => {
+                    const { x1, y1, x2, y2, distance, frame } = item;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
+                    <td>${estimateLocation(x1, y1)}</td>
+                    <td>${distance}</td>
+                    <td>${frame}</td>
+                `;
+
+                    tableBody.appendChild(row);
+                });
+            }
         }
 
         function distanceFromLine(x, y, x1, y1, x2, y2) {
@@ -158,6 +204,21 @@
             const a = y2 - y1;
             const b = x1 - x2;
             return Math.sqrt(a * a + b * b)
+        }
+
+        function closestTempleWarpDistance(x2, y2, x, y) {
+            let minDistance = distanceBetweenPoints(x2, y2, x, y);
+            let closestFrame = 0;
+            for (let i = 1; i <= 15; i++) {
+                x2 = 0.75 * x2;
+                y2 = 0.75 * y2;
+                distance = distanceBetweenPoints(x2, y2, x, y);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestFrame = i;
+                }
+            }
+            return [minDistance, closestFrame];
         }
 
         function estimateLocation(x, y) {
