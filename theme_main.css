@@ -1,0 +1,43 @@
+html {
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+body {
+  /* background: #444; */
+  color: #ffdcaa;
+}
+
+#header h1 {
+  color: #ffdcaa;
+}
+
+#header h1 span {
+  color: #fadc64;
+}
+
+.window {
+  background-color: #033d52;
+  box-shadow: 0 0 0em 0em rgba(25, 200, 195, 0);
+}
+
+.main-item:hover .window {
+  box-shadow: 0 0 2em 0.2em #fadc64;
+}
+
+.window-popout-link {
+  background-color: #033d52;
+  color: #ffdcaa;
+}
+
+.window-popout-link:not(.disabled):hover {
+  background-color: #01212d;
+  color: #fadc64;
+}
+
+.window-popout-link.disabled {
+  background-color: rgba(1, 33, 45, 0.5);
+  color: rgba(158, 217, 160, 0.5);
+}
