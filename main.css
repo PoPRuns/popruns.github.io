@@ -1,0 +1,258 @@
+@font-face {
+	font-family: 'Trajan Pro Regular';
+	font-style: normal;
+	font-weight: normal;
+	src: local('Trajan Pro Regular'), url('static/fonts/TrajanPro-Regular.woff') format('woff');
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	line-height: 1.4em;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+}
+
+body {
+	color: #ffdcaa;
+	min-height: 100%;
+	font-weight: 300;
+	font-family: 'Trajan Pro Regular', sans-serif;
+	display: flex;
+	flex-flow: column nowrap;
+	background: #000000 url('https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4aYyFLkVPIx2XdHuFecdxp/b7c267a2f15d2cd9f2e38fdcb8507f35/Memory_textured_background.png') no-repeat center center fixed;
+}
+
+a:active,
+a:focus {
+	outline: 0;
+	border: none;
+	outline-style: none;
+	-moz-outline-style: none;
+}
+
+#wrapper {
+	width: 100%;
+	text-align: center;
+	max-width: 85em;
+	margin: auto;
+	flex: 1 0 auto;
+}
+
+#header {
+	width: auto;
+	height: auto;
+	text-align: center;
+	padding: 2.5em 3em 1em 3em;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#header .header-text {
+	text-align: left;
+	padding: 0.5em;
+	flex: 0 1 auto;
+}
+
+.main-items-container {
+	padding: 0em 2em 0em 2em;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: center;
+}
+
+.main-items-container:first-child {
+	padding-top: 1em;
+}
+
+.main-items-container:last-child {
+	padding-bottom: 2em;
+}
+
+.rows {
+	width: 100%;
+	text-align: center;
+}
+
+.main-item {
+	flex: 1 0 auto;
+	height: 15em;
+	width: 14em;
+	max-width: 30em;
+	position: relative;
+}
+
+.main-items-container.banner {
+	padding-top: 1em;
+}
+
+.main-item.banner {
+	height: 4em;
+	max-width: 40em;
+}
+
+.window {
+	background-color: #033d52;
+	box-shadow: 0 0 0em 0em rgba(25, 200, 195, 0);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%) scale(0.9, 0.9);
+	transform: translate(-50%, -50%) scale(0.9, 0.9);
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	border-radius: 1em;
+	transition: transform 0.25s, box-shadow 0.25s, height 0.25s;
+	overflow: hidden;
+}
+
+.window-image {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	max-height: 15em;
+	display: block;
+	text-decoration: inherit;
+	/* no underline */
+
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+	position: relative;
+}
+
+.window-image-background {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+	opacity: 0.5;
+	transition: filter 0.25s, opacity 0.25s, transform 0.3s;
+	-webkit-transform: scale(1.2, 1.2);
+	transform: scale(1.2, 1.2);
+	filter: blur(1px);
+}
+
+.window-image-overlay {
+	width: 100%;
+	height: 100%;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center center;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%) scale(0.6, 0.6);
+	transform: translate(-50%, -50%) scale(0.6, 0.6);
+	-webkit-transition: transform 0.5s;
+	transition: transform 0.5s;
+	filter: drop-shadow(0 0 2em black);
+}
+
+.pop-3d-logo {
+	-webkit-transform: translate(-50%, -50%) scale(0.5, 0.5);
+	transform: translate(-50%, -50%) scale(0.5, 0.5);
+}
+
+.pop-sot-logo {
+	-webkit-transform: translate(-50%, -50%) scale(0.8, 0.8);
+	transform: translate(-50%, -50%) scale(0.8, 0.8);
+}
+
+.window-popout {
+	height: 4em;
+	width: 100%;
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: center;
+}
+
+.window-popout-link {
+	background-color: #033d52;
+	color: #ffdcaa;
+	display: block;
+	text-decoration: inherit;
+	/* no underline */
+	flex: 1 1 auto;
+	line-height: 4em;
+	-webkit-transition: background-color 0.25s, color 0.25s;
+	transition: background-color 0.25s, color 0.25s;
+}
+
+.window-popout-link.disabled {
+	background-color: rgba(1, 33, 45, 0.5);
+	color: rgba(158, 217, 160, 0.5);
+	cursor: -webkit-not-allowed;
+	cursor: not-allowed;
+}
+
+.main-item:hover .window {
+	box-shadow: 0 0 2em 0.2em #fadc64;
+	-webkit-transform: translate(-50%, -40%) scale(1, 1);
+	transform: translate(-50%, -40%) scale(1, 1);
+	z-index: 10;
+	height: calc(100% + 4em);
+}
+
+.main-item.banner:hover .window {
+	-webkit-transform: translate(-50%, -50%) scale(1, 1);
+	transform: translate(-50%, -50%) scale(1, 1);
+	z-index: 10;
+	height: 100%;
+}
+
+.main-item:hover .window .window-image-overlay {
+	-webkit-transform: translate(-50%, -50%) scale(0.75, 0.75);
+	transform: translate(-50%, -50%) scale(0.75, 0.75);
+}
+
+.main-item:hover .window .pop-3d-logo {
+	-webkit-transform: translate(-50%, -50%) scale(0.65, 0.65);
+	transform: translate(-50%, -50%) scale(0.65, 0.65);
+}
+
+.main-item:hover .window .pop-sot-logo {
+	-webkit-transform: translate(-50%, -50%) scale(0.95, 0.95);
+	transform: translate(-50%, -50%) scale(0.95, 0.95);
+}
+
+.main-item:hover .window .window-image-background {
+	filter: none;
+	opacity: 1;
+	transform: scale(1, 1);
+}
+
+.window-popout-link:not(.disabled):hover {
+	background-color: #01212d;
+	color: #fadc64;
+}
+
+
+@media only screen and (max-width: 900px) {
+	.main-item {
+		height: 19em;
+		margin: 1em;
+	}
+
+	.main-item .window,
+	.main-item:hover .window {
+		-webkit-transform: translate(-50%, -50%) scale(1, 1);
+		transform: translate(-50%, -50%) scale(1, 1);
+		height: 100%;
+	}
+
+	.main-item .window .window-image-background {
+		filter: none;
+		opacity: 1;
+		transform: scale(1, 1);
+	}
+}
