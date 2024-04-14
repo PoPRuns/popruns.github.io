@@ -16,7 +16,7 @@ const secChanceRoundFiveMatches = document.querySelectorAll('.sec-chance-round-f
 var leaderboardData = [];
 var scheduleResults = [];
 
-fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
+fetch("data.json")
   .then(response => response.json())
   .then(data => {
     data.roundOneMatches.forEach((match, index) => {
@@ -37,7 +37,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
     });
     data.roundFiveMatches.forEach((match, index) => {
       const matchElement = roundFiveMatches[index];
-      updateMatchData(matchElement, match, 2, 1, final=true);
+      updateMatchData(matchElement, match, 2, 1, final = true);
     });
     data.secChanceRoundOneMatches.forEach((match, index) => {
       const matchElement = secChanceRoundOneMatches[index];
@@ -62,6 +62,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
 
     const tableBody = leaderboardElement.querySelector('#table-body');
     const scheduleBody = scheduleElement.querySelector('#table-body');
+    const finaleBody = scheduleElement.querySelector('#finale-body');
     // Create an array to store the stats
     var sortedStats = [];
     let overallStats = {
@@ -181,7 +182,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       '<td>' + data.wrAfter + '</td>' +
       '<td>' + formatTime(overallStats.totalSlowestTime) + '</td>';
     overallRow.classList.add("overall-stats");
-    
+
     // Append the overall row to the table body
     tableBody.appendChild(overallRow);
 
@@ -195,17 +196,10 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
 
       let players = `<ul><li>${item.topPlayer}</li><li>${item.bottomPlayer}</li></ul>`;
 
-      let run1 = generateTimeListMarkup(item.times[0]?.[0], item.times[1]?.[0]);
-      let run2 = generateTimeListMarkup(item.times[0]?.[1], item.times[1]?.[1]);
-      let run3 = generateTimeListMarkup(item.times[0]?.[2], item.times[1]?.[2]);
-
       // Create a new row in the table
       let newRow = document.createElement('tr');
       newRow.innerHTML = '<td>' + dateTimeString + '</td>' +
-        '<td>' + players + '</td>' +
-        '<td>' + run1 + '</td>' +
-        '<td>' + run2 + '</td>' +
-        '<td>' + run3 + '</td>'
+        '<td>' + players + '</td>';
 
       // Check if the row is in the past or future
       if (item.timestamp < currentUnixTimestamp) {
@@ -214,8 +208,20 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         newRow.classList.add('future-row');
       }
 
-      // Append the new row to the table body
-      scheduleBody.appendChild(newRow);
+      // Best of 3
+      if (item.times[0].length <= 3) {
+        for (let i = 0; i < 3; i++) {
+          newRow.innerHTML += '<td>' + generateTimeListMarkup(item.times[0][i], item.times[1][i]) + '</td>';
+        }
+        scheduleBody.appendChild(newRow);
+      }
+      // Best of 5
+      else {
+        for (let i = 0; i < 5; i++) {
+          newRow.innerHTML += '<td>' + generateTimeListMarkup(item.times[0][i], item.times[1][i]) + '</td>';
+        }
+        finaleBody.appendChild(newRow);
+      }
     });
 
     loaderElement.style.display = "none";
@@ -228,7 +234,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
     console.error(error);
   });
 
-function updateMatchData(matchElement, match, topLife, bottomLife, final=false) {
+function updateMatchData(matchElement, match, topLife, bottomLife, final = false) {
   const topPlayerElement = matchElement.querySelector('.player-top');
   const bottomPlayerElement = matchElement.querySelector('.player-bottom');
   const matchDataElement = matchElement.querySelector('.match-data');
@@ -264,8 +270,8 @@ function setPlayerData(playerElement, playerData, life, final) {
     else {
       playerElement.querySelector('.life').innerHTML = '&#9654;&#9655;';
     }
-    
-    if (!final){
+
+    if (!final) {
       playerElement.querySelector('.score').textContent = playerData.score;
       if (playerData.score === 2) {
         playerElement.classList.add('winner');
@@ -282,7 +288,7 @@ function setPlayerData(playerElement, playerData, life, final) {
         playerElement.classList.add('active');
       }
     }
-    
+
     if (playerData.times) {
       let existingPlayer = leaderboardData.find(player => player.player === playerData.player);
       if (existingPlayer) {

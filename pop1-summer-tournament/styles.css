@@ -603,23 +603,23 @@ li.winner {
     color: white;
 }
 
-#schedule-table {
+.schedule-table {
     min-width: 1000px;
     margin: auto;
     color: #FFDCAA;
     margin-bottom: 30px;
 }
 
-#schedule-table th {
+.schedule-table th {
     padding: 20px 0px;
 }
 
-#schedule-table td {
+.schedule-table td {
     padding: 10px 60px;
     color: white;
 }
 
-#schedule-table ul {
+.schedule-table ul {
     padding-left: 6px;
     margin: auto;
 }
@@ -639,7 +639,7 @@ li.winner {
     font-weight: 900;
 }
 
-#schedule-table thead tr {
+.schedule-table thead tr {
     background-color: #d39c0a30;
 }
 
