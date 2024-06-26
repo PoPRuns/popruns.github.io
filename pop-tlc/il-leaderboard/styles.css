@@ -25,6 +25,10 @@ body {
 	display: flex;
 	flex-flow: column nowrap;
 	background: #000000 url('https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4aYyFLkVPIx2XdHuFecdxp/b7c267a2f15d2cd9f2e38fdcb8507f35/Memory_textured_background.png') no-repeat center center fixed;
+	-webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
 	text-align: center;
 }
 

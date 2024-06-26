@@ -31,7 +31,7 @@ async function getBestRun(levelVar, subCatString) {
 function formatTime(seconds) {
     if (typeof seconds !== 'number') return '-';
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = (seconds % 60).toFixed(3);
+    const remainingSeconds = (seconds % 60).toFixed(2).padStart(5,"0");
     const formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     return formattedTime;
 }
@@ -81,7 +81,7 @@ fetch(`https://www.speedrun.com/api/v1/games/${GAME_ID}/levels`)
                     levelCell.textContent = levelMapping[levelVar.scope.level];
                     insertCell(levelVar, newRow, 1, "Any Preset");
                     insertCell(levelVar, newRow, 2, "Immortal");
-                    insertCell(levelVar, newRow, 2, "No Hit");
+                    insertCell(levelVar, newRow, 3, "No Hit");
                 });
             })
             .catch(error => {
