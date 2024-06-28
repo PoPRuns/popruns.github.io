@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+    <title>TLC Save Analyzer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/gwmd32ew/favicon.png?v=0e828a1" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+
+<body>
+    <div>
+        <div id="header">Save Completion Analyzer</div>
+        <div id="sub-header">for PoP: The Lost Crown</div>
+        <div>
+            <input id="save-intructions" value="%USERPROFILE%\Documents\My Games\Prince Of Persia The Lost Crown\" readonly="readonly">
+            <button id="choose-save" onclick="openFolderDialog()">
+                Choose Save
+            </button>
+            <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none;" onchange="handleChangeSaveFile(event)">
+        </div>
+        <div id="dynamic">
+            <!-- <div class="section-header">
+                <span>Abilities</span>
+                <div class="percent-box">
+                    5%
+                </div>
+            </div>
+            <div class="section-description">
+                Each ability from this list provides 0.5% game completion.
+            </div> -->
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
