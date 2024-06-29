@@ -1,56 +1,150 @@
 var renderData = [
     {
+        title: "Main Quests",
+        percentage: 30,
+        description: "Each quest from this list provides 3.75% game completion.\n* These quests don't count for percentage.",
+        data: {
+            "e36c64cd5a982ce4b8571f8190c1ad43": {
+                displayName: "Persia Under Attack*",
+                isUnlocked: false
+            },
+            "d46f01520560b6446a4c366171e5e6d2": {
+                displayName: "Lost in Mount Qaf",
+                isUnlocked: false
+            },
+            "cbc6e45ab294c3b409021fa2ef3067fd": {
+                displayName: "The Abducted Prince",
+                isUnlocked: false
+            },
+            "89a9bdf53da19a744b22fad494884202": {
+                displayName: "The Tiger and the Rat",
+                isUnlocked: false
+            },
+            "e499d16e671ee1b42b170dc0f71b6c8e": {
+                displayName: "The Path to the Sand Prison",
+                isUnlocked: false
+            },
+            "59d515cfe12ef084d8df7ab2c38cce21": {
+                displayName: "The Darkest of Souls",
+                isUnlocked: false
+            },
+            "0e3ee840951882f488ac11cf427a468b": {
+                displayName: "The Celestial Guardians",
+                isUnlocked: false
+            },
+            "5c788318b1a856943aadce9af84d8000": {
+                displayName: "Return to the Past*",
+                isUnlocked: false
+            },
+            "959814af55fa48b4b962f7cff039f076": {
+                displayName: "Father and Son",
+                isUnlocked: false
+            },
+            "93980f6721474124e99ede45f49a9e1c": {
+                displayName: "The Crossroads of Time",
+                isUnlocked: false
+            }
+        }
+    },
+    {
+        title: "Side Quests",
+        percentage: 20,
+        description: "Each quest from this list provides 2.22% game completion.\n* Divine Trials doesn't give %.",
+        data: {
+            "658f412ae13e19f4b936561ddf4ea003": {
+                displayName: "The Deserter",
+                isUnlocked: false
+            },
+            "1e0e7db0fe7e193439bb4fc2ad3e467d": {
+                displayName: "Ancient Power Unearthed",
+                isUnlocked: false
+            },
+            "cb201fdd23e57014c8b3a5cf67f51689": {
+                displayName: "Treasure of the Seven Seas",
+                isUnlocked: false
+            },
+            "2724b2ce3a2da4d4f88a046c1d73061b": {
+                displayName: "The Impossible Climb",
+                isUnlocked: false
+            },
+            "bbc662da8c3f10c48b3e790a7f883314": {
+                displayName: "The Moon Gatherer",
+                isUnlocked: false
+            },
+            "fee85a9ac8042834990ccbb8b408a123": {
+                displayName: "The Architect",
+                isUnlocked: false
+            },
+            "38c51e9d3fe29004a9b1be232f7c1e55": {
+                displayName: "Motherly Love",
+                isUnlocked: false
+            },
+            "76cc870c18c33c74e861dc0cb0de6131": {
+                displayName: "The Lost Warriors",
+                isUnlocked: false
+            },
+            "25ab3221851d1bb4a806a442a2a6a100": {
+                displayName: "Prophecy of Mount Qaf",
+                isUnlocked: false
+            },
+            "0fa4c742207211f43be1e5347fa94656": {
+                displayName: "Divine Trials*",
+                isUnlocked: false
+            },
+        }
+    },
+    {
         title: "Abilities",
         percentage: 5,
         description: "Each ability from this list provides 0.5% game completion.",
         data: {
             MiniMap: {
-                dispalyName: "Eye of the Wanderer",
+                displayName: "Eye of the Wanderer",
                 isUnlocked: false,
                 description: "Map: Given by Fariba"
             },
             BowAim: {
-                dispalyName: "Bow of Menolias",
+                displayName: "Bow of Menolias",
                 isUnlocked: false,
                 description: "Found in Hyrcanian Forest"
             },
             ChakramAim: {
-                dispalyName: "Chakram of Menolias",
+                displayName: "Chakram of Menolias",
                 isUnlocked: false,
                 description: "Find Menolias in the Forest"
             },
             AirDash: {
-                dispalyName: "Rush of the Simurgh",
+                displayName: "Rush of the Simurgh",
                 isUnlocked: false,
                 description: "Dash: Defeat Jahandar"
             },
             Teleport: {
-                dispalyName: "Shadow of the Simurgh",
+                displayName: "Shadow of the Simurgh",
                 isUnlocked: false,
                 description: "Found in the Depths"
             },
             Clairvoyance: {
-                dispalyName: "Clairvoyance",
+                displayName: "Clairvoyance",
                 isUnlocked: false,
                 description: "Found in Sacred Archives"
             },
             Warp: {
-                dispalyName: "Dimensional Claw",
+                displayName: "Dimensional Claw",
                 isUnlocked: false,
                 description: "Found in Soma Tree"
             },
             DoubleJump: {
-                dispalyName: "Gravity Wings",
+                displayName: "Gravity Wings",
                 isUnlocked: false,
                 description: "Double Jump: Defeat Azhdaha"
             },
             ChakramTeleport: {
-                dispalyName: "Chakram Shadow of the Simurgh",
+                displayName: "Chakram Shadow of the Simurgh",
                 isUnlocked: false,
                 description: "Defeat Menolias"
             },
             ScarfAim: {
-                dispalyName: "Fabric of Time",
+                displayName: "Fabric of Time",
                 isUnlocked: false,
                 description: "Grapple: Defeat Varham"
             }
@@ -62,52 +156,52 @@ var renderData = [
         description: "Each Athra Surge from this list provides 0.5% game completion.",
         data: {
             FocusAbilityPiercingAttack: {
-                dispalyName: "Verethragna's Smite",
+                displayName: "Verethragna's Smite",
                 isUnlocked: false,
                 description: "Obtained from story progression"
             },
             FocusAbilityAntiAir: {
-                dispalyName: "Shahbaz' Spirit",
+                displayName: "Shahbaz' Spirit",
                 isUnlocked: false,
                 description: "Alternate Sargon fight in Sacred Archives"
             },
             FocusAbilityWindSlashAttack: {
-                dispalyName: "Wind of Sistan",
+                displayName: "Wind of Sistan",
                 isUnlocked: false,
                 description: "Found in the Depths"
             },
             FocusAbilitySuperChargeAttack: {
-                dispalyName: "Vayu's Wave",
+                displayName: "Vayu's Wave",
                 isUnlocked: false,
                 description: "Complete the first 9 Artaban's challenges"
             },
             FocusAbilityHeal: {
-                dispalyName: "Bahman's Breath",
+                displayName: "Bahman's Breath",
                 isUnlocked: false,
                 description: "First Wak-Wak tree in Hyrcanian Forest"
             },
             FocusAbilitySuperShotLaserAim: {
-                dispalyName: "Arash's Ray",
+                displayName: "Arash's Ray",
                 isUnlocked: false,
                 description: "Alternate Sargon fight in Depths"
             },
             FocusAbilityGroundSlam: {
-                dispalyName: "Hadhayans' Might",
+                displayName: "Hadhayans' Might",
                 isUnlocked: false,
                 description: "Alternate Sargon fight in Soma Tree"
             },
             FocusAbilitySuperWarrior: {
-                dispalyName: "Soul of Gilgamesh",
+                displayName: "Soul of Gilgamesh",
                 isUnlocked: false,
                 description: "Alternate Sargon fight in Pit of Eternal Sands"
             },
             FocusAbilityMaelstrom: {
-                dispalyName: "Bahamut's Rage",
+                displayName: "Bahamut's Rage",
                 isUnlocked: false,
                 description: "Orod fight in Raging Sea"
             },
             FocusAbilityFullCounterStance: {
-                dispalyName: "Rashnu's Judgment",
+                displayName: "Rashnu's Judgment",
                 isUnlocked: false,
                 description: "Menolias fight in Upper City"
             }
@@ -116,283 +210,283 @@ var renderData = [
     {
         title: "Amulets",
         percentage: 5,
-        description: "Each amulet as well as each amulet upgrade gives 0.051% game completion.\n*Amulets unlocked from the Divine Trials don't give %.",
+        description: "Each amulet as well as each amulet upgrade gives 0.051% game completion.\n* Amulets unlocked from the Divine Trials don't give %.",
         data: {
             ExtendedHits: {
-                dispalyName: "Blade Dancer",
+                displayName: "Blade Dancer",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Obtained from story progression"
             },
             DodgeMaster: {
-                dispalyName: "Elusive Water",
+                displayName: "Elusive Water",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Soma Tree"
             },
             VoidStone: {
-                dispalyName: "Void Blade",
+                displayName: "Void Blade",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Upper City"
             },
             Finisher: {
-                dispalyName: "Verethrangna's Wrath",
+                displayName: "Verethrangna's Wrath",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Sunken Harbor"
             },
             CounterAttackStone: {
-                dispalyName: "Turning Wind",
+                displayName: "Turning Wind",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Soma Tree, talk to the wolf after defeating Kiana"
             },
             DaredevilStone: {
-                dispalyName: "Indomitable Spirit",
+                displayName: "Indomitable Spirit",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "The Depths, complete the “Motherly Love” quest"
             },
             Dauntless: {
-                dispalyName: "Arslân's Glory",
+                displayName: "Arslân's Glory",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, start the “Prophecy of Mount Qaf” quest"
             },
             BraveStone: {
-                dispalyName: "Will of Rostam",
+                displayName: "Will of Rostam",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Sacred Archives"
             },
             ExplosiveStone: {
-                dispalyName: "Agony Amulet",
+                displayName: "Agony Amulet",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Defeat the Giant Crab in the Depths"
             },
             EvilEyeStone: {
-                dispalyName: "Evil-Eye Amulet",
+                displayName: "Evil-Eye Amulet",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "The Depths, the Scrapper's Shop"
             },
             BowMultiShot: {
-                dispalyName: "White Peacock",
+                displayName: "White Peacock",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Sunken Harbor"
             },
             BowFireArrow: {
-                dispalyName: "Blazing Kestrel",
+                displayName: "Blazing Kestrel",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Tower of Silence"
             },
             HunterStone: {
-                dispalyName: "Zurvan's Voice",
+                displayName: "Zurvan's Voice",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, Architect puzzle chest"
             },
             HawkStone: {
-                dispalyName: "Arash's Arrowhead",
+                displayName: "Arash's Arrowhead",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, Kaheva's Forge"
             },
             ChakramVortex: {
-                dispalyName: "Chakram Tempest",
+                displayName: "Chakram Tempest",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, Kaheva's Forge"
             },
             LifeStone: {
-                dispalyName: "Blessing",
+                displayName: "Blessing",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, The Mage"
             },
             Prayer: {
-                dispalyName: "Wolf-Bride",
+                displayName: "Wolf-Bride",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Hyrcanian Forest, defeat Erlik"
             },
             PhoenixStone: {
-                dispalyName: "Dragon King",
+                displayName: "Dragon King",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Sacred Archives, start the “Moon Gatherer” quest"
             },
             Monk: {
-                dispalyName: "Starving Heart",
+                displayName: "Starving Heart",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "The Depths, the Scrapper's Shop"
             },
             SafetyStone: {
-                dispalyName: "Hardiness",
+                displayName: "Hardiness",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, The Mage"
             },
             SteelStone: {
-                dispalyName: "Mount Damavand",
+                displayName: "Mount Damavand",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, Kaheva's Forge"
             },
             ShieldOfMithra: {
-                dispalyName: "Shield of Mithra",
+                displayName: "Shield of Mithra",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, complete the “Ancient Power Unearthed” quest"
             },
             Knight: {
-                dispalyName: "Gleaming Lion",
+                displayName: "Gleaming Lion",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Lower City"
             },
             Tower: {
-                dispalyName: "Rukhsana's Gift",
+                displayName: "Rukhsana's Gift",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Lower City"
             },
             TeleportShockWave: {
-                dispalyName: "Shockwave",
+                displayName: "Shockwave",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "The Depths, Architect puzzle chest"
             },
             TeleportRay: {
-                dispalyName: "Divine Spear",
+                displayName: "Divine Spear",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in The Depths"
             },
             DarkEye: {
-                dispalyName: "Eye of Destiny",
+                displayName: "Eye of Destiny",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "The Depths, the Scrapper's Shop"
             },
             WealthStone: {
-                dispalyName: "Ard's Fortune",
+                displayName: "Ard's Fortune",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Sunken Harbor, Architect puzzle chest"
             },
             MagnetStone: {
-                dispalyName: "Ecbatana Seal",
+                displayName: "Ecbatana Seal",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "Lower City, Kaheva's Forge"
             },
             CelestialStone: {
-                dispalyName: "Four Royal Stars",
+                displayName: "Four Royal Stars",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Upper City"
             },
             Treasure: {
-                dispalyName: "King Jamshid",
+                displayName: "King Jamshid",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "Lower City, The Mage"
             },
             Focus: {
-                dispalyName: "Ayyar Amulet",
+                displayName: "Ayyar Amulet",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in The Depths"
             },
             Poison: {
-                dispalyName: "Horned Viper",
+                displayName: "Horned Viper",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, The Mage"
             },
             Flame: {
-                dispalyName: "Holy Fire",
+                displayName: "Holy Fire",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Lower City, progress in the “Prophecy of Mount Qaf” quest"
             },
             Thunder: {
-                dispalyName: "Thunder Charm",
+                displayName: "Thunder Charm",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Sunken Harbor"
             },
             Ice: {
-                dispalyName: "Frost Charm",
+                displayName: "Frost Charm",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 3,
                 description: "Chest in Lower City"
             },
             FireStormCharge: {
-                dispalyName: "Flaming Whirlwind*",
+                displayName: "Flaming Whirlwind*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "Complete the Peacock memorial"
             },
             SuperArrow: {
-                dispalyName: "Point of Honor*",
+                displayName: "Point of Honor*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "Complete the Stallion memorial"
             },
             RefillArrow: {
-                dispalyName: "Arash's Quiver*",
+                displayName: "Arash's Quiver*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
                 description: "Complete the Hound memorial"
             },
             FrozenShield: {
-                dispalyName: "Frozen Truth*",
+                displayName: "Frozen Truth*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
@@ -430,11 +524,11 @@ function renderDataToHTML() {
             const listItemDiv = document.createElement('div');
             listItemDiv.classList.add("section-list-item");
             const listItem = document.createElement('span');
-            listItem.innerText = `${value.isUnlocked ? "☑️" : "❌"} ${value.dispalyName}`;
+            listItem.innerText = `${value.isUnlocked ? "☑️" : "❌"} ${value.displayName}`;
             listItemDiv.appendChild(listItem);
             if (value.level > 0) {
                 const upgradesLeft = value.maxLevel - value.level;
-                value.description = `${value.level === 1 ? "Base" : `+${value.level - 1}`} Unlocked${upgradesLeft ? `, ${upgradesLeft} Upgrades Left` : ""}`;
+                value.description = `${value.level === 1 ? "" : `+${value.level - 1}`} Unlocked${upgradesLeft ? `, ${upgradesLeft} Upgrade(s) Left` : ""}`;
             }
             if (value.description) {
                 const itemDesc = document.createElement('span');
@@ -454,11 +548,43 @@ function openFolderDialog() {
 }
 
 function processJson(jsonObj) {
+    const gameManagerFrames = jsonObj.m_list.find(obj => obj.m_sceneName === "GameManager").m_entities[0].m_frames;
+    const questInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.QuestSaveDataFrame").m_Data;
+    console.log(questInfoList);
+
+
     const entityManager = jsonObj.m_list.find(obj => obj.m_sceneName === "EntitiesManager");
     const progressionData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerProgressionSubComponent+PlayerProgressionSaveData");
     const unlockedAbilites = progressionData.m_progression.m_playerAbilitiesProgressionData.m_unlockedAbilities;
     const unlockedAmulets = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_unlockedStoneOfKnowledges;
     const amuletLevels = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_stoneLevels;
+
+    var mainQuestSectionData = renderData.find(section => section.title === "Main Quests").data;
+    for (var quest in mainQuestSectionData) {
+        questProps = mainQuestSectionData[quest];
+        questInfo = questInfoList.find(obj => obj.m_GUID === quest);
+        questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        if (questState === "Ended") {
+            questProps.isUnlocked = true;
+        }
+        else {
+            questProps.isUnlocked = false;
+        }
+    }
+
+    var sideQuestSectionData = renderData.find(section => section.title === "Side Quests").data;
+    for (var quest in sideQuestSectionData) {
+        questProps = sideQuestSectionData[quest];
+        questInfo = questInfoList.find(obj => obj.m_GUID === quest);
+        questState = questInfo?.m_questElementsFlatList?.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        if (questState === "Ended") {
+            questProps.isUnlocked = true;
+        }
+        else {
+            questProps.isUnlocked = false;
+        }
+    }
+
     var abilitySectionData = renderData.find(section => section.title === "Abilities").data;
     for (var ability in abilitySectionData) {
         abilityProps = abilitySectionData[ability];
@@ -469,6 +595,7 @@ function processJson(jsonObj) {
             abilityProps.isUnlocked = false;
         }
     }
+
     var athraSectionData = renderData.find(section => section.title === "Athra Surges").data;
     for (var surge in athraSectionData) {
         surgeProps = athraSectionData[surge];
@@ -479,6 +606,7 @@ function processJson(jsonObj) {
             surgeProps.isUnlocked = false;
         }
     }
+
     var amuletSectionData = renderData.find(section => section.title === "Amulets").data;
     for (var amulet in amuletSectionData) {
         amuletProps = amuletSectionData[amulet];
