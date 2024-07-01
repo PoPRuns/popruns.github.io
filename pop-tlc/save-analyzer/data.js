@@ -569,17 +569,17 @@ const initialData = [
             GearUpgrade_SwordPlus4: {
                 displayName: "Qays and Layla",
                 isUnlocked: false,
-                description: "Upgrade the swords to +4"
+                description: "Upgrade the swords to +4 at Kaheva's forge"
             },
             GearUpgrade_BowPlus4: {
                 displayName: "Bow of Menolias",
                 isUnlocked: false,
-                description: "Upgrade the bow to +4"
+                description: "Upgrade the bow to +4 at Kaheva's forge"
             },
             GearUpgrade_QuiverPlus4: {
                 displayName: "Menolias' Quiver",
                 isUnlocked: false,
-                description: "Upgrade the quiver to +4"
+                description: "Upgrade the quiver to +4 at Kaheva's forge"
             },
             GearUpgrade_PotionCount_PackShop3: {
                 displayName: "Additional Potions (Magi)",
@@ -589,10 +589,10 @@ const initialData = [
             GearUpgrade_PotionHealingEffect_PackShop3: {
                 displayName: "Potion Efficiency",
                 isUnlocked: false,
-                description: "Upgrade the potion efficiency to max from the shopkeeper"
+                description: "Fully Upgrade the potion efficiency at the shopkeeper"
             },
             GearUpgrade_PotionCount_PackChest: {
-                displayName: "Additional Potions (Moon Gatherer)",
+                displayName: "Additional Potion (Moon Gatherer)",
                 isUnlocked: false,
                 description: "Complete the “Moon Gatherer” side quest"
             },

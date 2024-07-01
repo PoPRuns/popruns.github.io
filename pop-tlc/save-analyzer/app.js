@@ -63,6 +63,7 @@ function processJson(jsonObj) {
     const unlockedAmulets = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_unlockedStoneOfKnowledges;
     const amuletLevels = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_stoneLevels;
     const unlockedSkins = progressionData.m_progression.m_playerSkinProgressionData.m_unlockedSkins.map(obj => obj.m_skin);
+    const inventoryData = progressionData.m_progression.m_playerInventoryProgressionData.m_inventory.map(obj => obj.m_itemType);
 
     const mapSaveData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerMapSubComponent+PlayerMapSaveData");
     const unlockedLevels = mapSaveData.m_uncoveredLevels.map(obj => obj.key);
@@ -140,6 +141,17 @@ function processJson(jsonObj) {
             amuletProps.isUnlocked = false;
             amuletProps.level = 0;
             amuletProps.description = initialData.find(section => section.title === "Amulets").data[amulet].description;
+        }
+    }
+
+    var upgradeSectionData = renderData.find(section => section.title === "Equipment Upgrades").data;
+    for (var upgrade in upgradeSectionData) {
+        const upgradeProps = upgradeSectionData[upgrade];
+        if (inventoryData.includes(upgrade)) {
+            upgradeProps.isUnlocked = true;
+        }
+        else {
+            upgradeProps.isUnlocked = false;
         }
     }
 
