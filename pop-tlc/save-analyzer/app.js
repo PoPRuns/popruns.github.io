@@ -469,31 +469,118 @@ var renderData = [
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
-                description: "Complete the Peacock memorial"
+                description: "Divine Trials - Complete the Peacock memorial"
             },
             SuperArrow: {
                 displayName: "Point of Honor*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
-                description: "Complete the Stallion memorial"
+                description: "Divine Trials - Complete the Stallion memorial"
             },
             RefillArrow: {
                 displayName: "Arash's Quiver*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
-                description: "Complete the Hound memorial"
+                description: "Divine Trials - Complete the Hound memorial"
             },
             FrozenShield: {
                 displayName: "Frozen Truth*",
                 isUnlocked: false,
                 level: 0,
                 maxLevel: 1,
-                description: "Complete the Arouch memorial"
+                description: "Divine Trials - Complete the Arouch memorial"
             }
         }
-    }
+    },
+    {
+        title: "Skins",
+        percentage: 5,
+        description: "Each skin that is unlocked directly in the game world provides 1% game completion.\n* These skins don't count for %.",
+        data: {
+            Default: {
+                displayName: "Default*",
+                isUnlocked: false,
+                description: "Default skin after recieving the Royal Sash"
+            },
+            DefaultChroma3: {
+                displayName: "Radiant",
+                isUnlocked: false,
+                description: "Lower City, Chest near the first Wak Wak Tree"
+            },
+            DefaultChroma2: {
+                displayName: "Coral",
+                isUnlocked: false,
+                description: "Sunken Harbor, Chest in the long room with spike traps"
+            },
+            DefaultChroma4: {
+                displayName: "Rosy",
+                isUnlocked: false,
+                description: "Hyrcanian Forest, Chest in the rightmost location"
+            },
+            DefaultChroma5: {
+                displayName: "Lilac",
+                isUnlocked: false,
+                description: "Lower City, Trap room near the elevator"
+            },
+            DefaultChroma1: {
+                displayName: "Crimson",
+                isUnlocked: false,
+                description: "Old Royal Road, Chest in the tower like structure"
+            },
+            SargonSuperSaiyan: {
+                displayName: "Exalted*",
+                isUnlocked: false,
+                description: "Unlocked on finishing the main story"
+            },
+            SargonVagabond: {
+                displayName: "Young Sargon*",
+                isUnlocked: false,
+                description: "Unlocked from Ubisoft Connect rewards"
+            },
+            Silver: {
+                displayName: "Swift Sargon*",
+                isUnlocked: false,
+                description: "Unlocked on finishing speedrun mode under 10 hours"
+            },
+            SandOfTimeChroma1: {
+                displayName: "Holo Chroma*",
+                isUnlocked: false,
+                description: "Unlocked on finishing permadeath mode"
+            },
+            Bronze: {
+                displayName: "Gold*",
+                isUnlocked: false,
+                description: "Unlocked on finishing permadeath mode on Immortal difficulty"
+            },
+            POP2008: {
+                displayName: "Wanderer*",
+                isUnlocked: false,
+                description: "Unlocked on finishing the Boss Rush challenge"
+            },
+            SargonNakedChroma01: {
+                displayName: "Homa*",
+                isUnlocked: false,
+                description: "Divine Trials - Unlocked on finishing the Hound Memorial"
+            },
+            SargonNakedChroma04: {
+                displayName: "Flowers*",
+                isUnlocked: false,
+                description: "Divine Trials - Unlocked on finishing the Auroch Memorial"
+            },
+            SargonNakedChroma02: {
+                displayName: "Lion*",
+                isUnlocked: false,
+                description: "Divine Trials - Unlocked on finishing the Peacock Memorial"
+            },
+            SargonNakedChroma03: {
+                displayName: "Cobra*",
+                isUnlocked: false,
+                description: "Divine Trials - Unlocked on finishing the Stallion Memorial"
+            }
+        }
+    },
 ];
 const initialData = structuredClone(renderData);
 
@@ -550,20 +637,20 @@ function openFolderDialog() {
 function processJson(jsonObj) {
     const gameManagerFrames = jsonObj.m_list.find(obj => obj.m_sceneName === "GameManager").m_entities[0].m_frames;
     const questInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.QuestSaveDataFrame").m_Data;
-    console.log(questInfoList);
-
 
     const entityManager = jsonObj.m_list.find(obj => obj.m_sceneName === "EntitiesManager");
     const progressionData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerProgressionSubComponent+PlayerProgressionSaveData");
     const unlockedAbilites = progressionData.m_progression.m_playerAbilitiesProgressionData.m_unlockedAbilities;
     const unlockedAmulets = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_unlockedStoneOfKnowledges;
     const amuletLevels = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_stoneLevels;
+    const activeSkin = progressionData.m_progression.m_playerSkinProgressionData.m_activeSkin;
+    console.log(activeSkin);
 
     var mainQuestSectionData = renderData.find(section => section.title === "Main Quests").data;
     for (var quest in mainQuestSectionData) {
-        questProps = mainQuestSectionData[quest];
-        questInfo = questInfoList.find(obj => obj.m_GUID === quest);
-        questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        const questProps = mainQuestSectionData[quest];
+        const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
+        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         if (questState === "Ended") {
             questProps.isUnlocked = true;
         }
@@ -574,9 +661,9 @@ function processJson(jsonObj) {
 
     var sideQuestSectionData = renderData.find(section => section.title === "Side Quests").data;
     for (var quest in sideQuestSectionData) {
-        questProps = sideQuestSectionData[quest];
-        questInfo = questInfoList.find(obj => obj.m_GUID === quest);
-        questState = questInfo?.m_questElementsFlatList?.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        const questProps = sideQuestSectionData[quest];
+        const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
+        const questState = questInfo?.m_questElementsFlatList?.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         if (questState === "Ended") {
             questProps.isUnlocked = true;
         }
@@ -587,7 +674,7 @@ function processJson(jsonObj) {
 
     var abilitySectionData = renderData.find(section => section.title === "Abilities").data;
     for (var ability in abilitySectionData) {
-        abilityProps = abilitySectionData[ability];
+        const abilityProps = abilitySectionData[ability];
         if (unlockedAbilites.includes(ability)) {
             abilityProps.isUnlocked = true;
         }
@@ -598,7 +685,7 @@ function processJson(jsonObj) {
 
     var athraSectionData = renderData.find(section => section.title === "Athra Surges").data;
     for (var surge in athraSectionData) {
-        surgeProps = athraSectionData[surge];
+        const surgeProps = athraSectionData[surge];
         if (unlockedAbilites.includes(surge)) {
             surgeProps.isUnlocked = true;
         }
@@ -609,7 +696,7 @@ function processJson(jsonObj) {
 
     var amuletSectionData = renderData.find(section => section.title === "Amulets").data;
     for (var amulet in amuletSectionData) {
-        amuletProps = amuletSectionData[amulet];
+        const amuletProps = amuletSectionData[amulet];
         if (unlockedAmulets.includes(amulet)) {
             amuletProps.isUnlocked = true;
             const amuletLevel = amuletLevels[unlockedAmulets.indexOf(amulet)];
