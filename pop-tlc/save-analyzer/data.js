@@ -562,6 +562,58 @@ const initialData = [
         }
     },
     {
+        title: "Amulet Holders",
+        percentage: 5,
+        description: "Each amulet holder from this list provides 0.56% game completion.",
+        data: {
+            "S-194185274_O2102073558": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Purchased from the Mage's Shop"
+            },
+            "S-953692090_O-822170603": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Chest in the room on way back from Hyrcanian forest"
+            },
+            "TODO-3": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Collect 15 sand jars for the “Prophecy of Mount Qaf” quest"
+            },
+            "S-1998352001_O1274025047": {
+                displayName: "Sacred Archives",
+                isUnlocked: false,
+                description: "Chest in bell platforming challenge room"
+            },
+            "S360638867_O1139401100": {
+                displayName: "Sacred Archives",
+                isUnlocked: false,
+                description: "Architect puzzle chest"
+            },
+            "S1076086488_O2038047517": {
+                displayName: "Soma Tree",
+                isUnlocked: false,
+                description: "Chest in the same room as the mandatory fight"
+            },
+            "TODO-1": {
+                displayName: "Sunken Harbor",
+                isUnlocked: false,
+                description: "Chest on the way to Soma Tree"
+            },
+            "TODO-2": {
+                displayName: "Pit of Eternal Sands",
+                isUnlocked: false,
+                description: "Alternate Sargon fight in Depths"
+            },
+            "S-1935183277_O-598913130": {
+                displayName: "Upper City",
+                isUnlocked: false,
+                description: "Chest near the Clockwork teleporter"
+            },
+        }
+    },
+    {
         title: "Equipment Upgrades",
         percentage: 5,
         description: "Each item from this list provides 0.83% game completion.",
@@ -582,7 +634,7 @@ const initialData = [
                 description: "Upgrade the quiver to +4 at Kaheva's forge"
             },
             GearUpgrade_PotionCount_PackShop3: {
-                displayName: "Additional Potions (Magi)",
+                displayName: "Additional Potions (Mage)",
                 isUnlocked: false,
                 description: "Buy all the additional potions from the shopkeeper"
             },
