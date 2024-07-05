@@ -576,7 +576,7 @@ const initialData = [
                 isUnlocked: false,
                 description: "Chest in the room on way back from Hyrcanian forest"
             },
-            "TODO-3": {
+            "TODO-3_lol": {
                 displayName: "Lower City",
                 isUnlocked: false,
                 description: "Collect 15 sand jars for the “Prophecy of Mount Qaf” quest"
@@ -596,12 +596,12 @@ const initialData = [
                 isUnlocked: false,
                 description: "Chest in the same room as the mandatory fight"
             },
-            "TODO-1": {
+            "TODO-1_lol": {
                 displayName: "Sunken Harbor",
                 isUnlocked: false,
                 description: "Chest on the way to Soma Tree"
             },
-            "TODO-2": {
+            "TODO-2_lol": {
                 displayName: "Pit of Eternal Sands",
                 isUnlocked: false,
                 description: "Alternate Sargon fight in Depths"
@@ -739,6 +739,298 @@ const initialData = [
                 displayName: "Cobra*",
                 isUnlocked: false,
                 description: "Divine Trials - Unlocked on finishing the Stallion Memorial"
+            }
+        }
+    },
+    {
+        title: "Lore Items",
+        percentage: 5,
+        description: "Each item from this list provides 0.09% game completion.",
+        data: {
+            "LoreItem_01_FirstClayTablet": {
+                "displayName": "FirstClayTablet",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_04_ArchiveScroll": {
+                "displayName": "ArchiveScroll",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_05_PrisonerCarvedStatue": {
+                "displayName": "PrisonerCarvedStatue",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_06_StatuetteOfVayu": {
+                "displayName": "StatuetteOfVayu",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_07_GildedBracelet": {
+                "displayName": "GildedBracelet",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_09_ChildToy": {
+                "displayName": "ChildToy",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_10_TarnishedCoin": {
+                "displayName": "TarnishedCoin",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_11_Diadem": {
+                "displayName": "Diadem",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_12_StatuetteOfQueenAtossa": {
+                "displayName": "StatuetteOfQueenAtossa",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_13_PersianTale": {
+                "displayName": "PersianTale",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_14_ProclamationTreaty": {
+                "displayName": "ProclamationTreaty",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_15_SacredObject": {
+                "displayName": "SacredObject",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_17_ArtisanToolCarpetWeavers": {
+                "displayName": "ArtisanToolCarpetWeavers",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_18_ArchitecturalDrawings": {
+                "displayName": "ArchitecturalDrawings",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_19_RustedHook": {
+                "displayName": "RustedHook",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_21_Mirror": {
+                "displayName": "Mirror",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_24_ErlikTusk": {
+                "displayName": "ErlikTusk",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_25_AzdhahaTooth": {
+                "displayName": "AzdhahaTooth",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_26_PrisonerChains": {
+                "displayName": "PrisonerChains",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_28_AstronomicalMeschanism": {
+                "displayName": "AstronomicalMeschanism",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_29_GeometricalFormulaCreator": {
+                "displayName": "GeometricalFormulaCreator",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_30_RoyalDecree": {
+                "displayName": "RoyalDecree",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_32_TheCombOfAPrincess": {
+                "displayName": "TheCombOfAPrincess",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_34_MemoryFragment": {
+                "displayName": "MemoryFragment",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_35_CursedObject": {
+                "displayName": "CursedObject",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_36_ObjectFoundinAzhdahaLair": {
+                "displayName": "ObjectFoundinAzhdahaLair",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_37_DroppedLocket": {
+                "displayName": "DroppedLocket",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_38_NoteBeneathBatteredTalisman": {
+                "displayName": "NoteBeneathBatteredTalisman",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_39_SecondClayTablet": {
+                "displayName": "SecondClayTablet",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_40_FoundOnRadjen": {
+                "displayName": "FoundOnRadjen",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_42_Placeholder_01": {
+                "displayName": "Placeholder_01",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_43_Placeholder_02": {
+                "displayName": "Placeholder_02",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_44_ScrollBlessedByTheSymorgh": {
+                "displayName": "ScrollBlessedByTheSymorgh",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_45_NurseryRhymeOnAToy": {
+                "displayName": "NurseryRhymeOnAToy",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_46_LastDayAtWork": {
+                "displayName": "LastDayAtWork",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_47_Missive_01": {
+                "displayName": "Missive_01",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_48_Missive_02": {
+                "displayName": "Missive_02",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_49_Missive_03": {
+                "displayName": "Missive_03",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_50_Missive_04": {
+                "displayName": "Missive_04",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_51_LetterfromtheKingDariustoCaptainIrisKaloxilos": {
+                "displayName": "LetterfromtheKingDariustoCaptainIrisKaloxilos",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_52_PiratesSeaShanty": {
+                "displayName": "PiratesSeaShanty",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_53_TheCrowningofaDivineKing": {
+                "displayName": "TheCrowningofaDivineKing",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_54_TheEmbraceofAthra": {
+                "displayName": "TheEmbraceofAthra",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_55_TheFallofTheHyrcanianTribe": {
+                "displayName": "TheFallofTheHyrcanianTribe",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_56_TheFrozenTomb": {
+                "displayName": "TheFrozenTomb",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_57_TheHunterAndTheManEater": {
+                "displayName": "TheHunterAndTheManEater",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_58_TheLegendofTheSnakeTheBirdandTheSands": {
+                "displayName": "TheLegendofTheSnakeTheBirdandTheSands",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_59_01BotanyLogsOfCyrusAfshin": {
+                "displayName": "01BotanyLogsOfCyrusAfshin",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_61_03BotanyLogsOfCyrusAfshin": {
+                "displayName": "03BotanyLogsOfCyrusAfshin",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_62_TheThirdSon": {
+                "displayName": "TheThirdSon",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_64_01AlchemistDiary": {
+                "displayName": "01AlchemistDiary",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_66_03AlchemistDiary": {
+                "displayName": "03AlchemistDiary",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_67_04AlchemistDiary": {
+                "displayName": "04AlchemistDiary",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_70_TheArchitectAndTheKing": {
+                "displayName": "TheArchitectAndTheKing",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_71_ThePathOfTheHero": {
+                "displayName": "ThePathOfTheHero",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_75_LegendFromThePit": {
+                "displayName": "LegendFromThePit",
+                "isUnlocked": false,
+                "description": ""
+            },
+            "LoreItem_76_MastersInstructions": {
+                "displayName": "MastersInstructions",
+                "isUnlocked": false,
+                "description": ""
             }
         }
     },

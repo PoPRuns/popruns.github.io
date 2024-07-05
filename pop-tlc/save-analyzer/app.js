@@ -54,20 +54,20 @@ function openFolderDialog() {
 window.openFolderDialog = openFolderDialog;
 
 function processJson(jsonObj) {
-    const gameManagerFrames = jsonObj.m_list.find(obj => obj.m_sceneName === "GameManager").m_entities[0].m_frames;
+    const sceneList = jsonObj.m_list;
+    const gameManagerFrames = sceneList.find(obj => obj.m_sceneName === "GameManager").m_entities[0].m_frames;
     const questInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.QuestSaveDataFrame").m_Data;
 
-    const entityManager = jsonObj.m_list.find(obj => obj.m_sceneName === "EntitiesManager");
-    const progressionData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerProgressionSubComponent+PlayerProgressionSaveData");
-    const unlockedAbilites = progressionData.m_progression.m_playerAbilitiesProgressionData.m_unlockedAbilities;
-    const unlockedAmulets = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_unlockedStoneOfKnowledges;
-    const amuletLevels = progressionData.m_progression.m_playerStoneOfKnowledgeProgressionData.m_stoneLevels;
-    const unlockedSkins = progressionData.m_progression.m_playerSkinProgressionData.m_unlockedSkins.map(obj => obj.m_skin);
-    const inventoryData = progressionData.m_progression.m_playerInventoryProgressionData.m_inventory.map(obj => obj.m_itemType);
+    const entityManager = sceneList.find(obj => obj.m_sceneName === "EntitiesManager");
+    const progressionData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerProgressionSubComponent+PlayerProgressionSaveData")?.m_progression;
+    const unlockedAbilites = progressionData.m_playerAbilitiesProgressionData.m_unlockedAbilities;
+    const unlockedAmulets = progressionData.m_playerStoneOfKnowledgeProgressionData.m_unlockedStoneOfKnowledges;
+    const amuletLevels = progressionData.m_playerStoneOfKnowledgeProgressionData.m_stoneLevels;
+    const unlockedSkins = progressionData.m_playerSkinProgressionData.m_unlockedSkins.map(obj => obj.m_skin);
+    const inventoryData = progressionData.m_playerInventoryProgressionData.m_inventory.map(obj => obj.m_itemType);
 
     const mapSaveData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerMapSubComponent+PlayerMapSaveData");
     const unlockedLevels = mapSaveData.m_uncoveredLevels.map(obj => obj.key);
-    console.log(unlockedLevels);
 
     var mainQuestSectionData = renderData.find(section => section.title === "Main Quests").data;
     for (var quest in mainQuestSectionData) {
@@ -144,6 +144,26 @@ function processJson(jsonObj) {
         }
     }
 
+    var holderSectionData = renderData.find(section => section.title === "Amulet Holders").data;
+    for (var holder in holderSectionData) {
+        const holderProps = holderSectionData[holder];
+        const sceneGUID = parseInt(holder.split("_")[0].substring(1));
+        const objectGUID = parseInt(holder.split("_")[1].substring(1));
+
+        const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
+        const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
+        const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
+        const doesHolderExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === "SeedOfKnowledge")?.m_itemAmount;
+
+
+        if (objectObj !== undefined && !doesHolderExist) {
+            holderProps.isUnlocked = true;
+        }
+        else {
+            holderProps.isUnlocked = false;
+        }
+    }
+
     var upgradeSectionData = renderData.find(section => section.title === "Equipment Upgrades").data;
     for (var upgrade in upgradeSectionData) {
         const upgradeProps = upgradeSectionData[upgrade];
@@ -163,6 +183,17 @@ function processJson(jsonObj) {
         }
         else {
             skinrops.isUnlocked = false;
+        }
+    }
+
+    var loreSectionData = renderData.find(section => section.title === "Lore Items").data;
+    for (var loreItem in loreSectionData) {
+        const loreItemProps = loreSectionData[loreItem];
+        if (inventoryData.includes(loreItem)) {
+            loreItemProps.isUnlocked = true;
+        }
+        else {
+            loreItemProps.isUnlocked = false;
         }
     }
 
@@ -224,7 +255,7 @@ function handleChangeSaveFile(e) {
 
                             const textDecoder = new TextDecoder('utf-8');
                             const text = textDecoder.decode(concatenated);
-                            const jsonObj = JSON.parse(text.slice(text.indexOf("{")));
+                            const jsonObj = JSON.parse(text.substring(text.indexOf("{")));
                             console.log("Decoded JSON:", jsonObj);
                             processJson(jsonObj);
                         } catch (error) {
