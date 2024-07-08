@@ -278,4 +278,13 @@ function handleChangeSaveFile(e) {
 }
 window.handleChangeSaveFile = handleChangeSaveFile;
 
+function handleCopyLocation(e) {
+    navigator.clipboard.writeText(e.target.value);
+    document.getElementById("save-location-tooltip-click").style.visibility = "visible";
+    setTimeout(() => {
+        document.getElementById("save-location-tooltip-click").style.visibility = "hidden";
+    }, 3000);
+}
+window.handleCopyLocation = handleCopyLocation;
+
 renderDataToHTML();
