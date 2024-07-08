@@ -594,17 +594,17 @@ const initialData = [
             "S1076086488_O2038047517": {
                 displayName: "Soma Tree",
                 isUnlocked: false,
-                description: "Chest in the same room as the mandatory fight"
+                description: "Chest after the Clairvoyance platfroming challenge"
             },
-            "TODO-1_lol": {
+            "S-1887863129_O1694143513": {
                 displayName: "Sunken Harbor",
                 isUnlocked: false,
                 description: "Chest on the way to Soma Tree"
             },
-            "TODO-2_lol": {
+            "S-56286082_O-382126177": {
                 displayName: "Pit of Eternal Sands",
                 isUnlocked: false,
-                description: "Alternate Sargon fight in Depths"
+                description: "Chest in the statue heads fight room"
             },
             "S-1935183277_O-598913130": {
                 displayName: "Upper City",
@@ -647,6 +647,38 @@ const initialData = [
                 displayName: "Additional Potion (Moon Gatherer)",
                 isUnlocked: false,
                 description: "Complete the “Moon Gatherer” side quest"
+            },
+        }
+    },
+    {
+        title: "Memory Shards",
+        percentage: 5,
+        description: "Each amulet holder from this list provides 0.56% game completion.",
+        data: {
+            "S-194185274_O2102073558": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Purchased from the Mage's Shop"
+            },
+            "S-2145347505_O-786588926": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Chest on the way to Prison"
+            },
+            "S-2016686573_O-1276959578": {
+                displayName: "Upper City",
+                isUnlocked: false,
+                description: "Chest in the tall room before the Chakram puzzle"
+            },
+            "S138031762_O1621380553": {
+                displayName: "The Depths",
+                isUnlocked: false,
+                description: "Chest in bell platforming challenge room"
+            },
+            "S-1055261614_O853402842": {
+                displayName: "Soma Tree",
+                isUnlocked: false,
+                description: "Architect puzzle chest"
             },
         }
     },
