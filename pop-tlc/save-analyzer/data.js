@@ -562,6 +562,58 @@ const initialData = [
         }
     },
     {
+        title: "Amulet Holders",
+        percentage: 5,
+        description: "Each amulet holder from this list provides 0.56% game completion.",
+        data: {
+            "S-194185274_O2102073558": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Purchased from the Mage's Shop"
+            },
+            "S-953692090_O-822170603": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Chest in the room on way back from Hyrcanian forest"
+            },
+            "TODO-3_lol": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Collect 15 sand jars for the “Prophecy of Mount Qaf” quest"
+            },
+            "S-1998352001_O1274025047": {
+                displayName: "Sacred Archives",
+                isUnlocked: false,
+                description: "Chest in bell platforming challenge room"
+            },
+            "S360638867_O1139401100": {
+                displayName: "Sacred Archives",
+                isUnlocked: false,
+                description: "Architect puzzle chest"
+            },
+            "S1076086488_O2038047517": {
+                displayName: "Soma Tree",
+                isUnlocked: false,
+                description: "Chest after the Clairvoyance platfroming challenge"
+            },
+            "S-1887863129_O1694143513": {
+                displayName: "Sunken Harbor",
+                isUnlocked: false,
+                description: "Chest on the way to Soma Tree"
+            },
+            "S-56286082_O-382126177": {
+                displayName: "Pit of Eternal Sands",
+                isUnlocked: false,
+                description: "Chest in the statue heads fight room"
+            },
+            "S-1935183277_O-598913130": {
+                displayName: "Upper City",
+                isUnlocked: false,
+                description: "Chest near the Clockwork teleporter"
+            },
+        }
+    },
+    {
         title: "Equipment Upgrades",
         percentage: 5,
         description: "Each item from this list provides 0.83% game completion.",
@@ -582,7 +634,7 @@ const initialData = [
                 description: "Upgrade the quiver to +4 at Kaheva's forge"
             },
             GearUpgrade_PotionCount_PackShop3: {
-                displayName: "Additional Potions (Magi)",
+                displayName: "Additional Potions (Mage)",
                 isUnlocked: false,
                 description: "Buy all the additional potions from the shopkeeper"
             },
@@ -595,6 +647,43 @@ const initialData = [
                 displayName: "Additional Potion (Moon Gatherer)",
                 isUnlocked: false,
                 description: "Complete the “Moon Gatherer” side quest"
+            },
+        }
+    },
+    {
+        title: "Memory Shards",
+        percentage: 5,
+        description: "Each item from this list provides 0.83% game completion.",
+        data: {
+            "Special_VisionAbility_TODO": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Meet Fariba for the first time"
+            },
+            "S-273213765_TODO": {
+                displayName: "Sunken Harbor",
+                isUnlocked: false,
+                description: "Chest in the room when entering from Hyrcanian Forest"
+            },
+            "S138031762_O1621380553": {
+                displayName: "The Depths",
+                isUnlocked: false,
+                description: "Chest after the Shadow platforming puzzle"
+            },
+            "S-2145347505_O-786588926": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Chest on the way to Prison"
+            },
+            "S-1055261614_O853402842": {
+                displayName: "Soma Tree",
+                isUnlocked: false,
+                description: "Chest in the room after obtaining Dimensional Claw"
+            },
+            "S-2016686573_O-1276959578": {
+                displayName: "Upper City",
+                isUnlocked: false,
+                description: "Chest in the tall room before the Chakram puzzle"
             },
         }
     },
@@ -687,6 +776,298 @@ const initialData = [
                 displayName: "Cobra*",
                 isUnlocked: false,
                 description: "Divine Trials - Unlocked on finishing the Stallion Memorial"
+            }
+        }
+    },
+    {
+        title: "Lore Items",
+        percentage: 5,
+        description: "Each item from this list provides 0.09% game completion.",
+        data: {
+            "LoreItem_01_FirstClayTablet": {
+                "displayName": "Clay Tablet",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_39_SecondClayTablet": {
+                "displayName": "Clay Cylinder",
+                "isUnlocked": false,
+                "description": "Pit of Eternal Sands"
+            },
+            "LoreItem_05_PrisonerCarvedStatue": {
+                "displayName": "Crudely Carved Statue",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_06_StatuetteOfVayu": {
+                "displayName": "Statuette of God Vayu",
+                "isUnlocked": false,
+                "description": "Tower of Silence"
+            },
+            "LoreItem_07_GildedBracelet": {
+                "displayName": "Gilded Bracelet",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_09_ChildToy": {
+                "displayName": "Child's Toy",
+                "isUnlocked": false,
+                "description": "The Depths"
+            },
+            "LoreItem_10_TarnishedCoin": {
+                "displayName": "Tarnished Coin",
+                "isUnlocked": false,
+                "description": "Sunken Harbor"
+            },
+            "LoreItem_11_Diadem": {
+                "displayName": "Tiara",
+                "isUnlocked": false,
+                "description": "The Depths"
+            },
+            "LoreItem_12_StatuetteOfQueenAtossa": {
+                "displayName": "The Commoner and The King",
+                "isUnlocked": false,
+                "description": "Tower of Silence"
+            },
+            "LoreItem_13_PersianTale": {
+                "displayName": "Persian Children's Playtime Verse",
+                "isUnlocked": false,
+                "description": "The Depths"
+            },
+            "LoreItem_14_ProclamationTreaty": {
+                "displayName": "Proclamation Treaty",
+                "isUnlocked": false,
+                "description": "Sunken Harbor"
+            },
+            "LoreItem_15_SacredObject": {
+                "displayName": "Sacred Object",
+                "isUnlocked": false,
+                "description": "Tower of Silence"
+            },
+            "LoreItem_17_ArtisanToolCarpetWeavers": {
+                "displayName": "Artisan Tools - Carpet Weavers",
+                "isUnlocked": false,
+                "description": "Lower City"
+            },
+            "LoreItem_18_ArchitecturalDrawings": {
+                "displayName": "Architectural Drawings",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_19_RustedHook": {
+                "displayName": "Rusted Hook",
+                "isUnlocked": false,
+                "description": "Sunken Harbor"
+            },
+            "LoreItem_21_Mirror": {
+                "displayName": "Mirror",
+                "isUnlocked": false,
+                "description": "The Depths"
+            },
+            "LoreItem_24_ErlikTusk": {
+                "displayName": "Tusk of Erlik",
+                "isUnlocked": false,
+                "description": "Hyrcanian Forest"
+            },
+            "LoreItem_25_AzdhahaTooth": {
+                "displayName": "Enormous Tooth of Azhdaha",
+                "isUnlocked": false,
+                "description": "Pit of Eternal Sands"
+            },
+            "LoreItem_26_PrisonerChains": {
+                "displayName": "Broken Chains",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_28_AstronomicalMeschanism": {
+                "displayName": "Astronomical Mechanism",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_29_GeometricalFormulaCreator": {
+                "displayName": "Mathematical Formula Calculator",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_30_RoyalDecree": {
+                "displayName": "Official Scroll: Royal Decree",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_32_TheCombOfAPrincess": {
+                "displayName": "The Comb of a Princess",
+                "isUnlocked": false,
+                "description": "Raging Sea"
+            },
+            "LoreItem_34_MemoryFragment": {
+                "displayName": "Memory Fragment - Aura of Loss",
+                "isUnlocked": false,
+                "description": "Tower of Silence"
+            },
+            "LoreItem_35_CursedObject": {
+                "displayName": "Cursed Object",
+                "isUnlocked": false,
+                "description": "Soma Tree"
+            },
+            "LoreItem_36_ObjectFoundinAzhdahaLair": {
+                "displayName": "Object Found in Azhdaha's Lair",
+                "isUnlocked": false,
+                "description": "Pit of Eternal Sands"
+            },
+            "LoreItem_37_DroppedLocket": {
+                "displayName": "Dropped Locket",
+                "isUnlocked": false,
+                "description": "The Depths"
+            },
+            "LoreItem_38_NoteBeneathBatteredTalisman": {
+                "displayName": "Note Pinned to a Battered Talisman",
+                "isUnlocked": false,
+                "description": "Hidden Village"
+            },
+            "LoreItem_04_ArchiveScroll": {
+                "displayName": "Message Written with Trembling Hand",
+                "isUnlocked": false,
+                "description": "Old Royal Road"
+            },
+            "LoreItem_40_FoundOnRadjen": {
+                "displayName": "The Lion and The Viper",
+                "isUnlocked": false,
+                "description": "Lower City"
+            },
+            "LoreItem_42_Placeholder_01": {
+                "displayName": "Note Pinned to a Rock Shaped Like an Eye",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_43_Placeholder_02": {
+                "displayName": "Ardashir's Mission Orders",
+                "isUnlocked": false,
+                "description": "Lower City"
+            },
+            "LoreItem_44_ScrollBlessedByTheSymorgh": {
+                "displayName": "Scroll - Blessed by the Simurgh",
+                "isUnlocked": false,
+                "description": "Hidden Village"
+            },
+            "LoreItem_45_NurseryRhymeOnAToy": {
+                "displayName": "Nursery Rhyme on a Toy",
+                "isUnlocked": false,
+                "description": "The Depths"
+            },
+            "LoreItem_46_LastDayAtWork": {
+                "displayName": "LAST DAY AT WORK",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_47_Missive_01": {
+                "displayName": "MISSIVE 1",
+                "isUnlocked": false,
+                "description": "Lower City"
+            },
+            "LoreItem_48_Missive_02": {
+                "displayName": "MISSIVE 2",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_49_Missive_03": {
+                "displayName": "MISSIVE 3",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_50_Missive_04": {
+                "displayName": "MISSIVE 4",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_51_LetterfromtheKingDariustoCaptainIrisKaloxilos": {
+                "displayName": "Letter from the King Darius to Captain Iris Kaloxilos",
+                "isUnlocked": false,
+                "description": "Raging Sea"
+            },
+            "LoreItem_52_PiratesSeaShanty": {
+                "displayName": "Pirate Sea Shanty",
+                "isUnlocked": false,
+                "description": "Sunken Harbor"
+            },
+            "LoreItem_53_TheCrowningofaDivineKing": {
+                "displayName": "The Crowning of a Divine King",
+                "isUnlocked": false,
+                "description": "Soma Tree"
+            },
+            "LoreItem_54_TheEmbraceofAthra": {
+                "displayName": "The Embrace of Athra",
+                "isUnlocked": false,
+                "description": "Hyrcanian Forest"
+            },
+            "LoreItem_55_TheFallofTheHyrcanianTribe": {
+                "displayName": "THE FALL OF THE HYRCANIAN TRIBE",
+                "isUnlocked": false,
+                "description": "Soma Tree"
+            },
+            "LoreItem_56_TheFrozenTomb": {
+                "displayName": "The Frozen Tomb",
+                "isUnlocked": false,
+                "description": "Tower of Silence"
+            },
+            "LoreItem_57_TheHunterAndTheManEater": {
+                "displayName": "The Hunter and the Man-Eater",
+                "isUnlocked": false,
+                "description": "Lower City"
+            },
+            "LoreItem_58_TheLegendofTheSnakeTheBirdandTheSands": {
+                "displayName": "The Legend of the Snake, The Bird, and The Sands",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_59_01BotanyLogsOfCyrusAfshin": {
+                "displayName": "Botany Logs of Cyrus LOG 1",
+                "isUnlocked": false,
+                "description": "Soma Tree"
+            },
+            "LoreItem_61_03BotanyLogsOfCyrusAfshin": {
+                "displayName": "Botany Logs of Cyrus LOG 2",
+                "isUnlocked": false,
+                "description": "Hyrcanian Forest"
+            },
+            "LoreItem_62_TheThirdSon": {
+                "displayName": "The Third Son",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_64_01AlchemistDiary": {
+                "displayName": "Alchemist Diary Entry 1",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_66_03AlchemistDiary": {
+                "displayName": "Alchemist Diary Entry 2",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_67_04AlchemistDiary": {
+                "displayName": "Alchemist Diary Entry 3",
+                "isUnlocked": false,
+                "description": "Sacred Archives"
+            },
+            "LoreItem_70_TheArchitectAndTheKing": {
+                "displayName": "The Architect and the King",
+                "isUnlocked": false,
+                "description": "Upper City"
+            },
+            "LoreItem_71_ThePathOfTheHero": {
+                "displayName": "The Path of the Hero",
+                "isUnlocked": false,
+                "description": "Lower City"
+            },
+            "LoreItem_75_LegendFromThePit": {
+                "displayName": "Legend from the Pit",
+                "isUnlocked": false,
+                "description": "Pit of Eternal Sands"
+            },
+            "LoreItem_76_MastersInstructions": {
+                "displayName": "Instructions from our Master",
+                "isUnlocked": false,
+                "description": "Upper City"
             }
         }
     },

@@ -14,7 +14,11 @@
         <div id="header">Save Completion Analyzer</div>
         <div id="sub-header">for PoP: The Lost Crown</div>
         <div>
-            <input id="save-intructions" value="%USERPROFILE%\Documents\My Games\Prince Of Persia The Lost Crown\" readonly="readonly">
+            <div id="save-location-container">
+                <input id="save-location" value="%USERPROFILE%\Documents\My Games\Prince Of Persia The Lost Crown\" readonly="readonly" onclick="handleCopyLocation(event)">
+                <span id="save-location-tooltip">Click once to copy</span>
+                <span id="save-location-tooltip-click">Copied!</span>
+            </div>
             <button id="choose-save" onclick="openFolderDialog()">
                 Choose Save
             </button>
