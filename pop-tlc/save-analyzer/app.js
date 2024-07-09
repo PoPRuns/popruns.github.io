@@ -175,6 +175,26 @@ function processJson(jsonObj) {
         }
     }
 
+    var shardSectionData = renderData.find(section => section.title === "Memory Shards").data;
+    for (var shard in shardSectionData) {
+        const shardProps = shardSectionData[shard];
+        const sceneGUID = parseInt(shard.split("_")[0].substring(1));
+        const objectGUID = parseInt(shard.split("_")[1].substring(1));
+
+        const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
+        const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
+        const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
+        const doesShardExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === "SeedOfKnowledge")?.m_itemAmount;
+
+
+        if (objectObj !== undefined && !doesShardExist) {
+            shardProps.isUnlocked = true;
+        }
+        else {
+            shardProps.isUnlocked = false;
+        }
+    }
+
     var skinSectionData = renderData.find(section => section.title === "Skins").data;
     for (var skin in skinSectionData) {
         const skinrops = skinSectionData[skin];
@@ -201,7 +221,6 @@ function processJson(jsonObj) {
 }
 
 function handleChangeSaveFile(e) {
-    console.log(e.target.value);
     const files = e.target.files;
     var lastSavedFolderFile = null;
     var popSaveGameFile = null;
@@ -256,7 +275,7 @@ function handleChangeSaveFile(e) {
                             const textDecoder = new TextDecoder('utf-8');
                             const text = textDecoder.decode(concatenated);
                             const jsonObj = JSON.parse(text.substring(text.indexOf("{")));
-                            console.log("Decoded JSON:", jsonObj);
+                            console.info("Decoded JSON:", jsonObj);
                             processJson(jsonObj);
                         } catch (error) {
                             console.error("Error reading file stream:", error);
