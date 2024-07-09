@@ -184,7 +184,7 @@ function processJson(jsonObj) {
         const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
         const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
         const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
-        const doesShardExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === "SeedOfKnowledge")?.m_itemAmount;
+        const doesShardExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === "GearUpgrade_VisionPackChest")?.m_itemAmount;
 
 
         if (objectObj !== undefined && !doesShardExist) {

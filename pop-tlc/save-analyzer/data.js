@@ -660,7 +660,7 @@ const initialData = [
                 isUnlocked: false,
                 description: "Meet Fariba for the first time"
             },
-            "S-273213765_TODO": {
+            "S1636739140_O1831099548": {
                 displayName: "Sunken Harbor",
                 isUnlocked: false,
                 description: "Chest in the room when entering from Hyrcanian Forest"
