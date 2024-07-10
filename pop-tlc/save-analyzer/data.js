@@ -2,6 +2,7 @@ const initialData = [
     {
         title: "Main Quests",
         percentage: 30,
+        completedPercent: 0,
         description: "Each quest from this list provides 3.75% game completion.\n* These quests don't count for percentage.",
         data: {
             "e36c64cd5a982ce4b8571f8190c1ad43": {
@@ -49,6 +50,7 @@ const initialData = [
     {
         title: "Side Quests",
         percentage: 20,
+        completedPercent: 0,
         description: "Each quest from this list provides 2.22% game completion.\n* Divine Trials doesn't give %.",
         data: {
             "658f412ae13e19f4b936561ddf4ea003": {
@@ -96,6 +98,7 @@ const initialData = [
     {
         title: "Location Discovery",
         percentage: 5,
+        completedPercent: 0,
         description: "Each location in this list provides 0.33% game completion.",
         data: {
             "Level_-1353158043": {
@@ -163,6 +166,7 @@ const initialData = [
     {
         title: "Abilities",
         percentage: 5,
+        completedPercent: 0,
         description: "Each ability from this list provides 0.5% game completion.",
         data: {
             MiniMap: {
@@ -220,6 +224,7 @@ const initialData = [
     {
         title: "Athra Surges",
         percentage: 5,
+        completedPercent: 0,
         description: "Each Athra Surge from this list provides 0.5% game completion.",
         data: {
             FocusAbilityPiercingAttack: {
@@ -277,6 +282,7 @@ const initialData = [
     {
         title: "Amulets",
         percentage: 5,
+        completedPercent: 0,
         description: "Each amulet as well as each amulet upgrade gives 0.051% game completion.\n* Amulets unlocked from the Divine Trials don't give %.",
         data: {
             ExtendedHits: {
@@ -564,6 +570,7 @@ const initialData = [
     {
         title: "Amulet Holders",
         percentage: 5,
+        completedPercent: 0,
         description: "Each amulet holder from this list provides 0.56% game completion.",
         data: {
             "S-194185274_O2102073558": {
@@ -616,6 +623,7 @@ const initialData = [
     {
         title: "Equipment Upgrades",
         percentage: 5,
+        completedPercent: 0,
         description: "Each item from this list provides 0.83% game completion.",
         data: {
             GearUpgrade_SwordPlus4: {
@@ -653,9 +661,10 @@ const initialData = [
     {
         title: "Memory Shards",
         percentage: 5,
+        completedPercent: 0,
         description: "Each item from this list provides 0.83% game completion.",
         data: {
-            "Special_VisionAbility_TODO": {
+            "Special_VisionAbility": {
                 displayName: "Lower City",
                 isUnlocked: false,
                 description: "Meet Fariba for the first time"
@@ -690,6 +699,7 @@ const initialData = [
     {
         title: "Skins",
         percentage: 5,
+        completedPercent: 0,
         description: "Each skin that is unlocked directly in the game world provides 1% game completion.\n* These skins don't count for %.",
         data: {
             Default: {
@@ -782,6 +792,7 @@ const initialData = [
     {
         title: "Lore Items",
         percentage: 5,
+        completedPercent: 0,
         description: "Each item from this list provides 0.09% game completion.",
         data: {
             "LoreItem_01_FirstClayTablet": {

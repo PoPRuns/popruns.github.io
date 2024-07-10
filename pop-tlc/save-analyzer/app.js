@@ -14,7 +14,8 @@ function renderDataToHTML() {
         if (section.percentage > 0) {
             const percentageDiv = document.createElement('div');
             percentageDiv.classList.add("percent-box");
-            percentageDiv.innerText = `${section.percentage}%`;
+            const roundedCompletion = Math.round(section.completedPercent * 100) / 100;
+            percentageDiv.innerText = `${roundedCompletion} / ${section.percentage} %`;
             sectionTitleDiv.appendChild(percentageDiv);
         }
         mainDiv.appendChild(sectionTitleDiv);
@@ -69,73 +70,97 @@ function processJson(jsonObj) {
     const mapSaveData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerMapSubComponent+PlayerMapSaveData");
     const unlockedLevels = mapSaveData.m_uncoveredLevels.map(obj => obj.key);
 
-    var mainQuestSectionData = renderData.find(section => section.title === "Main Quests").data;
+    var mainQuestSection = renderData.find(section => section.title === "Main Quests");
+    var mainQuestSectionData = mainQuestSection.data;
+    mainQuestSection.completedPercent = 0;
     for (var quest in mainQuestSectionData) {
         const questProps = mainQuestSectionData[quest];
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         if (questState === "Ended") {
             questProps.isUnlocked = true;
+            if (!questProps.displayName.includes("*")) {
+                mainQuestSection.completedPercent += (15 / 4);
+            }
         }
         else {
             questProps.isUnlocked = false;
         }
     }
 
-    var sideQuestSectionData = renderData.find(section => section.title === "Side Quests").data;
+    var sideQuestSection = renderData.find(section => section.title === "Side Quests");
+    var sideQuestSectionData = sideQuestSection.data;
+    sideQuestSection.completedPercent = 0;
     for (var quest in sideQuestSectionData) {
         const questProps = sideQuestSectionData[quest];
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList?.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         if (questState === "Ended") {
             questProps.isUnlocked = true;
+            if (!questProps.displayName.includes("*")) {
+                sideQuestSection.completedPercent += (20 / 9);
+            }
         }
         else {
             questProps.isUnlocked = false;
         }
     }
 
-    var locationSectionData = renderData.find(section => section.title === "Location Discovery").data;
+    var locationSection = renderData.find(section => section.title === "Location Discovery");
+    var locationSectionData = locationSection.data;
+    locationSection.completedPercent = 0;
     for (var location in locationSectionData) {
         const locationrops = locationSectionData[location];
         const locationId = parseInt(location.replace("Level_", ""));
         if (unlockedLevels.includes(locationId)) {
             locationrops.isUnlocked = true;
+            locationSection.completedPercent += (1 / 3);
         }
         else {
             locationrops.isUnlocked = false;
         }
     }
 
-    var abilitySectionData = renderData.find(section => section.title === "Abilities").data;
+    var abilitySection = renderData.find(section => section.title === "Abilities");
+    var abilitySectionData = abilitySection.data;
+    abilitySection.completedPercent = 0;
     for (var ability in abilitySectionData) {
         const abilityProps = abilitySectionData[ability];
         if (unlockedAbilites.includes(ability)) {
             abilityProps.isUnlocked = true;
+            abilitySection.completedPercent += (1 / 2);
         }
         else {
             abilityProps.isUnlocked = false;
         }
     }
 
-    var athraSectionData = renderData.find(section => section.title === "Athra Surges").data;
+    var athraSection = renderData.find(section => section.title === "Athra Surges");
+    var athraSectionData = athraSection.data;
+    athraSection.completedPercent = 0;
     for (var surge in athraSectionData) {
         const surgeProps = athraSectionData[surge];
         if (unlockedAbilites.includes(surge)) {
             surgeProps.isUnlocked = true;
+            athraSection.completedPercent += (1 / 2);
         }
         else {
             surgeProps.isUnlocked = false;
         }
     }
 
+    var amuletSection = renderData.find(section => section.title === "Amulets");
     var amuletSectionData = renderData.find(section => section.title === "Amulets").data;
+    amuletSection.completedPercent = 0;
     for (var amulet in amuletSectionData) {
         const amuletProps = amuletSectionData[amulet];
         if (unlockedAmulets.includes(amulet)) {
             amuletProps.isUnlocked = true;
             const amuletLevel = amuletLevels[unlockedAmulets.indexOf(amulet)];
             amuletProps.level = amuletLevel;
+            if (!amuletProps.displayName.includes("*")) {
+                amuletSection.completedPercent += (5 / 98) * amuletLevel;
+            }
         }
         else {
             amuletProps.isUnlocked = false;
@@ -144,7 +169,9 @@ function processJson(jsonObj) {
         }
     }
 
-    var holderSectionData = renderData.find(section => section.title === "Amulet Holders").data;
+    var holderSection = renderData.find(section => section.title === "Amulet Holders");
+    var holderSectionData = holderSection.data;
+    holderSection.completedPercent = 0;
     for (var holder in holderSectionData) {
         const holderProps = holderSectionData[holder];
         const sceneGUID = parseInt(holder.split("_")[0].substring(1));
@@ -158,26 +185,44 @@ function processJson(jsonObj) {
 
         if (objectObj !== undefined && !doesHolderExist) {
             holderProps.isUnlocked = true;
+            holderSection.completedPercent += (5 / 9);
         }
         else {
             holderProps.isUnlocked = false;
         }
     }
 
-    var upgradeSectionData = renderData.find(section => section.title === "Equipment Upgrades").data;
+    var upgradeSection = renderData.find(section => section.title === "Equipment Upgrades");
+    var upgradeSectionData = upgradeSection.data;
+    upgradeSection.completedPercent = 0;
     for (var upgrade in upgradeSectionData) {
         const upgradeProps = upgradeSectionData[upgrade];
         if (inventoryData.includes(upgrade)) {
             upgradeProps.isUnlocked = true;
+            upgradeSection.completedPercent += (5 / 6);
         }
         else {
             upgradeProps.isUnlocked = false;
         }
     }
 
-    var shardSectionData = renderData.find(section => section.title === "Memory Shards").data;
+    var shardSection = renderData.find(section => section.title === "Memory Shards");
+    var shardSectionData = shardSection.data;
+    shardSection.completedPercent = 0;
     for (var shard in shardSectionData) {
         const shardProps = shardSectionData[shard];
+
+        if (shard === "Special_VisionAbility") {
+            if (inventoryData.includes("GearUpgrade_VisionPackShop1")) {
+                shardProps.isUnlocked = true;
+                shardSection.completedPercent += (5 / 6);
+            }
+            else {
+                shardProps.isUnlocked = false;
+            }
+            continue;
+        }
+
         const sceneGUID = parseInt(shard.split("_")[0].substring(1));
         const objectGUID = parseInt(shard.split("_")[1].substring(1));
 
@@ -189,28 +234,37 @@ function processJson(jsonObj) {
 
         if (objectObj !== undefined && !doesShardExist) {
             shardProps.isUnlocked = true;
+            shardSection.completedPercent += (5 / 6);
         }
         else {
             shardProps.isUnlocked = false;
         }
     }
 
-    var skinSectionData = renderData.find(section => section.title === "Skins").data;
+    var skinSection = renderData.find(section => section.title === "Skins");
+    var skinSectionData = skinSection.data;
+    skinSection.completedPercent = 0;
     for (var skin in skinSectionData) {
         const skinrops = skinSectionData[skin];
         if (unlockedSkins.includes(skin)) {
             skinrops.isUnlocked = true;
+            if (!skinrops.displayName.includes("*")) {
+                skinSection.completedPercent += 1;
+            }
         }
         else {
             skinrops.isUnlocked = false;
         }
     }
 
-    var loreSectionData = renderData.find(section => section.title === "Lore Items").data;
+    var loreSection = renderData.find(section => section.title === "Lore Items");
+    var loreSectionData = loreSection.data;
+    loreSection.completedPercent = 0;
     for (var loreItem in loreSectionData) {
         const loreItemProps = loreSectionData[loreItem];
         if (inventoryData.includes(loreItem)) {
             loreItemProps.isUnlocked = true;
+            loreSection.completedPercent += (5/57);
         }
         else {
             loreItemProps.isUnlocked = false;
