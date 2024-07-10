@@ -583,7 +583,7 @@ const initialData = [
                 isUnlocked: false,
                 description: "Chest in the room on way back from Hyrcanian forest"
             },
-            "TODO-3_lol": {
+            "Special_ProphecyQuestReward": {
                 displayName: "Lower City",
                 isUnlocked: false,
                 description: "Collect 15 sand jars for the “Prophecy of Mount Qaf” quest"

@@ -58,6 +58,7 @@ function processJson(jsonObj) {
     const sceneList = jsonObj.m_list;
     const gameManagerFrames = sceneList.find(obj => obj.m_sceneName === "GameManager").m_entities[0].m_frames;
     const questInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.QuestSaveDataFrame").m_Data;
+    const lootInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.LootRecorder+LootSaveDataFrame").m_data.m_data;
 
     const entityManager = sceneList.find(obj => obj.m_sceneName === "EntitiesManager");
     const progressionData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerProgressionSubComponent+PlayerProgressionSaveData")?.m_progression;
@@ -65,7 +66,9 @@ function processJson(jsonObj) {
     const unlockedAmulets = progressionData.m_playerStoneOfKnowledgeProgressionData.m_unlockedStoneOfKnowledges;
     const amuletLevels = progressionData.m_playerStoneOfKnowledgeProgressionData.m_stoneLevels;
     const unlockedSkins = progressionData.m_playerSkinProgressionData.m_unlockedSkins.map(obj => obj.m_skin);
-    const inventoryData = progressionData.m_playerInventoryProgressionData.m_inventory.map(obj => obj.m_itemType);
+    const inventoryProgressionData = progressionData.m_playerInventoryProgressionData;
+    const inventoryData = inventoryProgressionData.m_inventory;
+    const inventoryList = inventoryData.map(obj => obj.m_itemType);
 
     const mapSaveData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerMapSubComponent+PlayerMapSaveData");
     const unlockedLevels = mapSaveData.m_uncoveredLevels.map(obj => obj.key);
@@ -174,6 +177,22 @@ function processJson(jsonObj) {
     holderSection.completedPercent = 0;
     for (var holder in holderSectionData) {
         const holderProps = holderSectionData[holder];
+
+        if (holder === "Special_ProphecyQuestReward") {
+            const inventoryJars = inventoryData.find(obj => obj.m_itemType === "QuestItem_FrescoElement")?.m_itemAmount ?? 0;
+            const collectedJars = inventoryProgressionData.m_itemLootCount.find(obj => obj.key === "QuestItem_FrescoElement")?.value ?? 0;
+            const depositedJars = collectedJars - inventoryJars;
+            const doesLootExist = lootInfoList.find(obj => obj.m_type.includes("SeedOfKnowledge"));
+            if (depositedJars >= 15 && !doesLootExist) {
+                holderProps.isUnlocked = true;
+                holderSection.completedPercent += (5 / 9);
+            }
+            else {
+                holderProps.isUnlocked = false;
+            }
+            continue;
+        }
+
         const sceneGUID = parseInt(holder.split("_")[0].substring(1));
         const objectGUID = parseInt(holder.split("_")[1].substring(1));
 
@@ -197,7 +216,7 @@ function processJson(jsonObj) {
     upgradeSection.completedPercent = 0;
     for (var upgrade in upgradeSectionData) {
         const upgradeProps = upgradeSectionData[upgrade];
-        if (inventoryData.includes(upgrade)) {
+        if (inventoryList.includes(upgrade)) {
             upgradeProps.isUnlocked = true;
             upgradeSection.completedPercent += (5 / 6);
         }
@@ -213,7 +232,7 @@ function processJson(jsonObj) {
         const shardProps = shardSectionData[shard];
 
         if (shard === "Special_VisionAbility") {
-            if (inventoryData.includes("GearUpgrade_VisionPackShop1")) {
+            if (inventoryList.includes("GearUpgrade_VisionPackShop1")) {
                 shardProps.isUnlocked = true;
                 shardSection.completedPercent += (5 / 6);
             }
@@ -262,9 +281,9 @@ function processJson(jsonObj) {
     loreSection.completedPercent = 0;
     for (var loreItem in loreSectionData) {
         const loreItemProps = loreSectionData[loreItem];
-        if (inventoryData.includes(loreItem)) {
+        if (inventoryList.includes(loreItem)) {
             loreItemProps.isUnlocked = true;
-            loreSection.completedPercent += (5/57);
+            loreSection.completedPercent += (5 / 57);
         }
         else {
             loreItemProps.isUnlocked = false;
@@ -328,7 +347,7 @@ function handleChangeSaveFile(e) {
 
                             const textDecoder = new TextDecoder('utf-8');
                             const text = textDecoder.decode(concatenated);
-                            const jsonObj = JSON.parse(text.substring(text.indexOf("{")));
+                            const jsonObj = JSON.parse(text.substring(text.indexOf('{"m_list')));
                             console.info("Decoded JSON:", jsonObj);
                             processJson(jsonObj);
                         } catch (error) {
@@ -341,12 +360,12 @@ function handleChangeSaveFile(e) {
                 saveFileReader.readAsArrayBuffer(popSaveGameFile);
             }
             else {
-                console.log(`${saveFilePartial} not found in the selected folder.`);
+                console.error(`${saveFilePartial} not found in the selected folder.`);
             }
         };
         reader.readAsText(lastSavedFolderFile);
     } else {
-        console.log("lastSavedFolder.txt not found in the selected folder.");
+        console.error("lastSavedFolder.txt not found in the selected folder.");
     }
 }
 window.handleChangeSaveFile = handleChangeSaveFile;
