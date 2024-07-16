@@ -73,222 +73,93 @@ function processJson(jsonObj) {
     const mapSaveData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerMapSubComponent+PlayerMapSaveData");
     const unlockedLevels = mapSaveData.m_uncoveredLevels.map(obj => obj.key);
 
-    var mainQuestSection = renderData.find(section => section.title === "Main Quests");
-    var mainQuestSectionData = mainQuestSection.data;
-    mainQuestSection.completedPercent = 0;
-    for (var quest in mainQuestSectionData) {
-        const questProps = mainQuestSectionData[quest];
+    renderData = structuredClone(initialData);
+
+    function updateSectionData(title, percentPerItem, checkUnlock) {
+        const section = renderData.find(section => section.title === title);
+        const sectionData = section.data;
+        for (var item in sectionData) {
+            const itemProps = sectionData[item];
+            const isUnlocked = checkUnlock(item, itemProps);
+            itemProps.isUnlocked = isUnlocked;
+            section.completedPercent += isUnlocked * !itemProps.displayName.includes("*") * (itemProps.level ?? 1) * percentPerItem;
+        }
+    }
+
+    function checkChestPickedFromScene(item, itemType) {
+        const [sceneGUID, objectGUID] = item.split("_").map(id => parseInt(id.substring(1)));
+        const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
+        const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
+        const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
+        const doesItemExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === itemType)?.m_itemAmount;
+
+        return (objectObj !== undefined && !doesItemExist);
+    }
+
+    updateSectionData("Main Quests", (15 / 4), (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
-        if (questState === "Ended") {
-            questProps.isUnlocked = true;
-            if (!questProps.displayName.includes("*")) {
-                mainQuestSection.completedPercent += (15 / 4);
-            }
-        }
-        else {
-            questProps.isUnlocked = false;
-        }
-    }
+        return (questState === "Ended");
+    });
 
-    var sideQuestSection = renderData.find(section => section.title === "Side Quests");
-    var sideQuestSectionData = sideQuestSection.data;
-    sideQuestSection.completedPercent = 0;
-    for (var quest in sideQuestSectionData) {
-        const questProps = sideQuestSectionData[quest];
+    updateSectionData("Side Quests", (20 / 9), (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
-        const questState = questInfo?.m_questElementsFlatList?.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
-        if (questState === "Ended") {
-            questProps.isUnlocked = true;
-            if (!questProps.displayName.includes("*")) {
-                sideQuestSection.completedPercent += (20 / 9);
-            }
-        }
-        else {
-            questProps.isUnlocked = false;
-        }
-    }
+        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        return (questState === "Ended");
+    });
 
-    var locationSection = renderData.find(section => section.title === "Location Discovery");
-    var locationSectionData = locationSection.data;
-    locationSection.completedPercent = 0;
-    for (var location in locationSectionData) {
-        const locationrops = locationSectionData[location];
+    updateSectionData("Location Discovery", (1 / 3), (location, locationrops) => {
         const locationId = parseInt(location.replace("Level_", ""));
-        if (unlockedLevels.includes(locationId)) {
-            locationrops.isUnlocked = true;
-            locationSection.completedPercent += (1 / 3);
-        }
-        else {
-            locationrops.isUnlocked = false;
-        }
-    }
+        return unlockedLevels.includes(locationId);
+    });
 
-    var abilitySection = renderData.find(section => section.title === "Abilities");
-    var abilitySectionData = abilitySection.data;
-    abilitySection.completedPercent = 0;
-    for (var ability in abilitySectionData) {
-        const abilityProps = abilitySectionData[ability];
-        if (unlockedAbilites.includes(ability)) {
-            abilityProps.isUnlocked = true;
-            abilitySection.completedPercent += (1 / 2);
-        }
-        else {
-            abilityProps.isUnlocked = false;
-        }
-    }
+    updateSectionData("Abilities", (1 / 2), (ability, abilityProps) => {
+        return unlockedAbilites.includes(ability);
+    });
 
-    var athraSection = renderData.find(section => section.title === "Athra Surges");
-    var athraSectionData = athraSection.data;
-    athraSection.completedPercent = 0;
-    for (var surge in athraSectionData) {
-        const surgeProps = athraSectionData[surge];
-        if (unlockedAbilites.includes(surge)) {
-            surgeProps.isUnlocked = true;
-            athraSection.completedPercent += (1 / 2);
-        }
-        else {
-            surgeProps.isUnlocked = false;
-        }
-    }
+    updateSectionData("Athra Surges", (1 / 2), (surge, surgeProps) => {
+        return unlockedAbilites.includes(surge);
+    });
 
-    var amuletSection = renderData.find(section => section.title === "Amulets");
-    var amuletSectionData = renderData.find(section => section.title === "Amulets").data;
-    amuletSection.completedPercent = 0;
-    for (var amulet in amuletSectionData) {
-        const amuletProps = amuletSectionData[amulet];
+    updateSectionData("Amulets", (5 / 98), (amulet, amuletProps) => {
         if (unlockedAmulets.includes(amulet)) {
-            amuletProps.isUnlocked = true;
-            const amuletLevel = amuletLevels[unlockedAmulets.indexOf(amulet)];
-            amuletProps.level = amuletLevel;
-            if (!amuletProps.displayName.includes("*")) {
-                amuletSection.completedPercent += (5 / 98) * amuletLevel;
-            }
+            amuletProps.level = amuletLevels[unlockedAmulets.indexOf(amulet)];
+            return true;
         }
         else {
-            amuletProps.isUnlocked = false;
-            amuletProps.level = 0;
-            amuletProps.description = initialData.find(section => section.title === "Amulets").data[amulet].description;
+            return false;
         }
-    }
+    });
 
-    var holderSection = renderData.find(section => section.title === "Amulet Holders");
-    var holderSectionData = holderSection.data;
-    holderSection.completedPercent = 0;
-    for (var holder in holderSectionData) {
-        const holderProps = holderSectionData[holder];
-
+    updateSectionData("Amulet Holders", (5 / 9), (holder, holderProps) => {
         if (holder === "Special_ProphecyQuestReward") {
             const inventoryJars = inventoryData.find(obj => obj.m_itemType === "QuestItem_FrescoElement")?.m_itemAmount ?? 0;
             const collectedJars = inventoryProgressionData.m_itemLootCount.find(obj => obj.key === "QuestItem_FrescoElement")?.value ?? 0;
             const depositedJars = collectedJars - inventoryJars;
             const doesLootExist = lootInfoList.find(obj => obj.m_type.includes("SeedOfKnowledge"));
-            if (depositedJars >= 15 && !doesLootExist) {
-                holderProps.isUnlocked = true;
-                holderSection.completedPercent += (5 / 9);
-            }
-            else {
-                holderProps.isUnlocked = false;
-            }
-            continue;
+            return (depositedJars >= 15 && !doesLootExist);
         }
+        return checkChestPickedFromScene(holder, "SeedOfKnowledge");
+    });
 
-        const sceneGUID = parseInt(holder.split("_")[0].substring(1));
-        const objectGUID = parseInt(holder.split("_")[1].substring(1));
+    updateSectionData("Equipment Upgrades", (5 / 6), (upgrade, upgradeProps) => {
+        return inventoryList.includes(upgrade);
+    });
 
-        const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
-        const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
-        const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
-        const doesHolderExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === "SeedOfKnowledge")?.m_itemAmount;
-
-
-        if (objectObj !== undefined && !doesHolderExist) {
-            holderProps.isUnlocked = true;
-            holderSection.completedPercent += (5 / 9);
-        }
-        else {
-            holderProps.isUnlocked = false;
-        }
-    }
-
-    var upgradeSection = renderData.find(section => section.title === "Equipment Upgrades");
-    var upgradeSectionData = upgradeSection.data;
-    upgradeSection.completedPercent = 0;
-    for (var upgrade in upgradeSectionData) {
-        const upgradeProps = upgradeSectionData[upgrade];
-        if (inventoryList.includes(upgrade)) {
-            upgradeProps.isUnlocked = true;
-            upgradeSection.completedPercent += (5 / 6);
-        }
-        else {
-            upgradeProps.isUnlocked = false;
-        }
-    }
-
-    var shardSection = renderData.find(section => section.title === "Memory Shards");
-    var shardSectionData = shardSection.data;
-    shardSection.completedPercent = 0;
-    for (var shard in shardSectionData) {
-        const shardProps = shardSectionData[shard];
-
+    updateSectionData("Memory Shards", (5 / 6), (shard, shardProps) => {
         if (shard === "Special_VisionAbility") {
-            if (inventoryList.includes("GearUpgrade_VisionPackShop1")) {
-                shardProps.isUnlocked = true;
-                shardSection.completedPercent += (5 / 6);
-            }
-            else {
-                shardProps.isUnlocked = false;
-            }
-            continue;
+            return inventoryList.includes("GearUpgrade_VisionPackShop1");
         }
+        return checkChestPickedFromScene(shard, "GearUpgrade_VisionPackChest");
+    });
 
-        const sceneGUID = parseInt(shard.split("_")[0].substring(1));
-        const objectGUID = parseInt(shard.split("_")[1].substring(1));
+    updateSectionData("Skins", 1, (skin, upgradePrskinropsops) => {
+        return unlockedSkins.includes(skin);
+    });
 
-        const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
-        const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
-        const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
-        const doesShardExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === "GearUpgrade_VisionPackChest")?.m_itemAmount;
-
-
-        if (objectObj !== undefined && !doesShardExist) {
-            shardProps.isUnlocked = true;
-            shardSection.completedPercent += (5 / 6);
-        }
-        else {
-            shardProps.isUnlocked = false;
-        }
-    }
-
-    var skinSection = renderData.find(section => section.title === "Skins");
-    var skinSectionData = skinSection.data;
-    skinSection.completedPercent = 0;
-    for (var skin in skinSectionData) {
-        const skinrops = skinSectionData[skin];
-        if (unlockedSkins.includes(skin)) {
-            skinrops.isUnlocked = true;
-            if (!skinrops.displayName.includes("*")) {
-                skinSection.completedPercent += 1;
-            }
-        }
-        else {
-            skinrops.isUnlocked = false;
-        }
-    }
-
-    var loreSection = renderData.find(section => section.title === "Lore Items");
-    var loreSectionData = loreSection.data;
-    loreSection.completedPercent = 0;
-    for (var loreItem in loreSectionData) {
-        const loreItemProps = loreSectionData[loreItem];
-        if (inventoryList.includes(loreItem)) {
-            loreItemProps.isUnlocked = true;
-            loreSection.completedPercent += (5 / 57);
-        }
-        else {
-            loreItemProps.isUnlocked = false;
-        }
-    }
+    updateSectionData("Lore Items", (5 / 57), (loreItem, loreItemProps) => {
+        return inventoryList.includes(loreItem);
+    });
 
     renderDataToHTML();
 }
