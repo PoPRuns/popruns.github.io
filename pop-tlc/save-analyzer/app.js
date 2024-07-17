@@ -82,18 +82,29 @@ function processJson(jsonObj) {
             const itemProps = sectionData[item];
             const isUnlocked = checkUnlock(item, itemProps);
             itemProps.isUnlocked = isUnlocked;
-            section.completedPercent += isUnlocked * !itemProps.displayName.includes("*") * (itemProps.level ?? 1) * percentPerItem;
+            section.completedPercent += isUnlocked * !itemProps.displayName.includes("*") * (itemProps.level ?? 1) * (itemProps.quantity ?? 1) * percentPerItem;
         }
     }
 
-    function checkChestPickedFromScene(item, itemType) {
+    function getObjectFromGUID(item) {
         const [sceneGUID, objectGUID] = item.split("_").map(id => parseInt(id.substring(1)));
         const sceneObj = sceneList.find(obj => obj.m_sceneGUID === sceneGUID);
         const objectObj = (sceneObj?.m_entities ?? []).find(obj => obj.m_objectGUID === objectGUID);
+        return objectObj
+    }
+
+    function checkChestPickedFromScene(item, itemType) {
+        const objectObj = getObjectFromGUID(item);
         const inventorySaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InventorySubComponent+InventoryStateInfoSaveData");
         const doesItemExist = (inventorySaveObj?.m_inventoryStateInfoData?.m_items ?? []).find(obj => obj.m_itemType === itemType)?.m_itemAmount;
-
         return (objectObj !== undefined && !doesItemExist);
+    }
+
+    function checkIEPickedFromScene(item) {
+        const objectObj = getObjectFromGUID(item);
+        const IESaveObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.InteractiveElementActionSubComponent+IEASaveData");
+        const IEInteracted = (IESaveObj?.m_logicsData ?? []).find(obj => obj["@type"] === "Alkawa.Gameplay.InteractiveElementLogicBase+IELBSaveData")?.m_stateinfoSaveData?.m_alreadyInteracted;
+        return (IESaveObj !== undefined && IEInteracted);
     }
 
     updateSectionData("Main Quests", (15 / 4), (quest, questProps) => {
@@ -126,9 +137,7 @@ function processJson(jsonObj) {
             amuletProps.level = amuletLevels[unlockedAmulets.indexOf(amulet)];
             return true;
         }
-        else {
-            return false;
-        }
+        return false;
     });
 
     updateSectionData("Amulet Holders", (5 / 9), (holder, holderProps) => {
@@ -144,6 +153,16 @@ function processJson(jsonObj) {
 
     updateSectionData("Equipment Upgrades", (5 / 6), (upgrade, upgradeProps) => {
         return inventoryList.includes(upgrade);
+    });
+
+    updateSectionData("Soma Flowers", (5 / 48), (petal, petalProps) => {
+        if (petal.startsWith("S")) {
+            return checkChestPickedFromScene(petal, "HaomaFragment");
+        }
+        else if (petal.startsWith("IE_")) {
+            return checkIEPickedFromScene(petal.slice(3));
+        }
+        return false;
     });
 
     updateSectionData("Memory Shards", (5 / 6), (shard, shardProps) => {

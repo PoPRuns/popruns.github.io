@@ -659,6 +659,68 @@ const initialData = [
         }
     },
     {
+        title: "Soma Flowers",
+        percentage: 5,
+        completedPercent: 0,
+        description: "Each full flower provides 0.42% game completion.",
+        data: {
+            "S-194185274_O2102073558": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Purchased from the Mage's Shop",
+                quantity: 1
+            },
+            "S-1411069268_O527506480": {
+                displayName: "Hyrcanian Forest",
+                isUnlocked: false,
+                description: "Architect puzzle chest",
+                quantity: 1
+            },
+            "S1302394515_O1801590133": {
+                displayName: "Sacred Archives",
+                isUnlocked: false,
+                description: "First Architect puzzle chest",
+                quantity: 1
+            },
+            "S-12128144_O703793398": {
+                displayName: "Pit of Eternal Sands",
+                isUnlocked: false,
+                description: "Azhdaha's Room",
+                quantity: 4
+            },
+            "S-1020297140_O-2071479013": {
+                displayName: "Pit of Eternal Sands",
+                isUnlocked: false,
+                description: "Architect puzzle chest",
+                quantity: 1
+            },
+            "IE_S1769582135_O-283694129": {
+                displayName: "Upper City",
+                isUnlocked: false,
+                description: "Menolias constellation room",
+                quantity: 1
+            },
+            "IE_S1993429450_O450851052": {
+                displayName: "Raging Sea",
+                isUnlocked: false,
+                description: "Orod constellation room",
+                quantity: 1
+            },
+            "S1134066981_O1634833069": {
+                displayName: "Tower of Silence",
+                isUnlocked: false,
+                description: "Architect puzzle chest",
+                quantity: 1
+            },
+            "S-2050029741_O-2079706095": {
+                displayName: "Upper City",
+                isUnlocked: false,
+                description: "Architect reward room",
+                quantity: 4
+            }
+        }
+    },
+    {
         title: "Memory Shards",
         percentage: 5,
         completedPercent: 0,
