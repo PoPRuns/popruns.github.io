@@ -670,7 +670,7 @@ const initialData = [
                 description: "Purchased from the Mage's Shop",
                 quantity: 1
             },
-            "BossLoot_672a554f605e0d24a99038a79f6bf022_429188177": {
+            "BossLoot_672a554f605e0d24a99038a79f6bf022_-1799469351": {
                 displayName: "Lower City",
                 isUnlocked: false,
                 description: "Defeat Undead Prisoner",
@@ -682,7 +682,7 @@ const initialData = [
                 description: "Architect puzzle chest",
                 quantity: 1
             },
-            "BossLoot_0825ad3b49199eb4b9f0ff96288ee25a_2037771100": {
+            "BossLoot_0825ad3b49199eb4b9f0ff96288ee25a_-1670059309": {
                 displayName: "Lower City",
                 isUnlocked: false,
                 description: "Defeat Jahandar",
@@ -693,6 +693,12 @@ const initialData = [
                 isUnlocked: false,
                 description: "First Architect puzzle chest",
                 quantity: 1
+            },
+            "BossLoot_77c296470a128304eb495be401db0e07_1346924320": {
+                displayName: "Soma Tree",
+                isUnlocked: false,
+                description: "Defeat the Forest Queen",
+                quantity: 4
             },
             "S-12128144_O703793398": {
                 displayName: "Pit of Eternal Sands",
@@ -724,7 +730,7 @@ const initialData = [
                 description: "Architect puzzle chest",
                 quantity: 1
             },
-            "BossLoot_6aa394c9873259945963bcaf3b27f759_510961057": {
+            "BossLoot_6aa394c9873259945963bcaf3b27f759_559427664": {
                 displayName: "Tower of Silence",
                 isUnlocked: false,
                 description: "Defeat King Darius",

@@ -32,6 +32,17 @@ function renderDataToHTML() {
             const listItem = document.createElement('span');
             listItem.innerText = `${value.isUnlocked ? "☑️" : "❌"} ${value.displayName}`;
             listItemDiv.appendChild(listItem);
+            if (value.quantity) {
+                const flowerImg = document.createElement('img');
+                if (value.quantity === 4) {
+                    flowerImg.src = 'full_flower.svg';
+                }
+                else {
+                    flowerImg.src = 'single_flower.svg';
+                }
+                flowerImg.width = flowerImg.width = 20;
+                listItemDiv.appendChild(flowerImg);
+            }
             if (value.level > 0) {
                 const upgradesLeft = value.maxLevel - value.level;
                 value.description = `${value.level === 1 ? "" : `+${value.level - 1}`} Unlocked${upgradesLeft ? `, ${upgradesLeft} Upgrade(s) Left` : ""}`;
@@ -39,7 +50,7 @@ function renderDataToHTML() {
             if (value.description) {
                 const itemDesc = document.createElement('span');
                 itemDesc.classList.add('item-description');
-                itemDesc.innerText = ` — ${value.description}`;
+                itemDesc.innerText = `— ${value.description}`;
                 listItemDiv.appendChild(itemDesc);
             }
             sectionData.appendChild(listItemDiv);
@@ -109,11 +120,11 @@ function processJson(jsonObj) {
 
     function checkBossLootPicked(item) {
         debugger;
-        const [questlootGUID, lootGUID] = item.split("_");
+        const [questlootGUID, sceneGUID] = item.split("_");
         const questInfo = questInfoList.find(obj => obj.m_GUID === questlootGUID);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         const questDone = (questState === "Ended");
-        const doesLootExist = lootInfoList.find(obj => obj.m_objectGUID.toString() === lootGUID);
+        const doesLootExist = lootInfoList.find(obj => obj.m_sceneGUID.toString() === sceneGUID);
         return (questDone && !doesLootExist);
     }
 
