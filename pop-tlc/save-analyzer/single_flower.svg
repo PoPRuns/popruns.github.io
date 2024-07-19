@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <clipPath id="clip-0">
+      <path d="M 250 6.632 L 493.368 250 L 250 493.368 L 6.632 250 Z" style="stroke: rgb(230, 213, 41); fill: rgb(255, 233, 0); stroke-width: 10px;" bx:shape="n-gon 250 250 243.368 243.368 4 0 1@ffb598df"/>
+    </clipPath>
+    <clipPath id="clip-2">
+      <path d="M 250 6.632 L 493.368 250 L 250 493.368 L 6.632 250 Z" style="stroke: rgb(230, 213, 41); fill: rgb(255, 233, 0); stroke-width: 10px;" bx:shape="n-gon 250 250 243.368 243.368 4 0 1@ffb598df"/>
+    </clipPath>
+    <clipPath id="clip-1">
+      <path d="M 250 6.632 L 493.368 250 L 250 493.368 L 6.632 250 Z" style="stroke: rgb(230, 213, 41); fill: rgb(255, 233, 0); stroke-width: 10px;" bx:shape="n-gon 250 250 243.368 243.368 4 0 1@ffb598df"/>
+    </clipPath>
+    <clipPath id="clip-3">
+      <path d="M 250 6.632 L 493.368 250 L 250 493.368 L 6.632 250 Z" style="stroke: rgb(230, 213, 41); fill: rgb(255, 233, 0); stroke-width: 10px;" bx:shape="n-gon 250 250 243.368 243.368 4 0 1@ffb598df"/>
+    </clipPath>
+  </defs>
+  <path d="M 250 175.08 L 324.92 250 L 250 324.92 L 175.08 250 Z" style="stroke: rgb(230, 213, 41); fill: rgb(255, 233, 0); stroke-width: 10px;" bx:shape="n-gon 250 250 74.92 74.92 4 0 1@fe649cb1"/>
+  <ellipse style="stroke: rgb(230, 213, 41); stroke-width: 10px; clip-path: url('#clip-0'); fill: rgb(97, 94, 57);" cx="250" cy="441.257" rx="121.873" ry="121.873"/>
+  <ellipse style="stroke: rgb(230, 213, 41); stroke-width: 10px; fill: rgb(255, 233, 0); clip-path: url('#clip-2');" cx="250" cy="58.743" rx="121.873" ry="121.873"/>
+  <ellipse style="stroke: rgb(230, 213, 41); stroke-width: 10px; clip-path: url('#clip-1'); fill: rgb(97, 94, 57);" cx="441.257" cy="250" rx="121.873" ry="121.873"/>
+  <ellipse style="stroke: rgb(230, 213, 41); stroke-width: 10px; clip-path: url('#clip-3'); fill: rgb(97, 94, 57);" cx="58.743" cy="250" rx="121.873" ry="121.873"/>
+</svg> 

@@ -107,6 +107,16 @@ function processJson(jsonObj) {
         return (IESaveObj !== undefined && IEInteracted);
     }
 
+    function checkBossLootPicked(item) {
+        debugger;
+        const [questlootGUID, lootGUID] = item.split("_");
+        const questInfo = questInfoList.find(obj => obj.m_GUID === questlootGUID);
+        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        const questDone = (questState === "Ended");
+        const doesLootExist = lootInfoList.find(obj => obj.m_objectGUID.toString() === lootGUID);
+        return (questDone && !doesLootExist);
+    }
+
     updateSectionData("Main Quests", (15 / 4), (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
@@ -161,6 +171,9 @@ function processJson(jsonObj) {
         }
         else if (petal.startsWith("IE_")) {
             return checkIEPickedFromScene(petal.slice(3));
+        }
+        else if (petal.startsWith("BossLoot_")) {
+            return checkBossLootPicked(petal.slice(9));
         }
         return false;
     });

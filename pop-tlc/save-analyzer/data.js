@@ -670,11 +670,23 @@ const initialData = [
                 description: "Purchased from the Mage's Shop",
                 quantity: 1
             },
+            "BossLoot_672a554f605e0d24a99038a79f6bf022_429188177": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Defeat Undead Prisoner",
+                quantity: 1
+            },
             "S-1411069268_O527506480": {
                 displayName: "Hyrcanian Forest",
                 isUnlocked: false,
                 description: "Architect puzzle chest",
                 quantity: 1
+            },
+            "BossLoot_0825ad3b49199eb4b9f0ff96288ee25a_2037771100": {
+                displayName: "Lower City",
+                isUnlocked: false,
+                description: "Defeat Jahandar",
+                quantity: 4
             },
             "S1302394515_O1801590133": {
                 displayName: "Sacred Archives",
@@ -711,6 +723,12 @@ const initialData = [
                 isUnlocked: false,
                 description: "Architect puzzle chest",
                 quantity: 1
+            },
+            "BossLoot_6aa394c9873259945963bcaf3b27f759_510961057": {
+                displayName: "Tower of Silence",
+                isUnlocked: false,
+                description: "Defeat King Darius",
+                quantity: 4
             },
             "S-2050029741_O-2079706095": {
                 displayName: "Upper City",
