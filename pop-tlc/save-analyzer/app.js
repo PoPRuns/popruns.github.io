@@ -2,10 +2,26 @@ import initialData from "./data.js";
 
 var renderData = structuredClone(initialData);
 
-function renderDataToHTML() {
+function renderTabButtons(tab) {
+    const mainDiv = document.getElementById('tab-buttons-container');
+    mainDiv.innerText = '';
+    renderData.forEach(obj => {
+        const tabButton = document.createElement('button');
+        tabButton.classList.add("tab-button");
+        if (obj.tab === tab) {
+            tabButton.classList.add("tab-button-selected");
+        }
+        tabButton.onclick = () => renderDataToHTML(obj.tab);
+        tabButton.innerText = obj.tab;
+        mainDiv.appendChild(tabButton);
+    });
+}
+
+function renderDataToHTML(tab) {
+    renderTabButtons(tab);
     const mainDiv = document.getElementById('dynamic');
-    mainDiv.textContent = '';
-    renderData.forEach(section => {
+    mainDiv.innerText = '';
+    renderData.find(obj => obj.tab === tab).data.forEach(section => {
         const sectionTitleDiv = document.createElement('div');
         sectionTitleDiv.classList.add("section-header");
         const sectionTitleSpan = document.createElement('span');
@@ -58,6 +74,7 @@ function renderDataToHTML() {
         mainDiv.appendChild(sectionData);
     });
 }
+window.renderDataToHTML = renderDataToHTML;
 
 function openFolderDialog() {
     var input = document.getElementById('folderInput');
@@ -86,8 +103,8 @@ function processJson(jsonObj) {
 
     renderData = structuredClone(initialData);
 
-    function updateSectionData(title, percentPerItem, checkUnlock) {
-        const section = renderData.find(section => section.title === title);
+    function updateSectionData(tab, sectionTitle, percentPerItem, checkUnlock) {
+        const section = renderData.find(obj => obj.tab === tab).data.find(section => section.title === sectionTitle);
         const sectionData = section.data;
         for (var item in sectionData) {
             const itemProps = sectionData[item];
@@ -118,42 +135,50 @@ function processJson(jsonObj) {
         return (IESaveObj !== undefined && IEInteracted);
     }
 
+    function checkProphecyLootPicked(item) {
+        const [itemType, jarCount] = item.split("_");
+        const inventoryJars = inventoryData.find(obj => obj.m_itemType === "QuestItem_FrescoElement")?.m_itemAmount ?? 0;
+        const collectedJars = inventoryProgressionData.m_itemLootCount.find(obj => obj.key === "QuestItem_FrescoElement")?.value ?? 0;
+        const depositedJars = collectedJars - inventoryJars;
+        const doesLootExist = lootInfoList.find(obj => obj.m_type.includes(itemType));
+        return (depositedJars >= jarCount && !doesLootExist);
+    }
+
     function checkBossLootPicked(item) {
-        debugger;
-        const [questlootGUID, sceneGUID] = item.split("_");
+        const [questlootGUID, sceneGUID, itemType] = item.split("_");
         const questInfo = questInfoList.find(obj => obj.m_GUID === questlootGUID);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         const questDone = (questState === "Ended");
-        const doesLootExist = lootInfoList.find(obj => obj.m_sceneGUID.toString() === sceneGUID);
+        const doesLootExist = lootInfoList.find(obj => obj.m_sceneGUID.toString() === sceneGUID && obj.m_type === itemType);
         return (questDone && !doesLootExist);
     }
 
-    updateSectionData("Main Quests", (15 / 4), (quest, questProps) => {
+    updateSectionData("Main %", "Main Quests", (15 / 4), (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         return (questState === "Ended");
     });
 
-    updateSectionData("Side Quests", (20 / 9), (quest, questProps) => {
+    updateSectionData("Main %", "Side Quests", (20 / 9), (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         return (questState === "Ended");
     });
 
-    updateSectionData("Location Discovery", (1 / 3), (location, locationrops) => {
+    updateSectionData("Main %", "Location Discovery", (1 / 3), (location, locationrops) => {
         const locationId = parseInt(location.replace("Level_", ""));
         return unlockedLevels.includes(locationId);
     });
 
-    updateSectionData("Abilities", (1 / 2), (ability, abilityProps) => {
+    updateSectionData("Main %", "Abilities", (1 / 2), (ability, abilityProps) => {
         return unlockedAbilites.includes(ability);
     });
 
-    updateSectionData("Athra Surges", (1 / 2), (surge, surgeProps) => {
+    updateSectionData("Main %", "Athra Surges", (1 / 2), (surge, surgeProps) => {
         return unlockedAbilites.includes(surge);
     });
 
-    updateSectionData("Amulets", (5 / 98), (amulet, amuletProps) => {
+    updateSectionData("Main %", "Amulets", (5 / 98), (amulet, amuletProps) => {
         if (unlockedAmulets.includes(amulet)) {
             amuletProps.level = amuletLevels[unlockedAmulets.indexOf(amulet)];
             return true;
@@ -161,22 +186,18 @@ function processJson(jsonObj) {
         return false;
     });
 
-    updateSectionData("Amulet Holders", (5 / 9), (holder, holderProps) => {
-        if (holder === "Special_ProphecyQuestReward") {
-            const inventoryJars = inventoryData.find(obj => obj.m_itemType === "QuestItem_FrescoElement")?.m_itemAmount ?? 0;
-            const collectedJars = inventoryProgressionData.m_itemLootCount.find(obj => obj.key === "QuestItem_FrescoElement")?.value ?? 0;
-            const depositedJars = collectedJars - inventoryJars;
-            const doesLootExist = lootInfoList.find(obj => obj.m_type.includes("SeedOfKnowledge"));
-            return (depositedJars >= 15 && !doesLootExist);
+    updateSectionData("Main %", "Amulet Holders", (5 / 9), (holder, holderProps) => {
+        if (holder.startsWith("Prophecy_")) {
+            return checkProphecyLootPicked(holder.slice(9));
         }
         return checkChestPickedFromScene(holder, "SeedOfKnowledge");
     });
 
-    updateSectionData("Equipment Upgrades", (5 / 6), (upgrade, upgradeProps) => {
+    updateSectionData("Main %", "Equipment Upgrades", (5 / 6), (upgrade, upgradeProps) => {
         return inventoryList.includes(upgrade);
     });
 
-    updateSectionData("Soma Flowers", (5 / 48), (petal, petalProps) => {
+    updateSectionData("Main %", "Soma Flowers", (5 / 48), (petal, petalProps) => {
         if (petal.startsWith("S")) {
             return checkChestPickedFromScene(petal, "HaomaFragment");
         }
@@ -186,25 +207,38 @@ function processJson(jsonObj) {
         else if (petal.startsWith("BossLoot_")) {
             return checkBossLootPicked(petal.slice(9));
         }
+        else if (petal.startsWith("Prophecy_")) {
+            return checkProphecyLootPicked(petal.slice(9));
+        }
         return false;
     });
 
-    updateSectionData("Memory Shards", (5 / 6), (shard, shardProps) => {
+    updateSectionData("Main %", "Memory Shards", (5 / 6), (shard, shardProps) => {
         if (shard === "Special_VisionAbility") {
             return inventoryList.includes("GearUpgrade_VisionPackShop1");
         }
         return checkChestPickedFromScene(shard, "GearUpgrade_VisionPackChest");
     });
 
-    updateSectionData("Skins", 1, (skin, upgradePrskinropsops) => {
+    updateSectionData("Main %", "Skins", 1, (skin, upgradePrskinropsops) => {
         return unlockedSkins.includes(skin);
     });
 
-    updateSectionData("Lore Items", (5 / 57), (loreItem, loreItemProps) => {
+    updateSectionData("Main %", "Lore Items", (5 / 57), (loreItem, loreItemProps) => {
         return inventoryList.includes(loreItem);
     });
 
-    renderDataToHTML();
+    updateSectionData("Main %", "Lore Items", (5 / 57), (loreItem, loreItemProps) => {
+        return inventoryList.includes(loreItem);
+    });
+
+    updateSectionData("Essentials %", "Bosses", 0, (quest, questProps) => {
+        const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
+        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        return (questState === "Ended");
+    });
+
+    renderDataToHTML("Main %");
 }
 
 function handleChangeSaveFile(e) {
@@ -293,4 +327,5 @@ function handleCopyLocation(e) {
 }
 window.handleCopyLocation = handleCopyLocation;
 
-renderDataToHTML();
+renderTabButtons("Main %");
+renderDataToHTML("Main %");
