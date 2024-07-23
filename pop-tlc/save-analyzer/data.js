@@ -709,6 +709,12 @@ const initialData = [
                         description: "Defeat the Forest Queen",
                         quantity: 4
                     },
+                    "IE_STODO_OTODO1": {
+                        displayName: "Soma Tree",
+                        isUnlocked: false,
+                        description: "Platforming challenge near Tower of Silence entrance",
+                        quantity: 1
+                    },
                     "S-12128144_O703793398": {
                         displayName: "Pit of Eternal Sands",
                         isUnlocked: false,
@@ -745,6 +751,12 @@ const initialData = [
                         description: "Defeat King Darius",
                         quantity: 4
                     },
+                    "IE_STODO_OTODO2": {
+                        displayName: "Lower City",
+                        isUnlocked: false,
+                        description: "Secret Room with Lion Enemies",
+                        quantity: 1
+                    },
                     "BossLoot_76cc870c18c33c74e861dc0cb0de6131_-1294364008_HaomaFragment": {
                         displayName: "Lower City",
                         isUnlocked: false,
@@ -768,6 +780,12 @@ const initialData = [
                         isUnlocked: false,
                         description: "Complete the “Prophecy of Mount Qaf” quest",
                         quantity: 4
+                    },
+                    "IE_STODO_OTODO3": {
+                        displayName: "The Depths",
+                        isUnlocked: false,
+                        description: "Left to the place where Sargon falls down",
+                        quantity: 1
                     },
                     "S-2050029741_O-2079706095": {
                         displayName: "Upper City",
