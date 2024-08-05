@@ -167,6 +167,7 @@
                 });
 
                 const filteredAndSortedData = calculatedDistances
+                    .filter((a) => a.frame !== 0)
                     .sort((a, b) => a.distance - b.distance);
 
                 filteredAndSortedData.forEach(item => {
