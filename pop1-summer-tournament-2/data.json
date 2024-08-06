@@ -1,0 +1,74 @@
+{
+    "players": [
+        {
+            "seed": 1,
+            "player": "higlak",
+            "pbAfter": "12:20",
+            "pbBefore": "12:20"
+        },
+        {
+            "seed": 2,
+            "player": "uvq3tsa",
+            "pbAfter": "12:23",
+            "pbBefore": "12:23"
+        },
+        {
+            "seed": 3,
+            "player": "VelCheran",
+            "pbAfter": "12:43",
+            "pbBefore": "12:43"
+        },
+        {
+            "seed": 4,
+            "player": "GMP",
+            "pbAfter": "15:11",
+            "pbBefore": "15:11"
+        },
+        {
+            "seed": 5,
+            "player": "happy",
+            "pbAfter": "15:37",
+            "pbBefore": "15:37"
+        },
+        {
+            "seed": 6,
+            "player": "WinterThunder",
+            "pbAfter": "15:39",
+            "pbBefore": "15:39"
+        }
+    ],
+    "groups": [
+        {
+            "id": "A",
+            "players": [
+                1,
+                4,
+                5
+            ]
+        },
+        {
+            "id": "B",
+            "players": [
+                2,
+                3,
+                6
+            ]
+        }
+    ],
+    "matches": [
+        {
+            "player1": {
+                "seed": 1,
+                "times": []
+            },
+            "player2": {
+                "seed": 4,
+                "times": []
+            }
+        }
+    ],
+    "wrAfter": "12:20",
+    "wrBefore": "12:20",
+    "roundFourMatches": [],
+    "roundThreeMatches": []
+}

@@ -1,0 +1,170 @@
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Istok+Web|Roboto+Condensed:700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="styles.css">
+
+    <title>PoP1 Summer Tournament</title>
+</head>
+
+<body>
+    <div class="header-flex">
+        <div class="header-left">
+            &#10087; <a class="section-link" onclick="showBracket()">BRACKET</a> &#9753;
+        </div>
+        <div class="header-left">
+            &#10087; <a class="section-link" onclick="showSchedule()">SCHEDULE & RESULTS</a> &#9753;
+        </div>
+        <div class="header-right">
+            &#10087; <a class="section-link" onclick="showLB()">LEADERBOARD</a> &#9753;
+        </div>
+    </div>
+    <header class="hero">
+        <div class="hero-wrap">
+            <!-- <img src="https://static.wikia.nocookie.net/logopedia/images/5/55/Prince_of_Persia_1989.svg" width=400 height=125></img> -->
+            <h1 id="headline">Summer Tournament</h1>
+            <p class="year">2024</p>
+            <p>Attack of the glitches!</p>
+        </div>
+    </header>
+
+    <section id="loader">
+        <div id="loader-5">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </section>
+    <section id="bracket">
+        <div id="group-tables"></div>
+        <div class="section-title">KNOCKOUTS</div>
+        <div class="scroll-wrap">
+            <div class="container">
+                <div class="split split-one">
+                    <div class="round round-three">
+                        <div class="round-details">Semi Final<br /></div>
+                        <div class="match-wrap">
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">A1</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                    <span class="youtube"></span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">B2</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="match-wrap">
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">B1</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                    <span class="youtube"></span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">A2</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND THREE -->
+                    <div class="round round-four">
+                        <div class="round-details">Final<br /></div>
+                        <div class="match-wrap">
+                            <ul class="matchup">
+                                <li class="player player-top">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of SF1</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                                <li class="match-data">
+                                    <span class="match-time">TBD</span>
+                                    <span class="youtube"></span>
+                                </li>
+                                <li class="player player-bottom">
+                                    <span class="seed"></span>
+                                    <span class="player-name">Winner of SF2</span>
+                                    <span class="life"></span>
+                                    <span class="score"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- END ROUND FOUR -->
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <section id="schedule-results">
+        <div class="section-title">SCHEDULE & RESULTS</div>
+        <div class="scroll-wrap">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Date - Time</th>
+                        <th>Players</th>
+                        <th>Run 1</th>
+                        <th>Run 2</th>
+                        <th>Run 3</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table data will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="leaderboard">
+        <div class="section-title">LEADERBOARD</div>
+        <div class="scroll-wrap">
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>No. of Runs</th>
+                        <th>Average Time</th>
+                        <th>Standard Deviation</th>
+                        <th>Fastest Time</th>
+                        <th>PB (Before)</th>
+                        <th>PB (After)</th>
+                        <th>Slowest Time</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table data will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <script src="app.js"></script>
+
+</body>
