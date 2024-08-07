@@ -208,7 +208,7 @@ ul {
     display: none;
     text-align: center;
     font-size: 12px;
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 .container {
@@ -367,55 +367,16 @@ ul {
     position: relative;
 }
 
-/* .round-two .matchup {
-    margin: 0;
-    height: 60px;
-    padding: 50px 0;
-} */
-
-.round-one .round-details {
-    margin-bottom: 30px;
-}
-
-.sec-chance-round-two .matchup {
+.semi-final .matchup {
     margin: 0;
     height: 60px;
     padding: 50px 0;
 }
 
-.round-three .matchup {
-    margin: 0;
-    height: 60px;
-    padding: 50px 0;
-}
-
-.sec-chance-round-three .round-details {
-    margin-bottom: -40px;
-}
-
-.sec-chance-round-three .matchup {
-    margin: 0;
-    height: 60px;
-    padding: 50px 0;
-}
-
-.round-four .matchup {
+.final .matchup {
     margin: 0;
     height: 60px;
     padding: 130px 0;
-}
-
-.sec-chance-round-four .matchup,
-.sec-chance-round-five .matchup {
-    margin: 0;
-    height: 60px;
-    padding: 90px 0;
-}
-
-.round-five .matchup {
-    margin: 0;
-    height: 60px;
-    padding-top: 350px;
 }
 
 .round-details {
@@ -473,30 +434,9 @@ li.winner {
     opacity: 1;
 }
 
-.vote-options {
-    display: block;
-    height: 52px;
-}
-
-.share .container {
+.container {
     margin: 0 auto;
     text-align: center;
-}
-
-.share-icon {
-    font-size: 24px;
-    color: #fff;
-    padding: 25px;
-}
-
-.share-wrap {
-    max-width: 1100px;
-    text-align: center;
-    margin: 60px auto;
-}
-
-.final {
-    margin: 4.5em 0;
 }
 
 @-webkit-keyframes pulse {
@@ -536,17 +476,6 @@ li.winner {
     }
 }
 
-.share-icon {
-    color: #fff;
-    opacity: 0.35;
-}
-
-.share-icon:hover {
-    opacity: 1;
-    -webkit-animation: pulse 0.5s;
-    animation: pulse 0.5s;
-}
-
 #leaderboard {
     padding: 20px 0;
     display: none;
@@ -579,7 +508,7 @@ li.winner {
     font-weight: bold;
     letter-spacing: 4px;
     margin-bottom: 30px;
-    margin-top: 20px;
+    margin-top: 50px;
 }
 
 .scroll-wrap {
@@ -587,18 +516,18 @@ li.winner {
     overflow-x: auto;
 }
 
-#leaderboard-table {
+.leaderboard-table {
     min-width: 1000px;
     margin: auto;
     color: #FFDCAA;
     margin-bottom: 30px;
 }
 
-#leaderboard-table th {
+.leaderboard-table th {
     padding: 10px 30px;
 }
 
-#leaderboard-table td {
+.leaderboard-table td {
     padding: 5px 30px;
     color: white;
 }
@@ -626,7 +555,6 @@ li.winner {
 
 .fa-youtube-play {
     color: red;
-    text-shadow: 0 0 4px black;
     margin: 0 3 0 5;
 }
 

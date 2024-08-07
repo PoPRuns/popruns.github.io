@@ -1,6 +1,7 @@
 const loaderElement = document.getElementById('loader');
 const bracketElement = document.getElementById('bracket');
 const scheduleElement = document.getElementById('schedule-results');
+const scheduleBody = scheduleElement.querySelector('#table-body');
 const leaderboardElement = document.getElementById('leaderboard');
 const tableBody = leaderboardElement.querySelector('#table-body');
 const roundThreeMatches = document.querySelectorAll('.round-three .match-wrap');
@@ -8,16 +9,19 @@ const roundFourMatches = document.querySelectorAll('.round-four .match-wrap'); /
 
 const groupTables = document.getElementById('group-tables');
 
-var leaderboardData = [];
-var scheduleResults = [];
-
-const createCell = (content) => {
-  const cell = document.createElement('td');
-  cell.textContent = content;
+const createCell = (content, cellType = 'td') => {
+  const cell = document.createElement(cellType);
+  if (typeof content !== 'object') {
+    console.log(typeof content);
+    cell.textContent = content;
+  }
+  else {
+    cell.appendChild(content);
+  }
   return cell;
 };
 
-fetch("data.json")
+fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
   .then(response => response.json())
   .then(data => {
     const players = data.players;
@@ -30,6 +34,101 @@ fetch("data.json")
       totalFastestTime: Infinity,
       totalSlowestTime: 0
     };
+
+    players.forEach((playerObj) => {
+      playerObj.poolMatches = 0;
+      playerObj.poolWins = 0;
+      playerObj.poolLosses = 0;
+      playerObj.poolTimes = [];
+      playerObj.times = [];
+    });
+
+    matches.forEach((match) => {
+      let player1Score = 0;
+      const player1 = players.find((obj) => obj.seed === match.player1.seed);
+      const player2 = players.find((obj) => obj.seed === match.player2.seed);
+
+      match.player1.times.forEach((time, index) => {
+        player1Score += (time < match.player2.times[index] ? 1 : -1);
+      })
+
+      player1.times.push(...match.player1.times);
+      player2.times.push(...match.player2.times);
+      if (match.type === 'pool') {
+        player1.poolMatches += 1;
+        player2.poolMatches += 1;
+        if (player1Score > 0) {
+          player1.poolWins += 1;
+          player2.poolLosses += 1;
+        }
+        if (player1Score < 0) {
+          player1.poolLosses += 1;
+          player2.poolWins += 1;
+        }
+        player1.poolTimes.push(...match.player1.times);
+        player2.poolTimes.push(...match.player2.times);
+      }
+
+      // Create a new row in the schedule table
+      const date = new Date(match.timestamp * 1000);
+      const options = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };
+      const dateTimeString = date.toLocaleString('en-US', options);
+      const scheduleRow = document.createElement('tr');
+      const playersList = document.createElement('ul');
+      playersList.appendChild(createCell(player1.player, 'li'));
+      playersList.appendChild(createCell(player2.player, 'li'));
+      scheduleRow.appendChild(createCell(dateTimeString));
+      scheduleRow.appendChild(createCell(playersList));
+
+      for (let i = 0; i < 3; i++) {
+        scheduleRow.appendChild(createCell(generateTimeListMarkup(match.player1.times[i], match.player2.times[i])));
+      }
+
+      if (match.youtube) {
+        const link = document.createElement('a');
+        const icon = document.createElement('i');
+        icon.style.fontSize = '1.5em';
+        icon.classList.add('fa', 'fa-youtube-play');
+        link.appendChild(icon);
+        link.href = match.youtube;
+        link.target = '_blank';
+        scheduleRow.appendChild(createCell(link));
+      }
+
+      const currentUnixTimestamp = Math.floor(Date.now() / 1000);
+      scheduleRow.classList.add(match.timestamp < currentUnixTimestamp ? 'past-row' : 'future-row');
+      scheduleBody.appendChild(scheduleRow);
+    });
+
+    players.forEach((playerObj) => {
+      const times = playerObj.times;
+      playerObj.average = Infinity;
+      playerObj.poolAverage = Infinity;
+
+      if (times.length > 0) {
+        const averageTime = times.reduce(function (acc, val) {
+          return acc + val;
+        }, 0) / times.length;
+
+        const sumOfSquaredDifferences = times.reduce(function (acc, val) {
+          const difference = val - averageTime;
+          return acc + (difference * difference);
+        }, 0);
+        const letiance = sumOfSquaredDifferences / times.length;
+        playerObj.average = averageTime;
+        playerObj.standardDeviation = Math.sqrt(letiance);
+      }
+
+
+      if (playerObj.poolTimes.length > 0) {
+        playerObj.poolAverage = playerObj.poolTimes.reduce(function (acc, val) {
+          return acc + val;
+        }, 0) / playerObj.poolTimes.length;
+      }
+
+      playerObj.fastestTime = Math.min.apply(null, times);
+      playerObj.slowestTime = Math.max.apply(null, times);
+    });
 
     groups.forEach((group) => {
       const groupTitle = document.createElement('div');
@@ -46,14 +145,24 @@ fetch("data.json")
       headerRow.appendChild(createCell("Average Time"));
       const groupTbody = document.createElement('tbody');
 
+      group.players.sort((a, b) => {
+        const playerA = players.find((obj) => obj.seed === a);
+        const playerB = players.find((obj) => obj.seed === b);
+        return (
+          playerB.poolWins - playerA.poolWins ||
+          playerA.poolAverage - playerB.poolAverage ||
+          a - b
+        );
+      });
+
       group.players.forEach((seed) => {
         const playerObj = players.find((obj) => obj.seed === seed);
         const playerRow = document.createElement('tr');
         playerRow.appendChild(createCell(playerObj.player));
-        playerRow.appendChild(createCell(0));
-        playerRow.appendChild(createCell(0));
-        playerRow.appendChild(createCell(0));
-        playerRow.appendChild(createCell("0:00"));
+        playerRow.appendChild(createCell(playerObj.poolMatches));
+        playerRow.appendChild(createCell(playerObj.poolWins));
+        playerRow.appendChild(createCell(playerObj.poolLosses));
+        playerRow.appendChild(createCell(formatTime(playerObj.poolAverage)));
         groupTbody.append(playerRow);
       });
 
@@ -67,13 +176,13 @@ fetch("data.json")
     players.forEach((playerObj) => {
       const newRow = document.createElement('tr');
       newRow.appendChild(createCell(playerObj.player));
-      newRow.appendChild(createCell("TODO: No of runs"));
-      newRow.appendChild(createCell("TODO: Average"));
-      newRow.appendChild(createCell("TODO: SD"));
-      newRow.appendChild(createCell("TODO: Fastest"));
+      newRow.appendChild(createCell(playerObj.times.length));
+      newRow.appendChild(createCell(formatTime(playerObj.poolAverage)));
+      newRow.appendChild(createCell(formatTime(playerObj.standardDeviation)));
+      newRow.appendChild(createCell(formatTime(playerObj.fastestTime)));
       newRow.appendChild(createCell(playerObj.pbBefore));
       newRow.appendChild(createCell(playerObj.pbAfter));
-      newRow.appendChild(createCell("TODO: Average"));
+      newRow.appendChild(createCell(formatTime(playerObj.slowestTime)));
       tableBody.appendChild(newRow);
     });
 
@@ -99,86 +208,12 @@ fetch("data.json")
     console.error(error);
   });
 
-function updateMatchData(matchElement, match, topLife, bottomLife, final = false) {
-  const topPlayerElement = matchElement.querySelector('.player-top');
-  const bottomPlayerElement = matchElement.querySelector('.player-bottom');
-  const matchDataElement = matchElement.querySelector('.match-data');
-
-  setPlayerData(topPlayerElement, match.top, topLife, final);
-  setPlayerData(bottomPlayerElement, match.bottom, bottomLife, final);
-
-  if (match.timestamp) {
-    let scheduleResult = {}
-    const date = new Date(match.timestamp * 1000);
-    const options = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };
-    const localTime = date.toLocaleString('en-US', options);
-    matchDataElement.querySelector('.match-time').textContent = localTime;
-    scheduleResult.timestamp = match.timestamp;
-    scheduleResult.dateTimeString = localTime;
-    scheduleResult.topPlayer = match.top.player;
-    scheduleResult.bottomPlayer = match.bottom.player;
-    scheduleResult.times = [match.top.times, match.bottom.times];
-    scheduleResults.push(scheduleResult);
-  }
-  if (match.youtube) {
-    matchDataElement.querySelector('.youtube').innerHTML = `<a href=${match.youtube} target="_blank"><i class="fa fa-youtube-play"></i>Recap</a>`;
-  }
-}
-
-function setPlayerData(playerElement, playerData, life, final) {
-  if (typeof playerData !== 'undefined') {
-    playerElement.querySelector('.seed').textContent = playerData.seed;
-    playerElement.querySelector('.player-name').textContent = playerData.player;
-    if (life === 2) {
-      playerElement.querySelector('.life').innerHTML = '&#9654;&#9654;';
-    }
-    else {
-      playerElement.querySelector('.life').innerHTML = '&#9654;&#9655;';
-    }
-
-    if (!final) {
-      playerElement.querySelector('.score').textContent = playerData.score;
-      if (playerData.score === 2) {
-        playerElement.classList.add('winner');
-      } else {
-        playerElement.classList.add('active');
-      }
-    }
-    else {
-      playerElement.querySelector('.pre-score').textContent = playerData.scoreOne;
-      playerElement.querySelector('.score').textContent = playerData.scoreTwo;
-      if (life + playerData.scoreOne >= 5 || playerData.scoreTwo === 3) {
-        playerElement.classList.add('winner');
-      } else {
-        playerElement.classList.add('active');
-      }
-    }
-
-    if (playerData.times) {
-      let existingPlayer = leaderboardData.find(player => player.player === playerData.player);
-      if (existingPlayer) {
-        // Append times to the existing player's times array
-        existingPlayer.times.push(...playerData.times.slice());
-      } else {
-        // Create a new leaderboard object for the player
-        const lbObj = {
-          player: playerData.player,
-          times: playerData.times.slice()
-        };
-        leaderboardData.push(lbObj); // Add the new player to the leaderboard
-      }
-    }
-  }
-}
-
 function formatTime(seconds) {
-  if (typeof seconds === 'undefined') return '-';
-  console.log(typeof seconds);
+  if (typeof seconds === 'undefined' || seconds === Infinity || seconds === -Infinity) return '-';
   if (seconds === 3600) return 'DNF';
-  if (seconds === Infinity) return '0:00';
-  let minutes = Math.floor(seconds / 60);
-  let remainingSeconds = Math.trunc(seconds % 60);
-  let formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.trunc(seconds % 60);
+  const formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   return formattedTime;
 }
 
@@ -200,9 +235,18 @@ function showLB() {
   leaderboardElement.style.display = "block";
 }
 
+function goldenTime(time) {
+  const element = document.createElement('span');
+  element.style.color = '#d39c0a';
+  element.textContent = time;
+  return element;
+}
+
 function generateTimeListMarkup(time1, time2) {
-  let formattedTime1 = formatTime(time1);
-  let formattedTime2 = formatTime(time2);
-  let markup = `<ul><li>${time1 !== undefined && time1 <= time2 ? `<span style="color: #d39c0a;">${formattedTime1}</span>` : formattedTime1}</li><li>${time2 !== undefined && time2 < time1 ? `<span style="color: #d39c0a;">${formattedTime2}</span>` : formattedTime2}</li></ul>`;
-  return markup;
+  const formattedTime1 = formatTime(time1);
+  const formattedTime2 = formatTime(time2);
+  const timeList = document.createElement('ul');
+  timeList.appendChild(time1 !== undefined && time1 <= time2 ? createCell(goldenTime(formattedTime1), 'li') : createCell(formattedTime1, 'li'));
+  timeList.appendChild(time2 !== undefined && time2 < time1 ? createCell(goldenTime(formattedTime2), 'li') : createCell(formattedTime2, 'li'));
+  return timeList;
 }

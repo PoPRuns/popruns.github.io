@@ -24,7 +24,6 @@
     </div>
     <header class="hero">
         <div class="hero-wrap">
-            <!-- <img src="https://static.wikia.nocookie.net/logopedia/images/5/55/Prince_of_Persia_1989.svg" width=400 height=125></img> -->
             <h1 id="headline">Summer Tournament</h1>
             <p class="year">2024</p>
             <p>Attack of the glitches!</p>
@@ -51,9 +50,10 @@
         <div class="scroll-wrap">
             <div class="container">
                 <div class="split split-one">
-                    <div class="round round-three">
+                    <div class="round semi-final">
                         <div class="round-details">Semi Final<br /></div>
                         <div class="match-wrap">
+                            <span class="match-number">1</span>
                             <ul class="matchup">
                                 <li class="player player-top">
                                     <span class="seed"></span>
@@ -74,6 +74,7 @@
                             </ul>
                         </div>
                         <div class="match-wrap">
+                            <span class="match-number">2</span>
                             <ul class="matchup">
                                 <li class="player player-top">
                                     <span class="seed"></span>
@@ -93,8 +94,8 @@
                                 </li>
                             </ul>
                         </div>
-                    </div> <!-- END ROUND THREE -->
-                    <div class="round round-four">
+                    </div>
+                    <div class="round final">
                         <div class="round-details">Final<br /></div>
                         <div class="match-wrap">
                             <ul class="matchup">
@@ -116,7 +117,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </div> <!-- END ROUND FOUR -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,11 +135,10 @@
                         <th>Run 1</th>
                         <th>Run 2</th>
                         <th>Run 3</th>
+                        <th>Recap</th>
                     </tr>
                 </thead>
-                <tbody id="table-body">
-                    <!-- Table data will be dynamically populated here -->
-                </tbody>
+                <tbody id="table-body"></tbody>
             </table>
         </div>
     </section>
@@ -146,7 +146,7 @@
     <section id="leaderboard">
         <div class="section-title">LEADERBOARD</div>
         <div class="scroll-wrap">
-            <table id="leaderboard-table">
+            <table class="leaderboard-table">
                 <thead>
                     <tr>
                         <th>Player</th>
@@ -159,9 +159,7 @@
                         <th>Slowest Time</th>
                     </tr>
                 </thead>
-                <tbody id="table-body">
-                    <!-- Table data will be dynamically populated here -->
-                </tbody>
+                <tbody id="table-body"></tbody>
             </table>
         </div>
     </section>
