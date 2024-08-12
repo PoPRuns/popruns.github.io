@@ -586,7 +586,7 @@ const initialData = [
                         isUnlocked: false,
                         description: "Chest in the room on way back from Hyrcanian forest"
                     },
-                    "Prophecy_SeedOfKnowledge_15": {
+                    "Prophecy_SeedOfKnowledge__15": {
                         displayName: "Lower City",
                         isUnlocked: false,
                         description: "Collect 15 sand jars for the “Prophecy of Mount Qaf” quest"
