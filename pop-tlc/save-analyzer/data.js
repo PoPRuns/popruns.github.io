@@ -703,13 +703,19 @@ const initialData = [
                         description: "First Architect puzzle chest",
                         quantity: 1
                     },
+                    "S-604939277_O-648583802": {
+                        displayName: "Sacred Archives",
+                        isUnlocked: false,
+                        description: "Extra 3-clone puzzle after Clairvoyance",
+                        quantity: 1
+                    },
                     "BossLoot_77c296470a128304eb495be401db0e07_1346924320_HaomaFragment": {
                         displayName: "Soma Tree",
                         isUnlocked: false,
                         description: "Defeat the Forest Queen",
                         quantity: 4
                     },
-                    "IE_STODO_OTODO1": {
+                    "IE_S536862130_O62468996": {
                         displayName: "Soma Tree",
                         isUnlocked: false,
                         description: "Platforming challenge near Tower of Silence entrance",
@@ -727,16 +733,34 @@ const initialData = [
                         description: "Architect puzzle chest",
                         quantity: 1
                     },
-                    "IE_S1769582135_O-283694129": {
-                        displayName: "Upper City",
+                    "S381352219_O529537387": {
+                        displayName: "Sunken Harbor",
                         isUnlocked: false,
-                        description: "Menolias constellation room",
+                        description: "Double Jump platfroming challenge",
                         quantity: 1
                     },
                     "IE_S1993429450_O450851052": {
                         displayName: "Raging Sea",
                         isUnlocked: false,
                         description: "Orod constellation room",
+                        quantity: 1
+                    },
+                    "IE_S1769582135_O-283694129": {
+                        displayName: "Upper City",
+                        isUnlocked: false,
+                        description: "Menolias constellation room",
+                        quantity: 1
+                    },
+                    "S-1325587473_O1645648227": {
+                        displayName: "Upper City",
+                        isUnlocked: false,
+                        description: "Hanging Gardens Chakram TP platforming challenge",
+                        quantity: 1
+                    },
+                    "IE_S-560423787_O1302367190": {
+                        displayName: "Tower of Silence",
+                        isUnlocked: false,
+                        description: "Fabric of Time platforming challenge",
                         quantity: 1
                     },
                     "S1134066981_O1634833069": {
@@ -751,7 +775,7 @@ const initialData = [
                         description: "Defeat King Darius",
                         quantity: 4
                     },
-                    "IE_STODO_OTODO2": {
+                    "IE_S2044469478_O1854770765": {
                         displayName: "Lower City",
                         isUnlocked: false,
                         description: "Secret Room with Lion Enemies",
@@ -763,28 +787,40 @@ const initialData = [
                         description: "Defeat Ardashir",
                         quantity: 1
                     },
-                    "Prophecy_HaomaFragment_5": {
+                    "Prophecy__Fresco_03_HaomaFragment__5": {
                         displayName: "Lower City",
                         isUnlocked: false,
                         description: "Collect 5 sand jars for the “Prophecy of Mount Qaf” quest",
                         quantity: 1
                     },
-                    "Prophecy_HaomaFragment_20": {
+                    "Prophecy__Fresco_06_HaomaFragment__20": {
                         displayName: "Lower City",
                         isUnlocked: false,
                         description: "Collect 20 sand jars for the “Prophecy of Mount Qaf” quest",
                         quantity: 1
                     },
-                    "Prophecy_HaomaFragment_30": {
+                    "Prophecy__Fresco_01_FullHaoma__30": {
                         displayName: "Lower City",
                         isUnlocked: false,
                         description: "Complete the “Prophecy of Mount Qaf” quest",
                         quantity: 4
                     },
-                    "IE_STODO_OTODO3": {
+                    "IE_S-1750593928_O409179470": {
                         displayName: "The Depths",
                         isUnlocked: false,
                         description: "Left to the place where Sargon falls down",
+                        quantity: 1
+                    },
+                    "IE_S1054661874_O1800860489": {
+                        displayName: "Pit of Eternal Sands",
+                        isUnlocked: false,
+                        description: "Platforming challenge in top left section",
+                        quantity: 1
+                    },
+                    "S-16704644_O-195683491": {
+                        displayName: "Raging Sea",
+                        isUnlocked: false,
+                        description: "Room after dropping from lighthouse",
                         quantity: 1
                     },
                     "S-2050029741_O-2079706095": {
@@ -792,7 +828,8 @@ const initialData = [
                         isUnlocked: false,
                         description: "Architect reward room",
                         quantity: 4
-                    }
+                    },
+                    // object -36863915 - mimic
                 }
             },
             {

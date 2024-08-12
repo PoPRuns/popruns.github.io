@@ -136,11 +136,11 @@ function processJson(jsonObj) {
     }
 
     function checkProphecyLootPicked(item) {
-        const [itemType, jarCount] = item.split("_");
+        const [itemType, jarCount] = item.split("__");
         const inventoryJars = inventoryData.find(obj => obj.m_itemType === "QuestItem_FrescoElement")?.m_itemAmount ?? 0;
         const collectedJars = inventoryProgressionData.m_itemLootCount.find(obj => obj.key === "QuestItem_FrescoElement")?.value ?? 0;
         const depositedJars = collectedJars - inventoryJars;
-        const doesLootExist = lootInfoList.find(obj => obj.m_type.includes(itemType));
+        const doesLootExist = lootInfoList.find(obj => obj.m_type === itemType);
         return (depositedJars >= jarCount && !doesLootExist);
     }
 
@@ -228,10 +228,6 @@ function processJson(jsonObj) {
         return inventoryList.includes(loreItem);
     });
 
-    updateSectionData("Main %", "Lore Items", (5 / 57), (loreItem, loreItemProps) => {
-        return inventoryList.includes(loreItem);
-    });
-
     updateSectionData("Essentials %", "Bosses", 0, (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
@@ -255,7 +251,7 @@ function handleChangeSaveFile(e) {
     if (lastSavedFolderFile) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            const saveFilePartial = `Save_${e.target.result}/PopSaveGameSlot`;
+            const saveFilePartial = `Save_${e.target.result.trim()}/PopSaveGameSlot`;
             Array.from(files).forEach(file => {
                 if (file.webkitRelativePath.includes(saveFilePartial)) {
                     popSaveGameFile = file;
