@@ -45,11 +45,13 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
 
     matches.forEach((match) => {
       let player1Score = 0;
+      let player2Score = 0;
       const player1 = players.find((obj) => obj.seed === match.player1.seed);
       const player2 = players.find((obj) => obj.seed === match.player2.seed);
 
       match.player1.times.forEach((time, index) => {
-        player1Score += (time < match.player2.times[index] ? 1 : -1);
+        player1Score += (time < match.player2.times[index] ? 1 : 0);
+        player2Score += (time > match.player2.times[index] ? 1 : 0);
       })
 
       player1.times.push(...match.player1.times);
@@ -57,11 +59,11 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       if (match.type === 'pool') {
         player1.poolMatches += 1;
         player2.poolMatches += 1;
-        if (player1Score > 0) {
+        if (player1Score >= 3) {
           player1.poolWins += 1;
           player2.poolLosses += 1;
         }
-        if (player1Score < 0) {
+        if (player2Score >= 3) {
           player1.poolLosses += 1;
           player2.poolWins += 1;
         }
