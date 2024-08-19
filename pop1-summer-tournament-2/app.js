@@ -57,14 +57,16 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       player1.times.push(...match.player1.times);
       player2.times.push(...match.player2.times);
       if (match.type === 'pool') {
-        player1.poolMatches += 1;
-        player2.poolMatches += 1;
         if (player1Score >= 3) {
+          player1.poolMatches += 1;
           player1.poolWins += 1;
+          player2.poolMatches += 1;
           player2.poolLosses += 1;
         }
         if (player2Score >= 3) {
+          player1.poolMatches += 1;
           player1.poolLosses += 1;
+          player2.poolMatches += 1;
           player2.poolWins += 1;
         }
         player1.poolTimes.push(...match.player1.times);
@@ -95,6 +97,9 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         link.href = match.youtube;
         link.target = '_blank';
         scheduleRow.appendChild(createCell(link));
+      }
+      else {
+        scheduleRow.appendChild(createCell('-'));
       }
 
       const currentUnixTimestamp = Math.floor(Date.now() / 1000);
