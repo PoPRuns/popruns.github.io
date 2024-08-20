@@ -18,6 +18,10 @@
             margin: auto;
             padding: 30px;
             max-width: 980px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         td {
@@ -28,47 +32,65 @@
             width: 100px;
             margin-right: 20px;
         }
+
+        .input-container {
+            width: fit-content;
+            text-align: left;
+        }
+
+        #tableBody {
+            font-size: 0.9rem;
+        }
+
+        .text-important {
+            text-align: center;
+            color: darkcyan !important;
+            font-weight: bolder;
+        }
     </style>
 </head>
 
 <body>
     <h1>PoP 2008 Calculator</h1>
 
-    <label>Select JSON file containing beams data:</label>&nbsp;
-    <input type="file" id="fileInput" accept=".json">
+    <br />
 
-    <br /><br />
+    <div class="input-container">
+        <label>Select Load load trigger:</label>&nbsp;
+        <select name="load" id="loadSelect" onchange="setLoadTriggerCoords(event.target.value)">
+            <option value="null,null">--</option>
+        </select>
 
-    <label>Enter coordinates of load trigger:</label>&nbsp;
-    <label for="pointX"><b>X</b></label>
-    <input id="pointX" type=number step=0.001>
-    <label for="pointY"><b>Y</b></label>
-    <input id="pointY" type=number step=0.001>
+        <div style="margin: 0.5rem;">(or)</div>
 
-    <br /><br />
+        <label>Enter coordinates of load trigger:</label>&nbsp;
+        <label for="pointX"><b>X</b></label>
+        <input id="pointX" type=number step=0.001>
+        <label for="pointY"><b>Y</b></label>
+        <input id="pointY" type=number step=0.001>
 
-    <label>Select Mode of traversal:</label>&nbsp;
-    <select name="mode" id="mode">
-        <option value="airwalk">Air-Walk</option>
-        <option value="templewarp">Temple Warp</option>
-    </select>
+        <br /><br />
 
-    <br /><br />
+        <label>Select Mode of traversal:</label>&nbsp;
+        <select name="mode" id="mode">
+            <option value="airwalk">Air-Walk</option>
+            <option value="templewarp">Temple Warp</option>
+        </select>
 
-    <button onclick="processJSON()">Calculate Distance</button>
+        <br /><br />
+    </div>
+
+    <button class="btn btn-primary" onclick="processJSON()">Calculate Distance</button>
 
     <br /><br />
 
     <div id="results" style="display: none;">
-        <hr />
-        <label><b>Load Trigger Location*</b> - </label>
-        <label id="loadLocation"></label>
-        <hr />
         <table class="table table-striped" id="dataTable">
             <thead>
                 <tr>
                     <th>Beam</th>
                     <th>Location*</th>
+                    <th>Nearest Load</th>
                     <th>Distance</th>
                     <th id="frameHeader" style="display: none;">Frame</th>
                 </tr>
@@ -78,196 +100,7 @@
         <label><b>*</b> - Calculates nearest Fertile Ground</label>
     </div>
 
-    <script>
-        function processJSON() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                alert('Please select a file.');
-                return;
-            }
-
-            const pointX = parseFloat(document.getElementById('pointX').value);
-            const pointY = parseFloat(document.getElementById('pointY').value);
-
-            if (isNaN(pointX) || isNaN(pointY)) {
-                alert('Please select load trigger coordinates.');
-                return;
-            }
-
-            document.getElementById("loadLocation").textContent = estimateLocation(pointX, pointY);
-
-            const reader = new FileReader();
-
-            reader.onload = function (event) {
-                const jsonData = JSON.parse(event.target.result);
-                const processedData = displayTable(jsonData, pointX, pointY);
-            };
-
-            reader.readAsText(file);
-            document.getElementById("results").style.display = "block";
-        }
-
-        function processData(data) {
-            // Perform your processing on the JSON data here
-            // For example, let's just stringify the JSON for demonstration
-            return JSON.stringify(data, null, 2);
-        }
-
-        function displayTable(data, pointX, pointY) {
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = '';
-
-            const mode = document.getElementById("mode").value;
-
-            if (mode === "airwalk") {
-                document.getElementById("frameHeader").style.display = "none";
-                const calculatedDistances = data.map(item => {
-                    const { x1, y1, x2, y2 } = item;
-                    return {
-                        x1,
-                        y1,
-                        x2,
-                        y2,
-                        distance: distanceFromLine(pointX, pointY, x1, y1, x2, y2)
-                    };
-                });
-
-                const filteredAndSortedData = calculatedDistances
-                    .filter(item => item.distance !== Infinity)
-                    .sort((a, b) => a.distance - b.distance);
-
-                filteredAndSortedData.forEach(item => {
-                    const { x1, y1, x2, y2, distance } = item;
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                    <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
-                    <td>${estimateLocation(x1, y1)}</td>
-                    <td>${distance}</td>
-                `;
-
-                    tableBody.appendChild(row);
-                });
-            }
-            else if (mode === "templewarp") {
-                document.getElementById("frameHeader").style.display = "block";
-                const calculatedDistances = data.map(item => {
-                    const { x1, y1, x2, y2 } = item;
-                    const [distance, frame] = closestTempleWarpDistance(x2, y2, pointX, pointY);
-                    return {
-                        x1,
-                        y1,
-                        x2,
-                        y2,
-                        distance,
-                        frame
-                    };
-                });
-
-                const filteredAndSortedData = calculatedDistances
-                    .filter((a) => a.frame !== 0)
-                    .sort((a, b) => a.distance - b.distance);
-
-                filteredAndSortedData.forEach(item => {
-                    const { x1, y1, x2, y2, distance, frame } = item;
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                    <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
-                    <td>${estimateLocation(x1, y1)}</td>
-                    <td>${distance}</td>
-                    <td>${frame}</td>
-                `;
-
-                    tableBody.appendChild(row);
-                });
-            }
-        }
-
-        function distanceFromLine(x, y, x1, y1, x2, y2) {
-            const a = y2 - y1;
-            const b = x1 - x2;
-            const c = x2 * y1 - x1 * y2;
-            const square = a * a + b * b;
-            const d = (x - x1) * (-b) + (y - y1) * (a);
-
-            const distance = Math.abs(a * x + b * y + c) / Math.sqrt(square);
-
-            if (d > square) {
-                return distance;
-            }
-            return Infinity;
-        }
-
-        function distanceBetweenPoints(x1, y1, x2, y2) {
-            const a = y2 - y1;
-            const b = x1 - x2;
-            return Math.sqrt(a * a + b * b)
-        }
-
-        function closestTempleWarpDistance(x2, y2, x, y) {
-            let minDistance = distanceBetweenPoints(x2, y2, x, y);
-            let closestFrame = 0;
-            for (let i = 1; i <= 15; i++) {
-                x2 = 0.75 * x2;
-                y2 = 0.75 * y2;
-                distance = distanceBetweenPoints(x2, y2, x, y);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestFrame = i;
-                }
-            }
-            return [minDistance, closestFrame];
-        }
-
-        function estimateLocation(x, y) {
-            const areaMapping = {
-                "Temple": [4.68, -147.53],
-                "King's Gate": [-413.54, -66.49],
-                "The Sun Temple": [-566.48, -43.91],
-                "Marshalling Ground": [-780.90, -17.71],
-                "The Windmills": [-775.92, 164.92],
-                "Hunter's Lair": [-929.43, 322.36],
-                "Martyrs' Tower": [-552.84, 202.43],
-                "The Cauldron": [-167.81, 225.33],
-                "Construction Yard": [-251.37, 456.49],
-                "Machinery Ground": [-395.26, 512.35],
-                "Heaven's Stair": [-303.65, 652.55],
-                "The Observatory": [-296.59, 697.24],
-                "Reservoir": [-157.00, 571.22],
-                "The Cavern": [155.28, 180.34],
-                "Royal Gardens": [265.01, 381.49],
-                "Spire of Dreams": [187.59, 550.25],
-                "Coronation Hall": [340.30, 582.45],
-                "The Palace Rooms": [351.24, 799.46],
-                "Royal Spire": [468.48, 425.92],
-                "City Gate": [421.11, -88.07],
-                "Tower of Ahriman": [598.56, 13.45],
-                "Tower of Ormazd": [654.07, 208.06],
-                "City of Light": [804.07, 113.09],
-                "Warrior's Fortress": [1039.05, 309.18],
-                "Queen's Tower": [786.82, -32.44],
-            }
-
-            let minDistance = Infinity;
-            let closestArea = "";
-
-            for (const area in areaMapping) {
-                const [areaX, areaY] = areaMapping[area];
-                const distance = distanceBetweenPoints(x, y, areaX, areaY);
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestArea = area;
-                }
-            }
-
-            return closestArea;
-        }
-
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
