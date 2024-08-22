@@ -84,7 +84,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       scheduleRow.appendChild(createCell(dateTimeString));
       scheduleRow.appendChild(createCell(playersList));
 
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 5; i++) {
         scheduleRow.appendChild(createCell(generateTimeListMarkup(match.player1.times[i], match.player2.times[i])));
       }
 
