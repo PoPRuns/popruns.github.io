@@ -240,12 +240,10 @@ function populateKOMatchData(matchType, player1, player2) {
   const player2Element = matchElement.querySelector(".matchup .player-bottom");
   if (player1) {
     player1Element.querySelector('.player-name').textContent = player1.player;
-    player1Element.querySelector('.seed').textContent = player1.seed;
     player1Element.classList.add('active');
   }
   if (player2) {
     player2Element.querySelector('.player-name').textContent = player2.player;
-    player2Element.querySelector('.seed').textContent = player2.seed;
     player2Element.classList.add('active');
   }
 }
