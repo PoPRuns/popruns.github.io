@@ -39,6 +39,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       playerObj.poolMatches = 0;
       playerObj.poolWins = 0;
       playerObj.poolLosses = 0;
+      playerObj.poolMiniWins = 0;
       playerObj.poolTimes = [];
       playerObj.times = [];
     });
@@ -49,68 +50,80 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const player1 = players.find((obj) => obj.seed === match.player1.seed);
       const player2 = players.find((obj) => obj.seed === match.player2.seed);
 
-      match.player1.times.forEach((time, index) => {
-        player1Score += (time < match.player2.times[index] ? 1 : 0);
-        player2Score += (time > match.player2.times[index] ? 1 : 0);
-      })
+      if (match.type !== 'pool') {
+        populateKOMatchData(match.type, player1, player2);
+      }
 
-      player1.times.push(...match.player1.times);
-      player2.times.push(...match.player2.times);
-      if (match.type === 'pool') {
-        if (player1Score >= 3) {
-          player1.poolMatches += 1;
-          player1.poolWins += 1;
-          player2.poolMatches += 1;
-          player2.poolLosses += 1;
+      if (player1 && player2) {
+        match.player1.times.forEach((time, index) => {
+          player1Score += (time < match.player2.times[index] ? 1 : 0);
+          player2Score += (time > match.player2.times[index] ? 1 : 0);
+        })
+
+        player1.times.push(...match.player1.times);
+        player2.times.push(...match.player2.times);
+        if (match.type === 'pool') {
+          if (player1Score >= 3) {
+            player1.poolMatches += 1;
+            player1.poolWins += 1;
+            player2.poolMatches += 1;
+            player2.poolLosses += 1;
+          }
+          if (player2Score >= 3) {
+            player1.poolMatches += 1;
+            player1.poolLosses += 1;
+            player2.poolMatches += 1;
+            player2.poolWins += 1;
+          }
+          player1.poolMiniWins += player1Score;
+          player1.poolTimes.push(...match.player1.times);
+          player2.poolMiniWins += player2Score;
+          player2.poolTimes.push(...match.player2.times);
         }
-        if (player2Score >= 3) {
-          player1.poolMatches += 1;
-          player1.poolLosses += 1;
-          player2.poolMatches += 1;
-          player2.poolWins += 1;
+        else {
+          populateKOMatchScore(match.type, player1Score, player2Score);
         }
-        player1.poolTimes.push(...match.player1.times);
-        player2.poolTimes.push(...match.player2.times);
       }
 
-      // Create a new row in the schedule table
-      const date = new Date(match.timestamp * 1000);
-      const options = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };
-      const dateTimeString = date.toLocaleString('en-US', options);
-      const scheduleRow = document.createElement('tr');
-      const playersList = document.createElement('ul');
-      playersList.appendChild(createCell(player1.player, 'li'));
-      playersList.appendChild(createCell(player2.player, 'li'));
-      scheduleRow.appendChild(createCell(dateTimeString));
-      scheduleRow.appendChild(createCell(playersList));
+      if (match.timestamp) {
+        // Create a new row in the schedule table
+        const date = new Date(match.timestamp * 1000);
+        const options = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };
+        const dateTimeString = date.toLocaleString('en-US', options);
+        const scheduleRow = document.createElement('tr');
+        const playersList = document.createElement('ul');
+        playersList.appendChild(createCell(player1.player, 'li'));
+        playersList.appendChild(createCell(player2.player, 'li'));
+        scheduleRow.appendChild(createCell(dateTimeString));
+        scheduleRow.appendChild(createCell(playersList));
 
-      for (let i = 0; i < 5; i++) {
-        scheduleRow.appendChild(createCell(generateTimeListMarkup(match.player1.times[i], match.player2.times[i])));
-      }
+        for (let i = 0; i < 5; i++) {
+          scheduleRow.appendChild(createCell(generateTimeListMarkup(match.player1.times[i], match.player2.times[i])));
+        }
 
-      if (match.youtube) {
-        const link = document.createElement('a');
-        const icon = document.createElement('i');
-        icon.style.fontSize = '1.5em';
-        icon.classList.add('fa', 'fa-youtube-play');
-        link.appendChild(icon);
-        link.href = match.youtube;
-        link.target = '_blank';
-        scheduleRow.appendChild(createCell(link));
-      }
-      else {
-        scheduleRow.appendChild(createCell('-'));
-      }
+        if (match.youtube) {
+          const link = document.createElement('a');
+          const icon = document.createElement('i');
+          icon.style.fontSize = '1.5em';
+          icon.classList.add('fa', 'fa-youtube-play');
+          link.appendChild(icon);
+          link.href = match.youtube;
+          link.target = '_blank';
+          scheduleRow.appendChild(createCell(link));
+        }
+        else {
+          scheduleRow.appendChild(createCell('-'));
+        }
 
-      const currentUnixTimestamp = Math.floor(Date.now() / 1000);
-      scheduleRow.classList.add(match.timestamp < currentUnixTimestamp ? 'past-row' : 'future-row');
-      scheduleBody.appendChild(scheduleRow);
+        const currentUnixTimestamp = Math.floor(Date.now() / 1000);
+        scheduleRow.classList.add(match.timestamp < currentUnixTimestamp ? 'past-row' : 'future-row');
+        scheduleBody.appendChild(scheduleRow);
+      }
     });
 
     players.forEach((playerObj) => {
       const times = playerObj.times;
       playerObj.average = Infinity;
-      playerObj.poolAverage = Infinity;
 
       if (times.length > 0) {
         const averageTime = times.reduce(function (acc, val) {
@@ -126,14 +139,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         playerObj.standardDeviation = Math.sqrt(letiance);
       }
 
-
-      if (playerObj.poolTimes.length > 0) {
-        playerObj.poolAverage = playerObj.poolTimes.reduce(function (acc, val) {
-          return acc + val;
-        }, 0) / playerObj.poolTimes.length;
-      }
-
       playerObj.fastestTime = Math.min.apply(null, times);
+      playerObj.fastestPoolTime = Math.min.apply(null, playerObj.poolTimes);
       playerObj.slowestTime = Math.max.apply(null, times);
     });
 
@@ -149,7 +156,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       headerRow.appendChild(createCell("Matches"));
       headerRow.appendChild(createCell("Won"));
       headerRow.appendChild(createCell("Lost"));
-      headerRow.appendChild(createCell("Average Time"));
+      headerRow.appendChild(createCell("Games Won"));
+      headerRow.appendChild(createCell("Fastest Time"));
       const groupTbody = document.createElement('tbody');
 
       group.players.sort((a, b) => {
@@ -157,7 +165,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         const playerB = players.find((obj) => obj.seed === b);
         return (
           playerB.poolWins - playerA.poolWins ||
-          playerA.poolAverage - playerB.poolAverage ||
+          playerB.poolMiniWins - playerA.poolMiniWins ||
+          playerA.fastestPoolTime - playerB.fastestPoolTime ||
           a - b
         );
       });
@@ -169,7 +178,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
         playerRow.appendChild(createCell(playerObj.poolMatches));
         playerRow.appendChild(createCell(playerObj.poolWins));
         playerRow.appendChild(createCell(playerObj.poolLosses));
-        playerRow.appendChild(createCell(formatTime(playerObj.poolAverage)));
+        playerRow.appendChild(createCell(playerObj.poolMiniWins));
+        playerRow.appendChild(createCell(formatTime(playerObj.fastestPoolTime)));
         groupTbody.append(playerRow);
       });
 
@@ -184,7 +194,7 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const newRow = document.createElement('tr');
       newRow.appendChild(createCell(playerObj.player));
       newRow.appendChild(createCell(playerObj.times.length));
-      newRow.appendChild(createCell(formatTime(playerObj.poolAverage)));
+      newRow.appendChild(createCell(formatTime(playerObj.average)));
       newRow.appendChild(createCell(formatTime(playerObj.standardDeviation)));
       newRow.appendChild(createCell(formatTime(playerObj.fastestTime)));
       newRow.appendChild(createCell(playerObj.pbBefore));
@@ -222,6 +232,40 @@ function formatTime(seconds) {
   const remainingSeconds = Math.trunc(seconds % 60);
   const formattedTime = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   return formattedTime;
+}
+
+function populateKOMatchData(matchType, player1, player2) {
+  const matchElement = document.getElementById(matchType);
+  const player1Element = matchElement.querySelector(".matchup .player-top");
+  const player2Element = matchElement.querySelector(".matchup .player-bottom");
+  if (player1) {
+    player1Element.querySelector('.player-name').textContent = player1.player;
+    player1Element.querySelector('.seed').textContent = player1.seed;
+    player1Element.classList.add('active');
+  }
+  if (player2) {
+    player2Element.querySelector('.player-name').textContent = player2.player;
+    player2Element.querySelector('.seed').textContent = player2.seed;
+    player2Element.classList.add('active');
+  }
+}
+
+function populateKOMatchScore(matchType, player1Score, player2Score) {
+  if (player1Score + player2Score > 0) {
+    const matchElement = document.getElementById(matchType);
+    const player1Element = matchElement.querySelector(".matchup .player-top");
+    const player2Element = matchElement.querySelector(".matchup .player-bottom");
+
+    player1Element.querySelector('.score').textContent = player1Score;
+    player2Element.querySelector('.score').textContent = player2Score;
+
+    if (player1Score >= 3) {
+      player1Element.classList.add('winner');
+    }
+    if (player2Score >= 3) {
+      player2Element.classList.add('winner');
+    }
+  }
 }
 
 function showBracket() {

@@ -55,18 +55,7 @@
             ]
         }
     ],
-    "matches": [
-        {
-            "player1": {
-                "seed": 1,
-                "times": []
-            },
-            "player2": {
-                "seed": 4,
-                "times": []
-            }
-        }
-    ],
+    "matches": [],
     "wrAfter": "12:20",
     "wrBefore": "12:20",
     "roundFourMatches": [],

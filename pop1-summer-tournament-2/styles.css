@@ -282,23 +282,6 @@ ul {
     margin: 0 4% 0 0;
 }
 
-.matchup:hover {
-    margin: 20px 0px;
-}
-
-.matchup:hover .player-top {
-    transform: translateY(-0.7rem);
-}
-
-.matchup:hover .match-data {
-    opacity: 1;
-    transform: translateY(-0.5rem);
-}
-
-.matchup:hover .player-bottom {
-    transform: translateY(0.7rem);
-}
-
 .match-wrap {
     display: flex;
     align-items: center;
@@ -327,11 +310,6 @@ ul {
     font-family: 'Roboto Condensed', sans-serif;
 }
 
-.life {
-    color: crimson;
-    margin-left: 5px;
-}
-
 .score {
     font-size: 16px;
     text-transform: uppercase;
@@ -340,18 +318,7 @@ ul {
     font-weight: bold;
     font-family: 'Roboto Condensed', sans-serif;
     position: absolute;
-    right: 5px;
-}
-
-.pre-score {
-    font-size: 16px;
-    text-transform: uppercase;
-    float: right;
-    color: seagreen;
-    font-weight: bold;
-    font-family: 'Roboto Condensed', sans-serif;
-    position: absolute;
-    right: 25px;
+    right: 10px;
 }
 
 .player {
