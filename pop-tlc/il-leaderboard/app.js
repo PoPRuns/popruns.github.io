@@ -79,7 +79,7 @@ fetch(`https://www.speedrun.com/api/v1/games/${GAME_ID}/levels`)
                     const newRow = levelsTable.insertRow();
                     const levelCell = newRow.insertCell(0);
                     levelCell.textContent = levelMapping[levelVar.scope.level];
-                    insertCell(levelVar, newRow, 1, "Any Preset");
+                    insertCell(levelVar, newRow, 1, "Rookie");
                     insertCell(levelVar, newRow, 2, "Immortal");
                     insertCell(levelVar, newRow, 3, "No Hit");
                 });
