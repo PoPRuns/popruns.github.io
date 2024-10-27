@@ -121,6 +121,7 @@ function populateRunCell(info, cell) {
     if (playerId !== null) {
         const playerDiv = document.createElement('div');
         playerDiv.style.display = 'flex';
+        playerDiv.style.justifyContent = 'center';
         if (countryCode !== null) {
             const flagImg = document.createElement('img');
             flagImg.src = `https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/${countryCode}.svg`;
