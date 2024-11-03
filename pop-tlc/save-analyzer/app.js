@@ -153,6 +153,15 @@ function processJson(jsonObj) {
         return (questDone && !doesLootExist);
     }
 
+    function checkItemEnemyKilled(item) {
+        const [sceneGUID, objectGUID, itemType] = item.split("_");
+        const objectObj = getObjectFromGUID(`S${sceneGUID}_O${objectGUID}`);
+        const subComponentObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.GameplayElementActionSubComponent+GameplayElementActionSaveData");
+        const waveCleared = (subComponentObj?.m_data ?? []).find(obj => obj["@type"] === "Alkawa.Gameplay.GameplayElementActionLogic_WaveSpawner+WaveSpawnerActionSaveData")?.m_IsWaveCleared;
+        const doesLootExist = lootInfoList.find(obj => obj.m_objectGUID.toString() === objectGUID && obj.m_type === itemType);
+        return (subComponentObj !== undefined && waveCleared && !doesLootExist);
+    }
+
     updateSectionData("Main %", "Main Quests", (15 / 4), (quest, questProps) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
@@ -209,6 +218,9 @@ function processJson(jsonObj) {
         }
         else if (petal.startsWith("Prophecy_")) {
             return checkProphecyLootPicked(petal.slice(9));
+        }
+        else if (petal.startsWith("EnemyLoot_")) {
+            return checkItemEnemyKilled(petal.slice(10));
         }
         return false;
     });

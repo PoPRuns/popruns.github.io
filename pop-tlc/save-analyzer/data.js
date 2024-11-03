@@ -823,13 +823,30 @@ const initialData = [
                         description: "Room after dropping from lighthouse",
                         quantity: 1
                     },
+                    "EnemyLoot_-2123075181_-1398043515_HaomaFragment": {
+                        displayName: "Blue Guy in Prison",
+                        isUnlocked: false,
+                        description: "Blue enemy in the bottom of the three locked doors",
+                        quantity: 1
+                    },
+                    "EnemyLoot_-1708251953_1207742047_HaomaFragment": {
+                        displayName: "Sunken Harbor Mimic Chest",
+                        isUnlocked: false,
+                        description: "Mimic Chest on the way to Soma Tree",
+                        quantity: 1
+                    },
+                    "EnemyLoot_1991959379_-36863915_HaomaFragment": {
+                        displayName: "Upper City Mimic Chest",
+                        isUnlocked: false,
+                        description: "Mimic Chest on the connection from Lower City",
+                        quantity: 1
+                    },
                     "S-2050029741_O-2079706095": {
                         displayName: "Upper City",
                         isUnlocked: false,
                         description: "Architect reward room",
                         quantity: 4
                     },
-                    // object -36863915 - mimic
                 }
             },
             {
