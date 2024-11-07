@@ -88,6 +88,10 @@ function processJson(jsonObj) {
     const questInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.QuestSaveDataFrame").m_Data;
     const lootInfoList = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.LootRecorder+LootSaveDataFrame").m_data.m_data;
 
+    const challengeSaveData = gameManagerFrames.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.ChallengeManagerSaveDataFrame")
+    const divineTrialList = challengeSaveData.m_archstoneGUID;
+    const divineTrialSaveData = challengeSaveData.m_archstoneSaveData;
+
     const entityManager = sceneList.find(obj => obj.m_sceneName === "EntitiesManager");
     const progressionData = entityManager.m_entities[0].m_frames[0].m_dataList.find(obj => obj && obj["@type"] === "Alkawa.Gameplay.PlayerProgressionSubComponent+PlayerProgressionSaveData")?.m_progression;
     const unlockedAbilites = progressionData.m_playerAbilitiesProgressionData.m_unlockedAbilities;
@@ -110,8 +114,22 @@ function processJson(jsonObj) {
             const itemProps = sectionData[item];
             const isUnlocked = checkUnlock(item, itemProps);
             itemProps.isUnlocked = isUnlocked;
-            section.completedPercent += isUnlocked * !itemProps.displayName.includes("*") * (itemProps.level ?? 1) * (itemProps.quantity ?? 1) * percentPerItem;
+            section.completedPercent += isUnlocked * (itemProps.level ?? 1) * (itemProps.quantity ?? 1) * percentPerItem;
         }
+    }
+
+    function checkQuestCompletion(GUID) {
+        const questInfo = questInfoList.find(obj => obj.m_GUID === GUID);
+        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
+        return (questState === "Ended");
+    }
+
+    function checkAndUpdateAmuletCompletion(amulet, amuletProps) {
+        if (unlockedAmulets.includes(amulet)) {
+            amuletProps.level = amuletLevels[unlockedAmulets.indexOf(amulet)];
+            return true;
+        }
+        return false;
     }
 
     function getObjectFromGUID(item) {
@@ -153,7 +171,7 @@ function processJson(jsonObj) {
         return (questDone && !doesLootExist);
     }
 
-    function checkItemEnemyKilled(item) {
+    function checkEnemyLootPicked(item) {
         const [sceneGUID, objectGUID, itemType] = item.split("_");
         const objectObj = getObjectFromGUID(`S${sceneGUID}_O${objectGUID}`);
         const subComponentObj = ((objectObj?.m_frames ?? [null])[0]?.m_dataList ?? []).find(obj => obj && obj["@type"] === "Alkawa.Gameplay.GameplayElementActionSubComponent+GameplayElementActionSaveData");
@@ -162,51 +180,43 @@ function processJson(jsonObj) {
         return (subComponentObj !== undefined && waveCleared && !doesLootExist);
     }
 
-    updateSectionData("Main %", "Main Quests", (15 / 4), (quest, questProps) => {
-        const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
-        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
-        return (questState === "Ended");
+    updateSectionData("Base - 100%", "Main Quests", (15 / 4), (quest, _) => {
+        return checkQuestCompletion(quest);
     });
 
-    updateSectionData("Main %", "Side Quests", (20 / 9), (quest, questProps) => {
-        const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
-        const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
-        return (questState === "Ended");
+    updateSectionData("Base - 100%", "Side Quests", (20 / 9), (quest, _) => {
+        return checkQuestCompletion(quest);
     });
 
-    updateSectionData("Main %", "Location Discovery", (1 / 3), (location, locationrops) => {
+    updateSectionData("Base - 100%", "Location Discovery", (1 / 3), (location, _) => {
         const locationId = parseInt(location.replace("Level_", ""));
         return unlockedLevels.includes(locationId);
     });
 
-    updateSectionData("Main %", "Abilities", (1 / 2), (ability, abilityProps) => {
+    updateSectionData("Base - 100%", "Abilities", (1 / 2), (ability, _) => {
         return unlockedAbilites.includes(ability);
     });
 
-    updateSectionData("Main %", "Athra Surges", (1 / 2), (surge, surgeProps) => {
+    updateSectionData("Base - 100%", "Athra Surges", (1 / 2), (surge, _) => {
         return unlockedAbilites.includes(surge);
     });
 
-    updateSectionData("Main %", "Amulets", (5 / 98), (amulet, amuletProps) => {
-        if (unlockedAmulets.includes(amulet)) {
-            amuletProps.level = amuletLevels[unlockedAmulets.indexOf(amulet)];
-            return true;
-        }
-        return false;
+    updateSectionData("Base - 100%", "Amulets", (5 / 98), (amulet, amuletProps) => {
+        return checkAndUpdateAmuletCompletion(amulet, amuletProps);
     });
 
-    updateSectionData("Main %", "Amulet Holders", (5 / 9), (holder, holderProps) => {
+    updateSectionData("Base - 100%", "Amulet Holders", (5 / 9), (holder, _) => {
         if (holder.startsWith("Prophecy_")) {
             return checkProphecyLootPicked(holder.slice(9));
         }
         return checkChestPickedFromScene(holder, "SeedOfKnowledge");
     });
 
-    updateSectionData("Main %", "Equipment Upgrades", (5 / 6), (upgrade, upgradeProps) => {
+    updateSectionData("Base - 100%", "Equipment Upgrades", (5 / 6), (upgrade, _) => {
         return inventoryList.includes(upgrade);
     });
 
-    updateSectionData("Main %", "Soma Flowers", (5 / 48), (petal, petalProps) => {
+    updateSectionData("Base - 100%", "Soma Flowers", (5 / 48), (petal, _) => {
         if (petal.startsWith("S")) {
             return checkChestPickedFromScene(petal, "HaomaFragment");
         }
@@ -220,33 +230,77 @@ function processJson(jsonObj) {
             return checkProphecyLootPicked(petal.slice(9));
         }
         else if (petal.startsWith("EnemyLoot_")) {
-            return checkItemEnemyKilled(petal.slice(10));
+            return checkEnemyLootPicked(petal.slice(10));
         }
         return false;
     });
 
-    updateSectionData("Main %", "Memory Shards", (5 / 6), (shard, shardProps) => {
+    updateSectionData("Base - 100%", "Memory Shards", (5 / 6), (shard, _) => {
         if (shard === "Special_VisionAbility") {
             return inventoryList.includes("GearUpgrade_VisionPackShop1");
         }
         return checkChestPickedFromScene(shard, "GearUpgrade_VisionPackChest");
     });
 
-    updateSectionData("Main %", "Skins", 1, (skin, upgradePrskinropsops) => {
+    updateSectionData("Base - 100%", "Skins", 1, (skin, _) => {
         return unlockedSkins.includes(skin);
     });
 
-    updateSectionData("Main %", "Lore Items", (5 / 57), (loreItem, loreItemProps) => {
+    updateSectionData("Base - 100%", "Lore Items", (5 / 57), (loreItem, _) => {
         return inventoryList.includes(loreItem);
     });
 
-    updateSectionData("Essentials %", "Bosses", 0, (quest, questProps) => {
+    updateSectionData("Divine Trials - 4%", "Trials", (7 / 44), (trial, _) => {
+        return divineTrialSaveData[divineTrialList.indexOf(trial)].m_challengeState === "Done";
+    });
+
+    updateSectionData("Divine Trials - 4%", "Quest", (1 / 2), (quest, _) => {
+        return checkQuestCompletion(quest);
+    });
+
+    updateSectionData("Mask of Darkness - 9%", "Side Quests", 1, (quest, _) => {
+        return checkQuestCompletion(quest);
+    });
+
+    updateSectionData("Mask of Darkness - 9%", "Amulets", (1 / 2), (amulet, amuletProps) => {
+        return checkAndUpdateAmuletCompletion(amulet, amuletProps);
+    });
+
+    updateSectionData("Mask of Darkness - 9%", "Additional Potions", (1 / 2), (potion, _) => {
+        return inventoryList.includes(potion);
+    });
+
+    updateSectionData("Mask of Darkness - 9%", "Soma Flowers", (1 / 2), (flower, _) => {
+        return inventoryList.includes(flower);
+    });
+
+    updateSectionData("Mask of Darkness - 9%", "Memory Fragments", (3 / 20), (fragment, _) => {
+        return inventoryList.includes(fragment);
+    });
+
+    updateSectionData("Mask of Darkness - 9%", "Artaban", (1 / 2), (book, _) => {
+        return inventoryList.includes(book);
+    });
+
+    updateSectionData("Essentials %", "Bosses", 0, (quest, _) => {
         const questInfo = questInfoList.find(obj => obj.m_GUID === quest);
         const questState = questInfo?.m_questElementsFlatList.find(obj => obj["@type"] === "Alkawa.Gameplay.QuestSaveData")?.m_currentState;
         return (questState === "Ended");
     });
 
-    renderDataToHTML("Main %");
+    updateSectionData("No %", "Main Quests", 0, (quest, _) => {
+        return checkQuestCompletion(quest);
+    });
+
+    updateSectionData("No %", "Amulets", 0, (amulet, amuletProps) => {
+        return checkAndUpdateAmuletCompletion(amulet, amuletProps);
+    });
+
+    updateSectionData("No %", "Skins", 0, (skin, _) => {
+        return unlockedSkins.includes(skin);
+    });
+
+    renderDataToHTML("Base - 100%");
 }
 
 function handleChangeSaveFile(e) {
@@ -335,5 +389,5 @@ function handleCopyLocation(e) {
 }
 window.handleCopyLocation = handleCopyLocation;
 
-renderTabButtons("Main %");
-renderDataToHTML("Main %");
+renderTabButtons("Base - 100%");
+renderDataToHTML("Base - 100%");

@@ -1,17 +1,13 @@
 const initialData = [
     {
-        tab: "Main %",
+        tab: "Base - 100%",
         data: [
             {
                 title: "Main Quests",
                 percentage: 30,
                 completedPercent: 0,
-                description: "Each quest from this list provides 3.75% game completion.\n* These quests don't count for percentage.",
+                description: "Each quest from this list provides 3.75% game completion.",
                 data: {
-                    "e36c64cd5a982ce4b8571f8190c1ad43": {
-                        displayName: "Persia Under Attack*",
-                        isUnlocked: false
-                    },
                     "d46f01520560b6446a4c366171e5e6d2": {
                         displayName: "Lost in Mount Qaf",
                         isUnlocked: false
@@ -36,10 +32,6 @@ const initialData = [
                         displayName: "The Celestial Guardians",
                         isUnlocked: false
                     },
-                    "5c788318b1a856943aadce9af84d8000": {
-                        displayName: "Return to the Past*",
-                        isUnlocked: false
-                    },
                     "959814af55fa48b4b962f7cff039f076": {
                         displayName: "Father and Son",
                         isUnlocked: false
@@ -54,7 +46,7 @@ const initialData = [
                 title: "Side Quests",
                 percentage: 20,
                 completedPercent: 0,
-                description: "Each quest from this list provides 2.22% game completion.\n* Divine Trials doesn't give %.",
+                description: "Each quest from this list provides 2.22% game completion.",
                 data: {
                     "658f412ae13e19f4b936561ddf4ea003": {
                         displayName: "The Deserter",
@@ -90,10 +82,6 @@ const initialData = [
                     },
                     "25ab3221851d1bb4a806a442a2a6a100": {
                         displayName: "Prophecy of Mount Qaf",
-                        isUnlocked: false
-                    },
-                    "0fa4c742207211f43be1e5347fa94656": {
-                        displayName: "Divine Trials*",
                         isUnlocked: false
                     },
                 }
@@ -286,7 +274,7 @@ const initialData = [
                 title: "Amulets",
                 percentage: 5,
                 completedPercent: 0,
-                description: "Each amulet as well as each amulet upgrade gives 0.051% game completion.\n* Amulets unlocked from the Divine Trials don't give %.",
+                description: "Each amulet as well as each amulet upgrade gives 0.051% game completion.",
                 data: {
                     ExtendedHits: {
                         displayName: "Blade Dancer",
@@ -539,34 +527,6 @@ const initialData = [
                         level: 0,
                         maxLevel: 3,
                         description: "Chest in Lower City"
-                    },
-                    FireStormCharge: {
-                        displayName: "Flaming Whirlwind*",
-                        isUnlocked: false,
-                        level: 0,
-                        maxLevel: 1,
-                        description: "Divine Trials - Complete the Peacock memorial"
-                    },
-                    SuperArrow: {
-                        displayName: "Point of Honor*",
-                        isUnlocked: false,
-                        level: 0,
-                        maxLevel: 1,
-                        description: "Divine Trials - Complete the Stallion memorial"
-                    },
-                    RefillArrow: {
-                        displayName: "Arash's Quiver*",
-                        isUnlocked: false,
-                        level: 0,
-                        maxLevel: 1,
-                        description: "Divine Trials - Complete the Hound memorial"
-                    },
-                    FrozenShield: {
-                        displayName: "Frozen Truth*",
-                        isUnlocked: false,
-                        level: 0,
-                        maxLevel: 1,
-                        description: "Divine Trials - Complete the Arouch memorial"
                     }
                 }
             },
@@ -891,13 +851,8 @@ const initialData = [
                 title: "Skins",
                 percentage: 5,
                 completedPercent: 0,
-                description: "Each skin that is unlocked directly in the game world provides 1% game completion.\n* These skins don't count for %.",
+                description: "Each skin that is unlocked directly in the game world provides 1% game completion.",
                 data: {
-                    Default: {
-                        displayName: "Default*",
-                        isUnlocked: false,
-                        description: "Default skin after recieving the Royal Sash"
-                    },
                     DefaultChroma3: {
                         displayName: "Radiant",
                         isUnlocked: false,
@@ -922,61 +877,6 @@ const initialData = [
                         displayName: "Crimson",
                         isUnlocked: false,
                         description: "Old Royal Road, Chest in the tower like structure"
-                    },
-                    SargonSuperSaiyan: {
-                        displayName: "Exalted*",
-                        isUnlocked: false,
-                        description: "Unlocked on finishing the main story"
-                    },
-                    SargonVagabond: {
-                        displayName: "Young Sargon*",
-                        isUnlocked: false,
-                        description: "Unlocked from Ubisoft Connect rewards"
-                    },
-                    Silver: {
-                        displayName: "Swift Sargon*",
-                        isUnlocked: false,
-                        description: "Unlocked on finishing speedrun mode under 10 hours"
-                    },
-                    SandOfTimeChroma1: {
-                        displayName: "Holo Chroma*",
-                        isUnlocked: false,
-                        description: "Unlocked on finishing permadeath mode"
-                    },
-                    Bronze: {
-                        displayName: "Gold*",
-                        isUnlocked: false,
-                        description: "Unlocked on finishing permadeath mode on Immortal difficulty"
-                    },
-                    POP2008: {
-                        displayName: "Wanderer*",
-                        isUnlocked: false,
-                        description: "Unlocked on finishing the Boss Rush challenge"
-                    },
-                    SargonNaked: {
-                        displayName: "Rasha-Bare*",
-                        isUnlocked: false,
-                        description: "Unlocked on finishing the Boss Rush on No-Hit difficulty"
-                    },
-                    SargonNakedChroma01: {
-                        displayName: "Homa*",
-                        isUnlocked: false,
-                        description: "Divine Trials - Unlocked on finishing the Hound Memorial"
-                    },
-                    SargonNakedChroma04: {
-                        displayName: "Flowers*",
-                        isUnlocked: false,
-                        description: "Divine Trials - Unlocked on finishing the Auroch Memorial"
-                    },
-                    SargonNakedChroma02: {
-                        displayName: "Lion*",
-                        isUnlocked: false,
-                        description: "Divine Trials - Unlocked on finishing the Peacock Memorial"
-                    },
-                    SargonNakedChroma03: {
-                        displayName: "Cobra*",
-                        isUnlocked: false,
-                        description: "Divine Trials - Unlocked on finishing the Stallion Memorial"
                     }
                 }
             },
@@ -1276,12 +1176,276 @@ const initialData = [
         ]
     },
     {
+        // TODO: Check the order
+        tab: "Divine Trials - 4%",
+        data: [
+            {
+                title: "Trials",
+                percentage: 3.5,
+                completedPercent: 0,
+                description: "Each trial from this list provides 0.16% game completion.",
+                data: {
+                    "45febb446db6a8541a9737678377d8e6": {
+                        displayName: "Hound - Tick, Tick... Death",
+                        isUnlocked: false
+                    },
+                    "64facce1d562cb54bad531a144de264d": {
+                        displayName: "Hound - Rolling Thunder",
+                        isUnlocked: false
+                    },
+                    "593f2912cc92b6c42ac63787a297c464": {
+                        displayName: "Hound - Sand in the Hourglass",
+                        isUnlocked: false
+                    },
+                    "25f30d144a9fce140912d75c5d890d72": {
+                        displayName: "Hound - Time is Currency",
+                        isUnlocked: false
+                    },
+                    "edc7c52b2d88f7e4eb83c6ed90d31e81": {
+                        displayName: "Hound - Charging the Defense",
+                        isUnlocked: false
+                    },
+                    "3a1f24bb198bd7b4a804d82442a445f3": {
+                        displayName: "Hound - Hadhayosh EX",
+                        isUnlocked: false
+                    },
+                    "5ddd2359f0cf27b488cefc34384e3984": {
+                        displayName: "Peacock - Saved by the Bell",
+                        isUnlocked: false
+                    },
+                    "71f98cd335a4e104191c9213b5c736e7": {
+                        displayName: "Peacock - Down in the Dumps",
+                        isUnlocked: false
+                    },
+                    "142f18265b0424e449d47d058fe0224f": {
+                        displayName: "Peacock - Path of the Chakram",
+                        isUnlocked: false
+                    },
+                    "6ba8c4bb1daa494489c3559a9ed3261c": {
+                        displayName: "Peacock - Sharp as a Trap",
+                        isUnlocked: false
+                    },
+                    "9427bfefa072ee545b53e7f1ae4892c5": {
+                        displayName: "Peacock - Preference for Parrying",
+                        isUnlocked: false
+                    },
+                    "bbe8ef320eb8e274aae9437ee178797a": {
+                        displayName: "Peacock - Jahandar EX",
+                        isUnlocked: false
+                    },
+                    "8a911b56a3d4c274d81fb0df9ed4f64c": {
+                        displayName: "Stallion - Let it Grow!",
+                        isUnlocked: false
+                    },
+                    "34bddf40389eeaa469261bbd4054a340": {
+                        displayName: "Stallion - Persian Mind Tricks",
+                        isUnlocked: false
+                    },
+                    "0544b0a431b55d14584514f707075d6e": {
+                        displayName: "Stallion - Above and Beyond",
+                        isUnlocked: false
+                    },
+                    "14644f6f36beb0f46820fe1d468b3ded": {
+                        displayName: "Stallion - No Hit, No Mercy",
+                        isUnlocked: false
+                    },
+                    "25821e78130395e47babcdfcac3c5fb5": {
+                        displayName: "Stallion - Kiana and Chamrosh EX",
+                        isUnlocked: false
+                    },
+                    "81e63c1360194b643a928b66afd7a172": {
+                        displayName: "Auroch - Free Solo",
+                        isUnlocked: false
+                    },
+                    "907f57daa7fde98438b33f7be09bd73a": {
+                        displayName: "Auroch - A Battery of Tests",
+                        isUnlocked: false
+                    },
+                    "bcccbf905d39cb6458e1f7eb3f3b40e0": {
+                        displayName: "Auroch - Feet off the Floor",
+                        isUnlocked: false
+                    },
+                    "d591411474d6cee40ade0290a37fe496": {
+                        displayName: "Auroch - 1 vs. the World",
+                        isUnlocked: false
+                    },
+                    "5e9ad73dc989fa34b86d79bcefd56728": {
+                        displayName: "Auroch - Menolias EX",
+                        isUnlocked: false
+                    }
+                }
+            },
+            {
+                title: "Quest",
+                percentage: 0.5,
+                completedPercent: 0,
+                description: "Completing all four memorials finishes the quest and gives an extra 0.5%",
+                data: {
+                    "0fa4c742207211f43be1e5347fa94656": {
+                        displayName: "Divine Trials (Side Quest)",
+                        isUnlocked: false,
+                        description: ""
+                    }
+                }
+            },
+        ]
+    },
+    {
+        tab: "Mask of Darkness - 9%",
+        data: [
+            {
+                title: "Side Quests",
+                percentage: 2,
+                completedPercent: 0,
+                description: "Each quest from this list provides 1% game completion.",
+                data: {
+                    "932bddfd89d65ad46b08040afa81c8fa": {
+                        displayName: "A Snake in the Grass",
+                        isUnlocked: false,
+                        description: ""
+                    },
+                    "b097ba356a302b5499878f8806b5e8e3": {
+                        displayName: "Dark Nights of the Soul",
+                        isUnlocked: false,
+                        description: ""
+                    }
+                }
+            },
+            {
+                title: "Amulets",
+                percentage: 1.5,
+                completedPercent: 0,
+                description: "Each quest from this list provides 0.5% game completion.",
+                data: {
+                    "FastFallMine": {
+                        displayName: "Seal of Fate",
+                        isUnlocked: false
+                    },
+                    "RevengeCounter": {
+                        displayName: "Vengeance Reservoir",
+                        isUnlocked: false
+                    },
+                    "ChakramLifeSteal": {
+                        displayName: "Vampiric Chakram",
+                        isUnlocked: false
+                    }
+                }
+            },
+            {
+                // TODO: Check the order
+                title: "Additional Potions",
+                percentage: 1.5,
+                completedPercent: 0,
+                description: "Each potion from this list provides 0.5% game completion.",
+                data: {
+                    "DLC_Radjen_PotionUpgradeCount_02": {
+                        displayName: "East Path (Village)",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_PotionUpgradeCount_03": {
+                        displayName: "West Path (Caravan)",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_PotionUpgradeCount_01": {
+                        displayName: "Final Path",
+                        isUnlocked: false
+                    }
+                }
+            },
+            {
+                title: "Soma Flowers",
+                percentage: 2,
+                completedPercent: 0,
+                description: "Each flower from this list provides 0.5% game completion.",
+                data: {
+                    "DLC_Radjen_FullHaoma_03_UvishkaEX": {
+                        displayName: "Defeat Undead Uvishka",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_FullHaoma_01_Memory_East_Village": {
+                        displayName: "Finish East Path (Village)",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_FullHaoma_02_Memory_West_Caravan": {
+                        displayName: "Finish West Path (Caravan)",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_FullHaoma_04_UndeadBlackBelt": {
+                        displayName: "Defeat Undead Black Belt",
+                        isUnlocked: false
+                    }
+                }
+            },
+            {
+                // TODO: Give proper names
+                title: "Memory Fragments",
+                percentage: 1.5,
+                completedPercent: 0,
+                description: "Each fragment from this list provides 0.15% game completion.",
+                data: {
+                    "DLC_Radjen_MemoryFragment_01": {
+                        displayName: "Memory Fragment 1",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_02": {
+                        displayName: "Memory Fragment 2",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_03": {
+                        displayName: "Memory Fragment 3",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_04": {
+                        displayName: "Memory Fragment 4",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_05": {
+                        displayName: "Memory Fragment 5",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_06": {
+                        displayName: "Memory Fragment 6",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_07": {
+                        displayName: "Memory Fragment 7",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_08": {
+                        displayName: "Memory Fragment 8",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_09": {
+                        displayName: "Memory Fragment 9",
+                        isUnlocked: false
+                    },
+                    "DLC_Radjen_MemoryFragment_10": {
+                        displayName: "Memory Fragment 10",
+                        isUnlocked: false
+                    },
+                }
+            },
+            {
+                title: "Artaban",
+                percentage: 0.5,
+                completedPercent: 0,
+                description: "Defeating Artaban gives a book and 0.5% as the reward.",
+                data: {
+                    "DLC_Artaban_Fight_Book": {
+                        displayName: "Artaban, Master-at-Arms",
+                        isUnlocked: false
+                    }
+                }
+            },
+        ]
+    },
+    {
         tab: "Essentials %",
         data: [
             {
                 title: "Bosses",
                 completedPercent: 0,
-                description: "Bosses don't directly give % but items that give % are locked behind them.",
+                description: "Bosses don't directly give % but collectibes/quests that give % are locked behind them.",
                 data: {
                     "672a554f605e0d24a99038a79f6bf022": {
                         displayName: "Undead Prisoner",
@@ -1299,7 +1463,7 @@ const initialData = [
                         description: ""
                     },
                     "7fcd5e5402572724794e699c89afb937": {
-                        displayName: "Varham 1",
+                        displayName: "Varham, The White Lion I",
                         isUnlocked: false,
                         description: ""
                     },
@@ -1329,7 +1493,7 @@ const initialData = [
                         description: ""
                     },
                     "d620636f7bb3ec64f80de45cea914b2d": {
-                        displayName: "Varham 2",
+                        displayName: "Varham, The White Lion II",
                         isUnlocked: false,
                         description: ""
                     },
@@ -1374,9 +1538,158 @@ const initialData = [
                         description: ""
                     },
                     "76cc870c18c33c74e861dc0cb0de6131": {
-                        displayName: "Ardashir",
+                        displayName: "Ardashir, General of Persia",
                         isUnlocked: false,
                         description: ""
+                    },
+                    "932bddfd89d65ad46b08040afa81c8fa": {
+                        displayName: "Undead Uvishka",
+                        isUnlocked: false,
+                        description: ""
+                    },
+                    "23995256ec0140043a2601b1e6848a0a": {
+                        displayName: "Undead Black Belt",
+                        isUnlocked: false,
+                        description: ""
+                    },
+                    "cbff5e0a9614d364b8b4d7f6880542a4": {
+                        displayName: "Radjen, Predator of the Shadows",
+                        isUnlocked: false,
+                        description: ""
+                    },
+                    "ce2722c87a1e904458ab73529cbced30": {
+                        displayName: "Artaban, Master-at-Arms",
+                        isUnlocked: false,
+                        description: ""
+                    }
+                }
+            },
+        ]
+    },
+    {
+        tab: "No %",
+        data: [
+            {
+                title: "Main Quests",
+                completedPercent: 0,
+                description: "These main story quests don't count for percentage.",
+                data: {
+                    "e36c64cd5a982ce4b8571f8190c1ad43": {
+                        displayName: "Persia Under Attack",
+                        isUnlocked: false
+                    },
+                    "5c788318b1a856943aadce9af84d8000": {
+                        displayName: "Return to the Past",
+                        isUnlocked: false
+                    }
+                }
+            },
+            {
+                title: "Amulets",
+                percentage: 5,
+                completedPercent: 0,
+                description: "Amulets unlocked from the Divine Trials don't give %.",
+                data: {
+                    FireStormCharge: {
+                        displayName: "Flaming Whirlwind",
+                        isUnlocked: false,
+                        level: 0,
+                        maxLevel: 1,
+                        description: "Divine Trials - Complete the Peacock memorial"
+                    },
+                    SuperArrow: {
+                        displayName: "Point of Honor",
+                        isUnlocked: false,
+                        level: 0,
+                        maxLevel: 1,
+                        description: "Divine Trials - Complete the Stallion memorial"
+                    },
+                    RefillArrow: {
+                        displayName: "Arash's Quiver",
+                        isUnlocked: false,
+                        level: 0,
+                        maxLevel: 1,
+                        description: "Divine Trials - Complete the Hound memorial"
+                    },
+                    FrozenShield: {
+                        displayName: "Frozen Truth",
+                        isUnlocked: false,
+                        level: 0,
+                        maxLevel: 1,
+                        description: "Divine Trials - Complete the Arouch memorial"
+                    }
+                }
+            },
+            {
+                title: "Skins",
+                percentage: 5,
+                completedPercent: 0,
+                description: "These skins don't count for %.",
+                data: {
+                    Default: {
+                        displayName: "Default",
+                        isUnlocked: false,
+                        description: "Default skin after recieving the Royal Sash"
+                    },
+                    SargonSuperSaiyan: {
+                        displayName: "Exalted",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing the main story"
+                    },
+                    SargonVagabond: {
+                        displayName: "Young Sargon",
+                        isUnlocked: false,
+                        description: "Unlocked from Ubisoft Connect rewards"
+                    },
+                    Silver: {
+                        displayName: "Swift Sargon",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing speedrun mode under 10 hours"
+                    },
+                    SandOfTimeChroma1: {
+                        displayName: "Holo Chroma",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing permadeath mode"
+                    },
+                    Bronze: {
+                        displayName: "Gold",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing permadeath mode on Immortal difficulty"
+                    },
+                    POP2008: {
+                        displayName: "Wanderer",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing the Boss Rush challenge"
+                    },
+                    SargonNaked: {
+                        displayName: "Rasha-Bare",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing the Boss Rush on No-Hit difficulty"
+                    },
+                    SargonNakedChroma01: {
+                        displayName: "Homa",
+                        isUnlocked: false,
+                        description: "Divine Trials - Unlocked on finishing the Hound Memorial"
+                    },
+                    SargonNakedChroma04: {
+                        displayName: "Flowers",
+                        isUnlocked: false,
+                        description: "Divine Trials - Unlocked on finishing the Auroch Memorial"
+                    },
+                    SargonNakedChroma02: {
+                        displayName: "Lion",
+                        isUnlocked: false,
+                        description: "Divine Trials - Unlocked on finishing the Peacock Memorial"
+                    },
+                    SargonNakedChroma03: {
+                        displayName: "Cobra",
+                        isUnlocked: false,
+                        description: "Divine Trials - Unlocked on finishing the Stallion Memorial"
+                    },
+                    SargonRadjen: {
+                        displayName: "Shadows",
+                        isUnlocked: false,
+                        description: "Unlocked on finishing the Mask of Darkness DLC"
                     }
                 }
             },
