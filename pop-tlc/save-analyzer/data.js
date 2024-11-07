@@ -1586,7 +1586,6 @@ const initialData = [
             },
             {
                 title: "Amulets",
-                percentage: 5,
                 completedPercent: 0,
                 description: "Amulets unlocked from the Divine Trials don't give %.",
                 data: {
@@ -1622,7 +1621,6 @@ const initialData = [
             },
             {
                 title: "Skins",
-                percentage: 5,
                 completedPercent: 0,
                 description: "These skins don't count for %.",
                 data: {
