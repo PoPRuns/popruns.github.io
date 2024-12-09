@@ -50,7 +50,7 @@ const loadTriggers = [
     { "name": "Reservoir - Spire of Dreams", "coords": [36, 536, 60] },
     { "name": "Spire of Dreams - Reservoir", "coords": [128, 534, 47] },
     { "name": "Desert Middle Junction - Cavern", "coords": [45, 159, -17] },
-    { "name": "Cavern - Desert Middle Junction", "coords": [86, 184, -9] },
+    { "name": "Cavern - Desert Middle Junction", "coords": [85, 185, -9] },
     { "name": "Desert Right Junction - Cavern", "coords": [244, 77, -13] },
     { "name": "Cavern - Desert Right Junction", "coords": [214, 158, -13] },
     { "name": "Cavern - Royal Gardens", "coords": [164, 252, 2] },
