@@ -11,7 +11,7 @@ const loadTriggers = [
     { "name": "Desert Left Junction - Temple", "coords": [-258, 10, -27] },
     { "name": "Temple - Desert Middle Junction", "coords": [-4, 78, -42] },
     { "name": "Desert Middle Junction - Temple", "coords": [0, 107, -18] },
-    { "name": "Temple - Desert Right Junction", "coords": [222, -3, -46] },
+    { "name": "Temple - Desert Right Junction", "coords": [221, -2, -46] },
     { "name": "Desert Right Junction - Temple", "coords": [258, 6, -18] },
     { "name": "Desert Left Junction - King's Gate", "coords": [-330, -1, -10] },
     { "name": "King's Gate - Desert Left Junction", "coords": [-362, -57, 11] },
