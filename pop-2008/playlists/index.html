@@ -20,14 +20,21 @@
             display: flex;
         }
 
-        .btn {
+        .bubble-group {
             cursor: pointer;
         }
 
-        .btn:hover {
-            /* fill: white !important; */
-            stroke: white !important;
-            filter: drop-shadow(0px 0px 5px aqua);
+        .bubble-group:hover .bubble {
+            fill: white !important;
+            filter: drop-shadow(0px 0px 10px aqua);
+        }
+
+        .bubble-group:hover .bubble-dot {
+            fill: white;
+        }
+
+        .selected-none {
+            color: gray;
         }
 
         .other-playlists {
@@ -52,14 +59,18 @@
 <body>
     <div class="main-container">
         <svg viewBox="0 30 500 300" xmlns="http://www.w3.org/2000/svg">
-            <g transform="matrix(1, 0, 0, 1, 0.7970069765598708, 0.7757420059404048)">
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4q08Zu34HsU6UbIimm6ULa', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" cx="244.041" cy="280.223" rx="38.877" ry="38.877" transform="matrix(1, 0, -0.003484, 1, 1.135049, 1.567528)" />
+            <g id="map-elements" transform="matrix(1, 0, 0, 1, 0.7970069765598708, 0.7757420059404048)">
+                <ellipse style="stroke: black; fill: rgba(164, 158, 170, 0.3); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" cx="244.041" cy="280.223" rx="38.877" ry="38.877" transform="matrix(1, 0, -0.003484, 1, 1.135049, 1.567528)" />
+
                 <ellipse style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" cx="102.345" cy="218.035" rx="33.768" ry="33.768" />
                 <ellipse style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" cx="186.841" cy="118.487" rx="33.768" ry="33.768" />
                 <ellipse style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" cx="304.754" cy="118.757" rx="33.768" ry="33.768" />
                 <ellipse style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" cx="394.993" cy="218.337" rx="33.768" ry="33.768" />
-                <line style="paint-order: fill; stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" x1="245.46" y1="202.753" x2="245.46" y2="242.048" />
+
+                <line style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" x1="245.46" y1="202.753" x2="245.46" y2="242.048" />
                 <line style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" x1="277.809" y1="260.074" x2="305.619" y2="232.832" />
+                <line style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" x1="214.245" y1="257.236" x2="189.274" y2="229.994" />
+
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 190.274 231.256 C 188.935 229.577 157.805 240.549 156.789 253.966" />
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 339.117 255.183 C 337.778 256.862 306.648 245.89 305.632 232.473" transform="matrix(-1, 0, 0, -1, -0.000028, 0.000014)" />
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-origin: 201.462px 214.131px;" d="M 218.205 225.401 C 216.866 227.08 185.736 216.108 184.72 202.691" transform="matrix(-0.000001, 1, -1, -0.000001, 0.000018, 0.000008)" />
@@ -73,44 +84,25 @@
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 217.083 112.371 C 215.877 108.15 271.473 106.652 273.269 112.938" />
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 122.439 240.895 C 117.431 243.677 146.933 259.762 155.356 255.083" />
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 340.792 255.791 C 335.784 253.009 365.286 236.924 373.709 241.603" transform="matrix(-1, 0, 0, -1, 0.000009, 0.000014)" />
+
                 <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 46.019 166.242 C 37.382 181.869 64.291 206.835 72.929 191.208" />
                 <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 429.082 196.821 C 420.445 181.194 447.354 156.228 455.992 171.855" transform="matrix(-1, 0, 0, -1, 0.000032, -0.000008)" />
                 <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 168.842 90.759 C 146.694 86.54 160.059 53.439 168.275 55.004" />
                 <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 335.659 55.855 C 313.511 60.074 326.876 93.175 335.092 91.61" transform="matrix(-1, 0, 0, -1, 0.000029, 0.000014)" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs6at4edL7E5smMLw8lvrM-w', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="156.194" cy="252.966" rx="13.053" ry="13.053" />
-                <line style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" x1="214.245" y1="257.236" x2="189.274" y2="229.994" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs59tZ48U1hEvXOC7qdw1Y7k', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="210.677" cy="192.834" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4CudGGQz8AZUksclh40a4M', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="283.106" cy="192.24" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs5Mve3iA1ecO0iwC17O32_E', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="339.855" cy="251.478" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4Usycg8j6RGZ1YB6ob4eaL', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="123.466" cy="239.508" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs5NP2RRu7xgySAyPZoB5jvz', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="123.979" cy="196.78" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs5u0utlFNvID3wh6z8Sgwad', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="79.604" cy="240.236" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7o3qWmne2YKpOpp4flIxC7', '_blank')" class="btn" style="fill-rule: evenodd; stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="80.712" cy="197.482" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs50aGzYIeMrL3tmtKyKf7XR', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="46.795" cy="166.16" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs5kdC2XNNJMPOOr95SnhX2q', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="169.977" cy="54.058" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7zBS58BJHjY7iUnsRPKdLJ', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="325.05" cy="54.922" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs6Zwn2-j2udwVM3wYqPXAu9', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="449.341" cy="165.863" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7TER846Dfm7YGdIMKnJBDn', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="417.829" cy="196.24" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs5K99E1SvDd20MpuqSgde8u', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="417.666" cy="238.777" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7Ok1ZtrHk-G2JT8ff9kcBQ', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="373.156" cy="197.402" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs6ZdIBVrwAeNr3OydNCeqrl', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="373.372" cy="240.535" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs42VHYygYq2ufj-9XDLHMl5', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="312.781" cy="86.489" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7fpDwkRRX2Oqb5Eqc6_yW_', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="333.563" cy="125.568" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs75RLDM8kH4XVxSLj1GRor0', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="297.673" cy="148.972" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs5iZffy5UretrfVp_q6_4bh', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="275.269" cy="111.379" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs6dIWmIQo-bEM98OLp_aohk', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="216.515" cy="110.244" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4GS5XepANjWzE2sI_ZUKuB', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="178.49" cy="88.11" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7s8shMnqPHpNnP6E_sA6Il', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="196.084" cy="149.404" rx="13.053" ry="13.053" />
-                <ellipse onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs7FRKn5sJwtXPsexegvuhI9', '_blank')" class="btn" style="stroke: black; fill: rgb(164, 158, 170); stroke-width: 2px;" cx="158.059" cy="125.432" rx="13.053" ry="13.053" />
             </g>
         </svg>
         <div class="other-playlists">
+            <div><strong>Selected Playlist</strong> - <span id="selected-playlist" class="selected-none">None</span></div>
+
+            <hr>
             <h2>Other Playlists</h2>
-            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs56ysyrrq_GALGQsjk1E80b', '_blank')">Pre-Temple</div>
-            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4o9G-3Kk-qTcWvtKu_jjUR', '_blank')">Mental Realms/Arhiman Fight</div>
+            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs56ysyrrq_GALGQsjk1E80b', '_blank')">Canyon</div>
+            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4o9G-3Kk-qTcWvtKu_jjUR', '_blank')">Mental Realms / Ahriman Fight</div>
             <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4JDnCbs_ZmWDrhOpgxhmmI', '_blank')">Epilogue</div>
             <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs58vx3dOqjepH4KneaUFNHQ', '_blank')">Glitches/Tricks</div>
         </div>
     </div>
+
+    <script src="app.js"></script>
 
 </html>
