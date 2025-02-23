@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>PoP 2008 Playlists</title>
     <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <style>
         body {
             background: #000000 url('../../static/images/pop_2008_map_bg.png') no-repeat center center fixed;
@@ -16,6 +17,13 @@
             font-family: sans-serif;
         }
 
+        #loader {
+            padding: 40vh 45vw;
+            font-size: 3vw;
+            filter: drop-shadow(0px 0px 5px aqua);
+            display: none;
+        }
+
         .main-container {
             display: flex;
         }
@@ -24,20 +32,26 @@
             cursor: pointer;
         }
 
-        .bubble-group:hover .bubble {
-            fill: white !important;
-            filter: drop-shadow(0px 0px 10px aqua);
+        .bubble-group:hover .bubble,
+        .group-selected .bubble {
+            stroke: aqua;
         }
 
-        .bubble-group:hover .bubble-dot {
+        .bubble-group:hover .bubble-dot,
+        .group-selected .bubble-dot {
             fill: white;
+        }
+
+        .group-selected .bubble {
+            filter: drop-shadow(0px 0px 10px aqua);
+            fill: white !important;
         }
 
         .selected-none {
             color: gray;
         }
 
-        .other-playlists {
+        .leaderboard-container {
             width: 30%;
             font-size: 1.25vw;
             margin-top: 3vw;
@@ -53,12 +67,34 @@
         .playlist-link:hover {
             filter: drop-shadow(0px 0px 5px aqua);
         }
+
+        #leaderboard-table {
+            margin-top: 1.5vw;
+        }
+
+        #leaderboard-table thead td {
+            padding-block: 1vw;
+            color: aqua;
+        }
+
+        #leaderboard-table tbody td {
+            padding-block: 0.5vw;
+        }
+
+        #leaderboard-table a {
+            color: #FFFFFF;
+        }
+
+        #leaderboard-table a:hover {
+            filter: drop-shadow(0px 0px 5px aqua);
+        }
     </style>
 </head>
 
 <body>
+    <div id="loader">Loading...</div>
     <div class="main-container">
-        <svg viewBox="0 30 500 300" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 50 500 300" xmlns="http://www.w3.org/2000/svg">
             <g id="map-elements" transform="matrix(1, 0, 0, 1, 0.7970069765598708, 0.7757420059404048)">
                 <ellipse style="stroke: black; fill: rgba(164, 158, 170, 0.3); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" cx="244.041" cy="280.223" rx="38.877" ry="38.877" transform="matrix(1, 0, -0.003484, 1, 1.135049, 1.567528)" />
 
@@ -84,22 +120,11 @@
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 217.083 112.371 C 215.877 108.15 271.473 106.652 273.269 112.938" />
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 122.439 240.895 C 117.431 243.677 146.933 259.762 155.356 255.083" />
                 <path style="stroke: black; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 340.792 255.791 C 335.784 253.009 365.286 236.924 373.709 241.603" transform="matrix(-1, 0, 0, -1, 0.000009, 0.000014)" />
-
-                <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 46.019 166.242 C 37.382 181.869 64.291 206.835 72.929 191.208" />
-                <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 429.082 196.821 C 420.445 181.194 447.354 156.228 455.992 171.855" transform="matrix(-1, 0, 0, -1, 0.000032, -0.000008)" />
-                <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px;" d="M 168.842 90.759 C 146.694 86.54 160.059 53.439 168.275 55.004" />
-                <path style="stroke-dasharray: 2, 3; stroke: white; fill: rgba(164, 158, 170, 0); stroke-width: 2px; transform-box: fill-box; transform-origin: 50% 50%;" d="M 335.659 55.855 C 313.511 60.074 326.876 93.175 335.092 91.61" transform="matrix(-1, 0, 0, -1, 0.000029, 0.000014)" />
             </g>
         </svg>
-        <div class="other-playlists">
-            <div><strong>Selected Playlist</strong> - <span id="selected-playlist" class="selected-none">None</span></div>
-
-            <hr>
-            <h2>Other Playlists</h2>
-            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs56ysyrrq_GALGQsjk1E80b', '_blank')">Canyon</div>
-            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4o9G-3Kk-qTcWvtKu_jjUR', '_blank')">Mental Realms / Ahriman Fight</div>
-            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs4JDnCbs_ZmWDrhOpgxhmmI', '_blank')">Epilogue</div>
-            <div class="playlist-link" onclick="window.open('https://www.youtube.com/playlist?list=PLUbxAKkVPqs58vx3dOqjepH4KneaUFNHQ', '_blank')">Glitches/Tricks</div>
+        <div class="leaderboard-container">
+            <div><strong>Selected Level</strong> - <span id="selected-playlist" class="selected-none">None</span></div>
+            <table id="leaderboard-table"></table>
         </div>
     </div>
 
