@@ -58,7 +58,7 @@ const loadTriggers = [
     { "name": "Royal Gardens - Royal Spire", "coords": [321, 377, 28] },
     { "name": "Royal Spire - Royal Gardens", "coords": [399, 393, 32] },
     { "name": "Royal Gardens - Spire of Dreams", "coords": [208, 390, 28] },
-    { "name": "Spire of Dreams - Royal Gardens", "coords": [181, 475, 27] },
+    { "name": "Spire of Dreams - Royal Gardens", "coords": [180, 473, 27] },
     { "name": "Spire of Dreams - Coronation Hall", "coords": [211, 571, 35] },
     { "name": "Coronation Hall - Spire of Dreams", "coords": [296, 614, 34] },
     { "name": "Coronation Hall - Palace Rooms", "coords": [349, 668, 36] },
