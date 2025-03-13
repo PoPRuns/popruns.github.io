@@ -46,7 +46,7 @@ const loadTriggers = [
     { "name": "Observatory - Heaven's Stair", "coords": [-311, 634, 220] },
     { "name": "Heaven's Stair - Reservoir", "coords": [-246, 632, 20] },
     { "name": "Reservoir - Heaven's Stair", "coords": [-139, 633, 27] },
-    { "name": "Reservoir - Spire of Dreams", "coords": [-59, 532, 41] },
+    { "name": "Reservoir - Spire of Dreams", "coords": [-58, 532, 41] },
     { "name": "Reservoir - Spire of Dreams", "coords": [36, 536, 60] },
     { "name": "Spire of Dreams - Reservoir", "coords": [128, 534, 47] },
     { "name": "Desert Middle Junction - Cavern", "coords": [45, 159, -17] },
