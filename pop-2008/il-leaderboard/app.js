@@ -83,16 +83,16 @@ const levels = [
     {
         name: "Tower of Ahriman",
         playlistId: "PLUbxAKkVPqs7Ok1ZtrHk-G2JT8ff9kcBQ",
-        cx: "373.156",
-        cy: "197.402",
+        cx: "373.372",
+        cy: "240.535",
         row: 42,
         col: 5
     },
     {
         name: "Tower of Ormazd",
         playlistId: "PLUbxAKkVPqs6ZdIBVrwAeNr3OydNCeqrl",
-        cx: "373.372",
-        cy: "240.535",
+        cx: "373.156",
+        cy: "197.402",
         row: 42,
         col: 11
     },
