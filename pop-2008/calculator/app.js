@@ -15,13 +15,16 @@ function processJSON() {
     const pointX = parseFloat(document.getElementById('pointX').value);
     const pointY = parseFloat(document.getElementById('pointY').value);
 
+    const ledgeX = parseFloat(document.getElementById('ledgeX').value);
+    const ledgeY = parseFloat(document.getElementById('ledgeY').value);
+
     if (isNaN(pointX) || isNaN(pointY)) {
         alert('Please select load trigger coordinates.');
         return;
     }
 
-    displayTable(beamData, pointX, pointY);
-    document.getElementById("results").style.display = "block";
+    displayTable(beamData, pointX, pointY, ledgeX, ledgeY);
+    document.getElementById("results").style.display = null;
 }
 window.processJSON = processJSON;
 
@@ -32,7 +35,20 @@ function setLoadTriggerCoords(value) {
 }
 window.setLoadTriggerCoords = setLoadTriggerCoords;
 
-function displayTable(data, pointX, pointY) {
+function handleChangeMode(value) {
+    const ledgestorage = document.getElementById("ledgestorage");
+    if (value === "ledgewarp") ledgestorage.childNodes.forEach(elem => elem.disabled = false);
+    else ledgestorage.childNodes.forEach(elem => elem.disabled = true);
+}
+window.handleChangeMode = handleChangeMode;
+
+function getBeamDisplay(x1, y1, x2, y2) {
+    const beamElement = document.createElement('pre');
+    beamElement.textContent = `(${x1.toFixed(3)}, ${y1.toFixed(3)}) 🠮 (${x2.toFixed(3)}, ${y2.toFixed(3)})`;
+    return beamElement;
+}
+
+function displayTable(data, pointX, pointY, ledgeX, ledgeY) {
     tableBody.textContent = '';
     const mode = document.getElementById("mode").value;
 
@@ -57,21 +73,19 @@ function displayTable(data, pointX, pointY) {
             const { x1, y1, x2, y2, distance } = item;
 
             const row = document.createElement('tr');
-            row.innerHTML = `
-                    <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
-                    <td>${estimateLocation(x1, y1)}</td>
-                    <td><pre>${nearestLoad(x1, y1)}</pre></td>
-                    <td class="text-important">${distance.toFixed(3)}</td>
-                `;
-
+            row.insertCell().appendChild(getBeamDisplay(x1, y1, x2, y2));
+            row.insertCell().textContent = estimateLocation(x1, y1);
+            row.insertCell().appendChild(nearestLoad(x1, y1));
+            Object.assign(row.insertCell(), { textContent: distance.toFixed(3), className: "text-important" });
             tableBody.appendChild(row);
         });
     }
-    else if (mode === "templewarp") {
+
+    else if (mode === "ledgewarp") {
         document.getElementById("frameHeader").style.display = null;
         const calculatedDistances = data.map(item => {
             const { x1, y1, x2, y2 } = item;
-            const [distance, frame] = closestTempleWarpDistance(x2, y2, pointX, pointY);
+            const [distance, frame] = closestLedgeWarpDistance(x2, y2, pointX, pointY, ledgeX, ledgeY);
             return {
                 x1,
                 y1,
@@ -90,14 +104,11 @@ function displayTable(data, pointX, pointY) {
             const { x1, y1, x2, y2, distance, frame } = item;
 
             const row = document.createElement('tr');
-            row.innerHTML = `
-                    <td><pre>(${x1}, ${y1}) &#x1F82E; (${x2}, ${y2})</pre></td>
-                    <td>${estimateLocation(x1, y1)}</td>
-                    <td><pre>${nearestLoad(x1, y1)}</pre></td>
-                    <td class="text-important">${distance.toFixed(3)}</td>
-                    <td class="text-important">${frame}</td>
-                `;
-
+            row.insertCell().appendChild(getBeamDisplay(x1, y1, x2, y2));
+            row.insertCell().textContent = estimateLocation(x1, y1);
+            row.insertCell().appendChild(nearestLoad(x1, y1));
+            Object.assign(row.insertCell(), { textContent: distance.toFixed(3), className: "text-important" });
+            Object.assign(row.insertCell(), { textContent: frame, className: "text-important" });
             tableBody.appendChild(row);
         });
     }
@@ -124,13 +135,13 @@ function distanceBetweenPoints(x1, y1, x2, y2) {
     return Math.sqrt(a * a + b * b)
 }
 
-function closestTempleWarpDistance(x2, y2, x, y) {
-    let minDistance = distanceBetweenPoints(x2, y2, x, y);
+function closestLedgeWarpDistance(xb, yb, x, y, xl, yl) {
+    let minDistance = distanceBetweenPoints(xb, yb, x, y);
     let closestFrame = 0;
     for (let i = 1; i <= 15; i++) {
-        x2 = 0.75 * x2;
-        y2 = 0.75 * y2;
-        const distance = distanceBetweenPoints(x2, y2, x, y);
+        xb = 0.75 * xb + 0.25 * xl;
+        yb = 0.75 * yb + 0.25 * yl;
+        const distance = distanceBetweenPoints(xb, yb, x, y);
         if (distance < minDistance) {
             minDistance = distance;
             closestFrame = i;
@@ -198,5 +209,7 @@ function nearestLoad(x, y) {
         }
     }
 
-    return closestLoad;
+    const nearestLoadElement = document.createElement('pre');
+    nearestLoadElement.textContent = closestLoad;
+    return nearestLoadElement;
 }

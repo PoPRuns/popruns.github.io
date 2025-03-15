@@ -5,99 +5,147 @@
     <meta charset="UTF-8">
     <title>PoP 2008 Calculator</title>
     <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
-    <!-- Latest compiled and minified Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Latest compiled Bootstrap js -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> -->
     <style>
         html {
-            background: var(--bs-gray-300);
+            background: #000000 url('../../static/images/pop_2008_map_bg.png') no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
         }
 
         body {
+            background: #00000080;
+            color: white;
+            color-scheme: dark;
+            font-family: sans-serif;
             margin: auto;
-            padding: 30px;
-            max-width: 980px;
+            padding: 2vw;
+            max-width: max(60vw, 400px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.5vw;
+            font-size: 1vw;
+        }
+
+        h1 {
+            font-size: 2vw;
+        }
+
+        select,
+        input,
+        button {
+            padding: 0.3vw;
+            margin: 0.3vw;
+            border: none;
+            border-radius: 0.4vw;
+            font-size: 1vw;
+        }
+
+        select {
+            height: 2vw;
+        }
+
+        button {
+            padding: 0.6vw;
+            ;
+            cursor: pointer;
+            background-color: darkcyan;
+        }
+
+        button:hover {
+            background-color: #00b4b4;
+        }
+
+        thead {
+            font-weight: bolder;
         }
 
         td {
-            padding: 10px 15px 0 0;
+            padding: 0.5vw 1.5vw;
         }
 
         input[type=number] {
-            width: 100px;
-            margin-right: 20px;
+            width: 5vw;
+            height: 1.4vw;
+            margin-right: 2vw;
         }
 
         .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2vw;
             width: fit-content;
             text-align: left;
         }
 
         #tableBody {
-            font-size: 0.9rem;
+            font-size: 0.9vw;
         }
 
         .text-important {
             text-align: center;
-            color: darkcyan !important;
+            color: cyan !important;
             font-weight: bolder;
         }
     </style>
 </head>
 
-<body>
+<body data-bs-theme="dark">
     <h1>PoP 2008 Calculator</h1>
 
-    <br />
-
     <div class="input-container">
-        <label>Select Load load trigger:</label>&nbsp;
-        <select name="load" id="loadSelect" onchange="setLoadTriggerCoords(event.target.value)">
-            <option value="null,null">--</option>
-        </select>
+        <div>
+            <label>Select Load load trigger</label>&nbsp;
+            <select name="load" id="loadSelect" onchange="setLoadTriggerCoords(event.target.value)">
+                <option value="null,null">--</option>
+            </select>
 
-        <div style="margin: 0.5rem;">(or)</div>
 
-        <label>Enter coordinates of load trigger:</label>&nbsp;
-        <label for="pointX"><b>X</b></label>
-        <input id="pointX" type=number step=0.001>
-        <label for="pointY"><b>Y</b></label>
-        <input id="pointY" type=number step=0.001>
+            <div>(or)</div>
 
-        <br /><br />
 
-        <label>Select Mode of traversal:</label>&nbsp;
-        <select name="mode" id="mode">
-            <option value="airwalk">Air-Walk</option>
-            <option value="templewarp">Temple Warp</option>
-        </select>
+            <label>Enter coordinates of load trigger </label>&nbsp;
+            <label for="pointX"><b>X</b></label>
+            <input id="pointX" type=number step=0.001>
+            <label for="pointY"><b>Y</b></label>
+            <input id="pointY" type=number step=0.001>
+        </div>
 
-        <br /><br />
-    </div>
+        <div>
+            <label>Select Mode of traversal</label>&nbsp;
+            <select name="mode" id="mode" onchange="handleChangeMode(event.target.value)">
+                <option value="airwalk">Air-Walk</option>
+                <option value="ledgewarp">Ledge Warp</option>
+            </select>
 
-    <button class="btn btn-primary" onclick="processJSON()">Calculate Distance</button>
 
-    <br /><br />
+            <div id="ledgestorage">
+                <label>Enter coordinates of ledge storage </label>&nbsp;
+                <label for="ledgeX"><b>X</b></label>
+                <input id="ledgeX" value=0 type=number step=0.001 disabled>
+                <label for="ledgeY"><b>Y</b></label>
+                <input id="ledgeY" value=0 type=number step=0.001 disabled>
+            </div>
+        </div>
 
-    <div id="results" style="display: none;">
-        <table class="table table-striped" id="dataTable">
-            <thead>
-                <tr>
-                    <th>Beam</th>
-                    <th>Location*</th>
-                    <th>Nearest Load</th>
-                    <th>Distance</th>
-                    <th id="frameHeader" style="display: none;">Frame</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-        <label><b>*</b> - Calculates nearest Fertile Ground</label>
+        <button onclick="processJSON()">Calculate Distance</button>
+
+        <div id="results" style="display: none;" rules=rows>
+            <table id="dataTable">
+                <thead>
+                    <td>Beam</td>
+                    <td>Location</td>
+                    <td>Nearest Load</td>
+                    <td>Distance</td>
+                    <td id="frameHeader" style="display: none;">Frame</td>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module" src="app.js"></script>
