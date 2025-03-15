@@ -205,7 +205,7 @@ function nearestLoad(x, y) {
 
         if (distance < minDistance) {
             minDistance = distance;
-            closestLoad = `(${loadX}, ${loadY}, ${loadY})`;
+            closestLoad = `(${loadX}, ${loadY}, ${loadZ})`;
         }
     }
 
