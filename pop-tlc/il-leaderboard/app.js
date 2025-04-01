@@ -86,7 +86,7 @@ async function fetchRunData(levelId, varKey = null, varValue = null) {
 
         if (bestRun) {
             const userData = data.data.players.data[0];
-            return [bestRun.run.times.primary_t, userData.names.international, userData.location.country.code];
+            return [bestRun.run.times.primary_t, bestRun?.run?.videos?.links?.[0]?.uri, userData?.names?.international, userData?.location?.country.code];
         }
     } catch (error) {
         console.error('Error fetching run data:', error);
@@ -113,21 +113,26 @@ function insertCell(levelVar, row, index, subCatString) {
 }
 
 function populateRunCell(info, cell) {
-    const [time, playerId, countryCode] = info;
+    const [time, runLink, playerId, countryCode] = info;
     const timeDiv = document.createElement('div');
     timeDiv.innerText = `${formatTime(time)}`;
     timeDiv.style.color = 'rgba(209,213,219,.8)';
+    if (runLink !== undefined) {
+        timeDiv.style.cursor = 'pointer';
+        timeDiv.onclick = () => window.open(runLink, "_blank");
+    }
     cell.appendChild(timeDiv);
     if (playerId !== null) {
         const playerDiv = document.createElement('div');
         playerDiv.style.display = 'flex';
         playerDiv.style.justifyContent = 'center';
-        if (countryCode !== null) {
+        if (countryCode !== null && countryCode !== undefined) {
             const flagImg = document.createElement('img');
-            flagImg.src = `https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/${countryCode}.svg`;
+            flagImg.src = `https://www.speedrun.com/images/flags/${countryCode}.png`;
             flagImg.alt = `flag_${countryCode}`;
-            flagImg.width = 18;
-            flagImg.style.paddingRight = '5px';
+            flagImg.width = "18";
+            flagImg.height = "12";
+            flagImg.style.padding = '5px 5px 0px 5px';
             playerDiv.appendChild(flagImg);
         }
         const playerElement = document.createElement('span');
