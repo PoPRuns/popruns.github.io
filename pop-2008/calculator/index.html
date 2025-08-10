@@ -91,6 +91,15 @@
             color: cyan !important;
             font-weight: bolder;
         }
+
+        #frameHeader a {
+            color: white;
+            text-decoration: none;
+        }
+
+        #frameHeader a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -141,7 +150,15 @@
                     <td>Location</td>
                     <td>Nearest Load</td>
                     <td>Distance</td>
-                    <td id="frameHeader" style="display: none;">Frame</td>
+                    <td id="frameHeader" style="display: none;">
+                        <a
+                            href="https://almond-record-a13.notion.site/Ledgewarp-Pause-Buffering-219f3900e96080c894e0d07c73426870"
+                            target="_blank"
+                            title="Click for explanation"
+                        >
+                            Position🔗
+                        </a>
+                    </td>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
