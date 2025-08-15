@@ -1,0 +1,33 @@
+﻿@page "/pop-2008/combo-generator"
+@using PoprunsBlazorPages.Pop2008.ComboGenerator
+
+<PageTitle>PoP 2008 Combo Generator</PageTitle>
+
+<form @onsubmit="GetCombos">
+	<input
+		type="number"
+		min="@Generator.MinHp"
+		required
+		@bind="_hp"/>
+	<select required @bind="_enemy">
+		<option value="">--Choose enemy--</option>
+		<option>@Enemy.Hunter</option>
+		<option>@Enemy.Concubine</option>
+		<option>@Enemy.Alchemist</option>
+		<option>@Enemy.Dad</option>
+	</select>
+	<input type="checkbox" @bind="_canStartWithB0"/>
+	<input type="submit" value="Compute"/>
+	<br/>
+</form>
+@_combos
+
+@code {
+	private int? _hp;
+	private Enemy? _enemy;
+	private bool _canStartWithB0 = true;
+
+	private string _combos = string.Empty;
+
+	private void GetCombos() => _combos = Generator.GetCombos((int)_hp!, (Enemy)_enemy!, _canStartWithB0);
+}
