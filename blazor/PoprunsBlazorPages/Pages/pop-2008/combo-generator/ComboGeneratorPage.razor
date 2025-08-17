@@ -3,24 +3,46 @@
 
 <PageTitle>PoP 2008 Combo Generator</PageTitle>
 
+<div class="background-root">
+<div class="foreground-root">
+
+<h1>PoP 2008 Combo Generator</h1>
+
 <form @onsubmit="GetCombos">
-	<input
-		type="number"
-		min="@Generator.MinHp"
-		required
-		@bind="_hp"/>
-	<select required @bind="_enemy">
-		<option value="">--Choose enemy--</option>
-		<option>@Enemy.Hunter</option>
-		<option>@Enemy.Concubine</option>
-		<option>@Enemy.Alchemist</option>
-		<option>@Enemy.Dad</option>
-	</select>
-	<input type="checkbox" @bind="_canStartWithB0"/>
-	<input type="submit" value="Compute"/>
-	<br/>
+<div>
+	<div class="input-row">
+		<label>Enter damage required to kill enemy</label>&nbsp;
+		<input type="number" min="@Generator.MinHp" required @bind="_hp"/>
+	</div>
+
+	<div class="input-row">
+		<label>Select enemy</label>&nbsp;
+		<select required @bind="_enemy">
+			<option value="">--</option>
+			<option>@Enemy.Hunter</option>
+			<option>@Enemy.Concubine</option>
+			<option>@Enemy.Alchemist</option>
+			<option>@Enemy.Dad</option>
+		</select>
+	</div>
+
+	<div class="input-row">
+		<label>Can start with B0?</label>&nbsp;
+		<input type="checkbox" @bind="_canStartWithB0"/>
+	</div>
+</div>
+<br/>
+<div class="button">
+	<button type="submit">Generate Combo</button>
+</div>
+<br/>
+<div class="output">
+	<label>@_combos</label>
+</div>
 </form>
-@_combos
+
+</div>
+</div>
 
 @code {
 	private int? _hp;

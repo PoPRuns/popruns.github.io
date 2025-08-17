@@ -1,0 +1,86 @@
+﻿.background-root {
+    background-image: url('/static/images/pop_2008_map_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: max(100vh, 700px);
+    width: max(100vw, 500);
+}
+
+.foreground-root {
+    background: #00000080;
+    color: white;
+    color-scheme: dark;
+    font-family: sans-serif;
+    margin: auto;
+    padding: max(2vw, 40px);
+    max-width: max(3vw, 600px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: max(1vw, 20px);
+}
+
+h1 {
+    font-size: max(2vw, 40px);
+}
+
+select,
+input,
+button {
+    padding: max(0.3vw, 6px);
+    margin: max(0.3vw, 6px);
+    border: none;
+    border-radius: max(0.4vw, 8px);
+    font-size: max(1vw, 20px);
+}
+
+select {
+    height: max(2w, 40px);
+}
+
+button {
+    padding: max(0.6vw, 12px);
+    cursor: pointer;
+    background-color: darkcyan;
+}
+
+button:hover {
+    background-color: #00b4b4;
+}
+
+button:active {
+    background-color: #07d0d0;
+}
+
+input[type=number] {
+    width: max(5vw, 100px);
+    height: max(1.4vw, 28px);
+    margin-right: max(2vw, 40px);
+}
+
+input[type=checkbox] {
+    width: max(2vw, 40px);
+    height: max(2vw, 40px);
+    accent-color: darkcyan;
+}
+
+.input-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.output {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Consolas;
+}

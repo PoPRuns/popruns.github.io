@@ -18,15 +18,22 @@ def get_env(args):
 
 def build(env):
     if env == "local":
+        print("Removing existing published data...")
         shutil.rmtree(path("_framework"), ignore_errors=True)
         shutil.rmtree(path("__blazor"), ignore_errors=True)
+
+    print("Publishing PoprunsBlazorPages...")
     subprocess.run(["dotnet", "publish", path("blazor/PoprunsBlazorPages"), "-c", "Release", "-o", path("blazor/publish")])
-    if env == "deploy":
-        os.remove(path("blazor/publish/wwwroot/index.html"))
+
+    print("Moving published data...")
     (shutil.copytree if env == "local" else shutil.move)(path("blazor/publish/wwwroot/_framework"), path("_framework"))
     shutil.copytree(path("blazor/publish/wwwroot"), path("__blazor/wwwroot")) 
+    
     if env == "deploy":
+        print("Removing blazor directory...")
         shutil.rmtree(path("blazor"))
+    
+    print("Build done.")
 
 def path(p):
     return os.path.normpath(p)
