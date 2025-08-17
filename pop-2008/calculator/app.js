@@ -37,8 +37,7 @@ window.setLoadTriggerCoords = setLoadTriggerCoords;
 
 function handleChangeMode(value) {
     const ledgestorage = document.getElementById("ledgestorage");
-    if (value === "ledgewarp") ledgestorage.childNodes.forEach(elem => elem.disabled = false);
-    else ledgestorage.childNodes.forEach(elem => elem.disabled = true);
+    ledgestorage.style.display = (value === "ledgewarp" ? "block" : "none");
 }
 window.handleChangeMode = handleChangeMode;
 
