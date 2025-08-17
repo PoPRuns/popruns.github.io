@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoP 2008 Calculator</title>
     <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
     <!-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> -->
@@ -21,42 +22,46 @@
             color-scheme: dark;
             font-family: sans-serif;
             margin: auto;
-            padding: 2vw;
+            padding: max(2vw, 20px);
             max-width: max(60vw, 400px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5vw;
-            font-size: 1vw;
+            gap: max(0.5vw, 10px);
+            font-size: max(1vw, 12px);
         }
 
         h1 {
-            font-size: 2vw;
+            font-size: max(2vw, 16px);
         }
 
         select,
         input,
         button {
-            padding: 0.3vw;
-            margin: 0.3vw;
+            padding: max(0.3vw, 5px);
+            margin: max(0.3vw, 5px);
             border: none;
-            border-radius: 0.4vw;
-            font-size: 1vw;
+            border-radius: max(0.4vw, 5px);
+            font-size: max(1vw, 12px);
         }
 
         select {
-            height: 2vw;
+            height: max(2vw, 24px);
         }
 
         button {
-            padding: 0.6vw;
-            ;
+            padding: max(0.6vw, 7px);
             cursor: pointer;
             background-color: darkcyan;
         }
 
         button:hover {
             background-color: #00b4b4;
+        }
+
+        #results {
+            max-width: max(57vw, 380px);
+            overflow-x: auto;
         }
 
         thead {
@@ -68,22 +73,22 @@
         }
 
         input[type=number] {
-            width: 5vw;
-            height: 1.4vw;
-            margin-right: 2vw;
+            width: max(5vw, 30px);
+            height: max(1.4vw, 14px);
+            margin-right: max(2vw, 15px);
         }
 
         .input-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2vw;
+            gap: max(2vw, 15px);
             width: fit-content;
             text-align: left;
         }
 
         #tableBody {
-            font-size: 0.9vw;
+            font-size: max(0.9vw, 11px);
         }
 
         .text-important {
@@ -108,7 +113,7 @@
 
     <div class="input-container">
         <div>
-            <label>Select Load load trigger</label>&nbsp;
+            <label>Select load trigger</label>&nbsp;
             <select name="load" id="loadSelect" onchange="setLoadTriggerCoords(event.target.value)">
                 <option value="null,null">--</option>
             </select>
