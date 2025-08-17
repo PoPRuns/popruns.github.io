@@ -21,7 +21,7 @@ const createCell = (content, cellType = 'td') => {
   return cell;
 };
 
-fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
+fetch("data.json")
   .then(response => response.json())
   .then(data => {
     const players = data.players;
@@ -148,6 +148,8 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       const groupTitle = document.createElement('div');
       groupTitle.classList.add('section-title');
       groupTitle.innerText = `Group ${group.id}`;
+      const tableContainer = document.createElement('div');
+      tableContainer.classList.add('scroll-wrap');
       const groupTable = document.createElement('table');
       groupTable.classList.add('schedule-table');
       const groupThead = document.createElement('thead');
@@ -186,8 +188,9 @@ fetch("https://api.npoint.io/21f2d9c5dbc231974f6a")
       groupThead.appendChild(headerRow);
       groupTable.appendChild(groupThead);
       groupTable.appendChild(groupTbody);
+      tableContainer.appendChild(groupTable);
       groupTables.appendChild(groupTitle);
-      groupTables.appendChild(groupTable);
+      groupTables.appendChild(tableContainer);
     });
 
     players.forEach((playerObj) => {
