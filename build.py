@@ -23,7 +23,10 @@ def build(env):
         shutil.rmtree(path("__blazor"), ignore_errors=True)
 
     print("Publishing PoprunsBlazorPages...")
-    subprocess.run(["dotnet", "publish", path("blazor/PoprunsBlazorPages"), "-c", "Release", "-o", path("blazor/publish")])
+    process_resp = subprocess.run(["dotnet", "publish", path("blazor/PoprunsBlazorPages"), "-c", "Release", "-o", path("blazor/publish")])
+    if process_resp.returncode != 0:
+        print("Dotnet build failed...")
+        return False
 
     print("Moving published data...")
     (shutil.copytree if env == "local" else shutil.move)(path("blazor/publish/wwwroot/_framework"), path("_framework"))
@@ -34,6 +37,7 @@ def build(env):
         shutil.rmtree(path("blazor"))
     
     print("Build done.")
+    return True
 
 def path(p):
     return os.path.normpath(p)
@@ -54,7 +58,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         http.server.BaseHTTPRequestHandler.send_error(self, code, message, explain)
 
 env = get_env(sys.argv)
-build(env)
-if env == "local":
+build_resp = build(env)
+if build_resp and env == "local":
     webbrowser.open(f"http://127.0.0.1:{PORT}")
     run_web_server()
