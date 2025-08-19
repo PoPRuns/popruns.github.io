@@ -4,7 +4,6 @@ import os.path
 import shutil
 import subprocess
 import sys
-import webbrowser
 
 PORT = 8080
 
@@ -44,21 +43,15 @@ def path(p):
 
 def run_web_server():
     try:
-        with http.server.ThreadingHTTPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
-            print(f"Serving at port {PORT} (Ctrl+C to stop)")
+        with http.server.ThreadingHTTPServer(("", PORT), http.server.SimpleHTTPRequestHandler) as httpd:
+            with open("404.html") as html_file:
+                httpd.RequestHandlerClass.error_message_format = html_file.read()
+            print(f"Serving at http://127.0.0.1:{PORT}/ (Ctrl+C to stop)")
             httpd.serve_forever()
     except KeyboardInterrupt:
         print("Keyboard interrupt detected")
 
-class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def send_error(self, code, message=None, explain=None):
-        if code == 404:
-            with open("404.html") as htmlFile:
-                self.error_message_format = htmlFile.read()
-        http.server.BaseHTTPRequestHandler.send_error(self, code, message, explain)
-
 env = get_env(sys.argv)
 build_resp = build(env)
 if build_resp and env == "local":
-    webbrowser.open(f"http://127.0.0.1:{PORT}")
     run_web_server()
