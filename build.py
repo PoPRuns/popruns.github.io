@@ -29,8 +29,8 @@ def build(env):
 
     print("Moving published data...")
     (shutil.copytree if env == "local" else shutil.move)(path("blazor/publish/wwwroot/_framework"), path("_framework"))
-    shutil.copytree(path("blazor/publish/wwwroot"), path("__blazor/wwwroot")) 
-    
+    shutil.copytree(path("blazor/publish/wwwroot"), path("__blazor/wwwroot"))
+
     if env == "deploy":
         print("Removing blazor directory...")
         shutil.rmtree(path("blazor"))
@@ -53,5 +53,7 @@ def run_web_server():
 
 env = get_env(sys.argv)
 build_resp = build(env)
-if build_resp and env == "local":
+if not build_resp:
+    sys.exit(1)
+if env == "local":
     run_web_server()
