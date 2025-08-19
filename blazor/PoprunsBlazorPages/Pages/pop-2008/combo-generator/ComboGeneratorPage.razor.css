@@ -4,8 +4,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    height: max(100vh, 700px);
-    width: max(100vw, 500);
+    min-height: 100vh;
 }
 
 .foreground-root {
