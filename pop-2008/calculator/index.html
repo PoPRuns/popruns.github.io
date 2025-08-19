@@ -23,7 +23,7 @@
             font-family: sans-serif;
             margin: auto;
             padding: max(2vw, 15px);
-            max-width: max(60vw, 400px);
+            max-width: max(60vw, 750px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -61,7 +61,7 @@
         }
 
         #results {
-            max-width: min(max(57vw, 380px), 95vw);
+            max-width: min(max(57vw, 730px), 95vw);
             overflow-x: auto;
         }
 
@@ -74,9 +74,17 @@
         }
 
         input[type=number] {
-            width: max(5vw, 30px);
+            width: max(5vw, 35px);
             height: max(1.4vw, 14px);
             margin-right: max(2vw, 15px);
+            appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .input-container {

@@ -41,9 +41,9 @@ function handleChangeMode(value) {
 }
 window.handleChangeMode = handleChangeMode;
 
-function getBeamDisplay(x1, y1, x2, y2) {
+function getBeamDisplay(x, y) {
     const beamElement = document.createElement('pre');
-    beamElement.textContent = `(${x1.toFixed(3)}, ${y1.toFixed(3)}) 🠮 (${x2.toFixed(3)}, ${y2.toFixed(3)})`;
+    beamElement.textContent = `(${x.toFixed(3)}, ${y.toFixed(3)})`;
     return beamElement;
 }
 
@@ -72,7 +72,7 @@ function displayTable(data, pointX, pointY, ledgeX, ledgeY) {
             const { x1, y1, x2, y2, distance } = item;
 
             const row = document.createElement('tr');
-            row.insertCell().appendChild(getBeamDisplay(x1, y1, x2, y2));
+            row.insertCell().appendChild(getBeamDisplay(x2, y2));
             row.insertCell().textContent = estimateLocation(x1, y1);
             row.insertCell().appendChild(nearestLoad(x1, y1));
             Object.assign(row.insertCell(), { textContent: distance.toFixed(3), className: "text-important" });
@@ -103,7 +103,7 @@ function displayTable(data, pointX, pointY, ledgeX, ledgeY) {
             const { x1, y1, x2, y2, distance, frame } = item;
 
             const row = document.createElement('tr');
-            row.insertCell().appendChild(getBeamDisplay(x1, y1, x2, y2));
+            row.insertCell().appendChild(getBeamDisplay(x2, y2));
             row.insertCell().textContent = estimateLocation(x1, y1);
             row.insertCell().appendChild(nearestLoad(x1, y1));
             Object.assign(row.insertCell(), { textContent: distance.toFixed(3), className: "text-important" });
