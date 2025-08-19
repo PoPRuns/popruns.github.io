@@ -5,3 +5,4 @@ publish
 PublishProfiles
 
 *.user
+launchSettings.json

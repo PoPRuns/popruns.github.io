@@ -1,5 +1,6 @@
 ﻿@page "/pop-2008/combo-generator"
-@using PoprunsBlazorPages.Pop2008.ComboGenerator
+@using PoprunsBlazorPages.Pages.Pop2008.ComboGenerator
+@inject IJSRuntime Js
 
 <PageTitle>PoP 2008 Combo Generator</PageTitle>
 
@@ -52,4 +53,10 @@
 	private string _combos = string.Empty;
 
 	private void GetCombos() => _combos = Generator.GetCombos((int)_hp!, (Enemy)_enemy!, _canStartWithB0);
+
+	protected override async Task OnInitializedAsync()
+	{
+		await Js.SetFavicon("https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752");
+		await base.OnInitializedAsync();
+	}
 }

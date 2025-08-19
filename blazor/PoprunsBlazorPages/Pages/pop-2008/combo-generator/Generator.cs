@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace PoprunsBlazorPages.Pop2008.ComboGenerator;
+namespace PoprunsBlazorPages.Pages.Pop2008.ComboGenerator;
 
 public static class Generator
 {

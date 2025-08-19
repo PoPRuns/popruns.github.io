@@ -6,11 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoPRuns - Prince of Persia Speedruns</title>
     <base href="/"/>
+    <link id="favicon" rel="icon" type="image/png" href="https://speedrun.com/static/theme/mwzg4n8y/favicon.png?v=0697428" />
     <link rel="stylesheet" href="__blazor/wwwroot/PoprunsBlazorPages.styles.css" />
 </head>
 
 <body style="margin: 0; padding: 0; background: #0d0d0d; color: white;">
     <div id="app"></div>
+    <script>
+        const link = document.getElementById("favicon");
+        function setFavicon(href) { link.href = href; }
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

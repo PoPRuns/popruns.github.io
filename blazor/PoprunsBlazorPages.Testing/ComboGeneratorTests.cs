@@ -1,6 +1,6 @@
-using PoprunsBlazorPages.Pop2008.ComboGenerator;
+using PoprunsBlazorPages.Pages.Pop2008.ComboGenerator;
 using System;
-using static PoprunsBlazorPages.Pop2008.ComboGenerator.Generator;
+using static PoprunsBlazorPages.Pages.Pop2008.ComboGenerator.Generator;
 
 namespace PoprunsBlazorPages.Testing;
 

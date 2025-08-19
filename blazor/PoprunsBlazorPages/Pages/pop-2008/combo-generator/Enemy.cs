@@ -1,4 +1,4 @@
-﻿namespace PoprunsBlazorPages.Pop2008.ComboGenerator;
+﻿namespace PoprunsBlazorPages.Pages.Pop2008.ComboGenerator;
 
 public enum Enemy
 {
