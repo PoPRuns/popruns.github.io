@@ -87,7 +87,7 @@ public static class Generator
             }
             builder.Append(' ');
         }
-        while (char.IsWhiteSpace(builder[^1]))
+        while (builder.Length > 0 && char.IsWhiteSpace(builder[^1]))
             builder.Remove(builder.Length - 1, 1);
         return builder.ToString();
     }
