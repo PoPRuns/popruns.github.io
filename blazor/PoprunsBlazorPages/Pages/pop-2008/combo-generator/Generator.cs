@@ -34,7 +34,7 @@ public static class Generator
         if (r == 2)
             return Serialize([new("B1"), new("B2", hp / 26 - 2), new("B2*")]);
 
-        // 10 <= r <= 24, hp > 26
+        // 10 <= r <= 12, hp > 26
         int comboCount = hp / 26 + 1;
         int b1Count = (26 * comboCount - hp) / 6; // always 0, 1, or 2
         int b2Count = comboCount - b1Count;
