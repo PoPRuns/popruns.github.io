@@ -95,6 +95,7 @@ def get_env(args):
 
 def build(env):
     if env == "local":
+        # in a live deployment, we don't need to remove these as we are already in a fresh environment
         print("Removing existing published data...")
         shutil.rmtree(path("_framework"), ignore_errors=True)
         shutil.rmtree(path("__blazor"), ignore_errors=True)
@@ -106,8 +107,10 @@ def build(env):
         return False
 
     print("Moving published data...")
-    (shutil.copytree if env == "local" else shutil.move)(path("blazor/publish/wwwroot/_framework"), path("_framework"))
+    # we do not remove anything from the blazor/publish directory so that for a local build,
+    #   dotnet can use caching to drastically speed up the publishing process
     shutil.copytree(path("blazor/publish/wwwroot"), path("__blazor/wwwroot"))
+    shutil.move(path("__blazor/wwwroot/_framework"), path("_framework"))
 
     if env == "deploy":
         print("Removing blazor directory...")
