@@ -182,7 +182,7 @@ a:focus {
 }
 
 .window-popout-link {
-	background-color: #033d52;
+	background-color: black;
 	color: #ffdcaa;
 	display: block;
 	text-decoration: inherit;
@@ -202,7 +202,6 @@ a:focus {
 
 .main-item:hover .window {
 	box-shadow: 0 0 1em 0.2em #fadc64;
-	border: 1px solid black;
 	-webkit-transform: translate(-50%, -40%) scale(1, 1);
 	transform: translate(-50%, -40%) scale(1, 1);
 	z-index: 10;
@@ -238,7 +237,7 @@ a:focus {
 }
 
 .window-popout-link:not(.disabled):hover {
-	background-color: #01212d;
+	background-color: rgb(25, 25, 25);
 	color: #fadc64;
 }
 
