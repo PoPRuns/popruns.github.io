@@ -663,7 +663,7 @@ const initialData = [
                         description: "First Architect puzzle chest",
                         quantity: 1
                     },
-                    "S-604939277_O-648583802": {
+                    "IE_S-604939277_O-648583802": {
                         displayName: "Sacred Archives",
                         isUnlocked: false,
                         description: "Extra 3-clone puzzle after Clairvoyance",
@@ -693,7 +693,7 @@ const initialData = [
                         description: "Architect puzzle chest",
                         quantity: 1
                     },
-                    "S381352219_O529537387": {
+                    "IE_S381352219_O529537387": {
                         displayName: "Sunken Harbor",
                         isUnlocked: false,
                         description: "Double Jump platfroming challenge",
@@ -711,7 +711,7 @@ const initialData = [
                         description: "Menolias constellation room",
                         quantity: 1
                     },
-                    "S-1325587473_O1645648227": {
+                    "IE_S-1325587473_O1645648227": {
                         displayName: "Upper City",
                         isUnlocked: false,
                         description: "Hanging Gardens Chakram TP platforming challenge",

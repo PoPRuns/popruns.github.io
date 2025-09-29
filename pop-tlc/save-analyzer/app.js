@@ -357,7 +357,7 @@ function handleChangeSaveFile(e) {
 
                             const textDecoder = new TextDecoder('utf-8');
                             const text = textDecoder.decode(concatenated);
-                            const jsonObj = JSON.parse(text.substring(text.indexOf('{"m_list')));
+                            const jsonObj = JSON.parse(text.substring(text.indexOf('{"m_list')).replaceAll("Infinity", "null"));
                             console.info("Decoded JSON:", jsonObj);
                             processJson(jsonObj);
                         } catch (error) {
