@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+    <title>Rogue PoP Save Analyzer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/g84d5238/favicon.png?v=97daa59" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+
+<body>
+    <div>
+        <div id="header">Save Completion Analyzer</div>
+        <div id="sub-header">for The Rogue Prince of Persia</div>
+        <div>
+            <div id="save-location-container">
+                <input id="save-location" value="<path-to-game>\userdata\saves" readonly="readonly">
+            </div>
+            <button id="choose-save" onclick="openFolderDialog()">
+                Choose save file
+            </button>
+            <input type="file" id="folderInput" accept=".sav" style="display:none;" onchange="handleChangeSaveFile(event)">
+        </div>
+        <div id="tab-buttons-container"></div>
+        <div id="dynamic"></div>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

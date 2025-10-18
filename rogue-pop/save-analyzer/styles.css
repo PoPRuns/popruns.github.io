@@ -1,0 +1,184 @@
+@font-face {
+	font-family: 'PortLligat Sans';
+	font-style: normal;
+	font-weight: normal;
+	src: local('PortLligat Sans'), url('../../static/fonts/PortLligatSans-Regular.woff') format('woff');
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	line-height: 1.4em;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+}
+
+body {
+	color: #ffdcaa;
+	min-height: 100%;
+	font-weight: 300;
+	font-family: 'PortLligat Sans', sans-serif;
+	display: flex;
+	flex-flow: column nowrap;
+	background: linear-gradient(rgba(0,0,0,.8), rgba(0,0,0,.8)), url('/static/images/rogue_bg_large.jpg') no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	text-align: center;
+}
+
+#header {
+	padding: 1em 3em 0.2em 3em;
+	font-size: xx-large;
+}
+
+#sub-header {
+	padding: 0 3em 2em 3em;
+	font-size: large;
+}
+
+#save-location-container {
+	position: relative;
+}
+
+#save-location {
+	background-color: #80808080;
+	border: none;
+	border-radius: 3px;
+	color: #fff;
+	display: block;
+	font-family: monospace;
+	font-size: .75rem;
+	margin: .4rem auto .6rem;
+	padding: .16rem .5rem .25rem;
+	text-align: center;
+	min-width: min(40em, 90%);
+}
+
+#save-location-tooltip, #save-location-tooltip-click {
+	visibility: hidden;
+	position: absolute;
+	background-color: #5b00ab;
+	color: white;
+	font-family: sans-serif;
+	border-radius: 10px;
+	padding: 5px 0;
+	width: 150px;
+	bottom: 115%;
+	left: 50%;
+	margin-left: -75px;
+	transition: all .3s ease;
+}
+
+#save-location-tooltip::after, #save-location-tooltip-click::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #5b00ab transparent transparent transparent;
+}
+
+#save-location-container:hover #save-location-tooltip {
+	visibility: visible;
+}
+
+#choose-save {
+	width: 170px;
+}
+
+#tab-buttons-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 2rem 0 0;
+}
+
+.tab-button-wrapper {
+	clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+	padding: 0.1rem;
+	margin: 0.25rem;
+}
+
+.tab-button-wrapper:hover {
+	background-color: #ffdcaa;
+}
+
+.tab-button {
+	position: relative;
+	background-color: #1f1f1fbb;
+	border: none;
+	cursor: pointer;
+	color: white;
+	font-family: inherit;
+	font-size: 1rem;
+	padding: 0.5rem 1.5rem;
+	clip-path: inherit;
+	transition: all .2s ease;
+}
+
+.tab-button-selected {
+	background-color: #000;
+	color: #ffdcaa;
+}
+
+.tab-button-selected::before {
+	content: "◆ ";
+}
+
+.tab-button-selected::after {
+	content: " ◆";
+}
+
+.section-header {
+	display: inline-flex;
+	gap: 10px;
+	align-items: baseline;
+	padding: 1.5em 3em 0.5em 3em;
+	font-size: x-large;
+}
+
+.percent-box {
+	background: #5b00ab;
+	border: 2px solid #7e48ad;
+	border-radius: 4px;
+	font-family: sans-serif;
+	font-size: 1.1rem;
+	font-weight: 700;
+	margin: 0 .5rem;
+	padding: .2rem 1.2rem;
+}
+
+.section-description {
+	font-size: smaller;
+	font-family: sans-serif;
+	color: white;
+	margin-bottom: 1.5rem;
+}
+
+.section-data {
+	width: fit-content;
+	margin: auto;
+	list-style-type: none;
+	text-align: left;
+	font-family: sans-serif;
+	padding-bottom: 1.5em;
+}
+
+.section-list-item {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 0.25rem;
+}
+
+.item-description {
+	color: white;
+}
