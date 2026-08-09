@@ -123,10 +123,29 @@ function nodeMatches(el, text, forceShow) {
     return visible;
 }
 
+let searchSnapshot = null;
+let lastSearchText = '';
+
+function snapshotOpenStates(tree) {
+    const map = new Map();
+    for (const d of tree.querySelectorAll('details')) map.set(d, d.open);
+    return map;
+}
+
+function restoreOpenStates(map) {
+    for (const [d, wasOpen] of map) d.open = wasOpen;
+}
+
 document.getElementById('search').addEventListener('input', (ev) => {
     const text = ev.target.value.trim().toLowerCase();
     const tree = document.getElementById('tree');
+    if (!lastSearchText && text) searchSnapshot = snapshotOpenStates(tree);
     for (const top of tree.children) nodeMatches(top, text, false);
+    if (!text && searchSnapshot) {
+        restoreOpenStates(searchSnapshot);
+        searchSnapshot = null;
+    }
+    lastSearchText = text;
 });
 
 // ---- summary panel ----
@@ -219,6 +238,8 @@ function applyLoadResult(result) {
     renderSummary(result.summary);
     renderTree(result.tree);
     document.getElementById('search').value = '';
+    searchSnapshot = null;
+    lastSearchText = '';
 }
 
 async function loadSaveFile(file) {
