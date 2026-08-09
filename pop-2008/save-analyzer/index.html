@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>PoP 2008 Save Analyzer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <aside id="sidebar">
+            <div id="drop-zone">
+                <button id="btn-load">Load Save&hellip;</button>
+                <p id="drop-hint">or drag a .PoPSavedGame file here</p>
+            </div>
+            <div id="summary-section">
+                <div class="sidebar-header">Summary</div>
+                <div id="summary-list">
+                    <p id="summary-empty">No save loaded.</p>
+                </div>
+            </div>
+        </aside>
+
+        <main id="content">
+            <header id="page-header">
+                <div id="page-header-text">
+                    <h1 id="page-title">No save loaded</h1>
+                    <p id="page-subtitle">Click "Load Save..." to open a .PoPSavedGame file</p>
+                </div>
+                <div id="search-box">
+                    <button id="btn-search-toggle" title="Filter fields">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <input id="search" type="text" placeholder="Filter fields...">
+                </div>
+            </header>
+            <div id="tree-header">
+                <span>Field</span>
+                <span>Value</span>
+            </div>
+            <div id="tree"></div>
+        </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

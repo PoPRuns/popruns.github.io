@@ -288,6 +288,10 @@ function processJson(jsonObj) {
         return (questState === "Ended");
     });
 
+    updateSectionData("Essentials %", "Azure Damuscus Ingots", 0, (ingot, _) => {
+        return checkIEPickedFromScene(ingot.slice(3));
+    });
+
     updateSectionData("No %", "Main Quests", 0, (quest, _) => {
         return checkQuestCompletion(quest);
     });

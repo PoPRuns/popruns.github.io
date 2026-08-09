@@ -1564,6 +1564,23 @@ const initialData = [
                     }
                 }
             },
+            {
+                title: "Azure Damuscus Ingots",
+                completedPercent: 0,
+                description: "Ingots don't directly give % but upgrades that give % are locked behind them.",
+                data: {
+                    "IE_S-194185274_O-364888941": {
+                        displayName: "Haven",
+                        isUnlocked: false,
+                        description: "Above Artaban",
+                    },
+                    "IE_S-180600890_O1090915692": {
+                        displayName: "Lower City",
+                        isUnlocked: false,
+                        description: "Chakram platforming challenge on way back from Forest",
+                    }
+                }
+            },
         ]
     },
     {
