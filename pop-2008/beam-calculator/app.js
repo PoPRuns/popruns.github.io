@@ -2,14 +2,35 @@ import loadTriggers from "./loads.js";
 import beamData from "./beams.js";
 
 const loadSelect = document.getElementById('loadSelect');
-loadTriggers.forEach((load) => {
+loadTriggers.forEach((load, i) => {
     const loadOption = document.createElement('option');
     loadOption.textContent = load.name;
-    loadOption.value = `${load.coords[0]},${load.coords[1]}`;
+    // Index is carried in the option value so setLoadTriggerCoords can look up
+    // this trigger's real footprint (its true world-space quad), not just its
+    // center point -- see loads.js, which now has both.
+    loadOption.value = `${load.coords[0]},${load.coords[1]},${i}`;
     loadSelect.appendChild(loadOption);
 });
 
 const tableBody = document.getElementById('tableBody');
+
+// The footprint of whichever load trigger is currently selected from the
+// dropdown, or null when the target was typed in manually (in which case the
+// math falls back to exact-point behaviour, same as before this change).
+//
+// Triggers are not points -- some of these quads are ~90 units across (see
+// loads.js) -- so "distance to one guessed interior point" and "distance to
+// the trigger's actual nearest edge" can disagree by a lot for a large or
+// rotated trigger. Manual X/Y entry still targets an exact point, since that
+// is meaningful too (e.g. probing a specific spot); the dropdown now targets
+// the trigger's real shape instead of an eyeballed single point inside it.
+let selectedFootprint = null;
+
+for (const id of ['pointX', 'pointY']) {
+    document.getElementById(id).addEventListener('input', () => {
+        selectedFootprint = null;
+    });
+}
 
 function processJSON() {
     const pointX = parseFloat(document.getElementById('pointX').value);
@@ -29,9 +50,11 @@ function processJSON() {
 window.processJSON = processJSON;
 
 function setLoadTriggerCoords(value) {
-    const [loadX, loadY] = value.split(",");
+    const [loadX, loadY, idx] = value.split(",");
     document.getElementById("pointX").value = loadX;
     document.getElementById("pointY").value = loadY;
+    const load = idx !== undefined ? loadTriggers[idx] : null;
+    selectedFootprint = (load && load.footprint) ? load.footprint : null;
 }
 window.setLoadTriggerCoords = setLoadTriggerCoords;
 
@@ -60,7 +83,7 @@ function displayTable(data, pointX, pointY, ledgeX, ledgeY) {
                 y1,
                 x2,
                 y2,
-                distance: distanceFromLine(pointX, pointY, x1, y1, x2, y2)
+                distance: bestDistanceFromLine(pointX, pointY, x1, y1, x2, y2, selectedFootprint)
             };
         });
 
@@ -84,7 +107,8 @@ function displayTable(data, pointX, pointY, ledgeX, ledgeY) {
         document.getElementById("frameHeader").style.display = null;
         const calculatedDistances = data.map(item => {
             const { x1, y1, x2, y2 } = item;
-            const [distance, frame] = closestLedgeWarpDistance(x2, y2, pointX, pointY, ledgeX, ledgeY);
+            const [distance, frame] = bestClosestLedgeWarpDistance(
+                x2, y2, pointX, pointY, ledgeX, ledgeY, selectedFootprint);
             return {
                 x1,
                 y1,
@@ -132,6 +156,37 @@ function distanceBetweenPoints(x1, y1, x2, y2) {
     const a = y2 - y1;
     const b = x1 - x2;
     return Math.sqrt(a * a + b * b)
+}
+
+// Both wrappers below reuse distanceFromLine / closestLedgeWarpDistance
+// completely unchanged -- just called once per corner of the trigger's real
+// footprint instead of once for a single guessed point, keeping whichever
+// result is best. A trigger with no footprint (manually typed target, or an
+// old entry with no match -- see loads.js) falls back to the original
+// single-point call, so behaviour is identical to before this change unless
+// a footprint is actually selected.
+function bestDistanceFromLine(targetX, targetY, x1, y1, x2, y2, footprint) {
+    if (!footprint) {
+        return distanceFromLine(targetX, targetY, x1, y1, x2, y2);
+    }
+    let best = Infinity;
+    for (const [fx, fy] of footprint) {
+        const d = distanceFromLine(fx, fy, x1, y1, x2, y2);
+        if (d < best) best = d;
+    }
+    return best;
+}
+
+function bestClosestLedgeWarpDistance(xb, yb, targetX, targetY, ledgeX, ledgeY, footprint) {
+    if (!footprint) {
+        return closestLedgeWarpDistance(xb, yb, targetX, targetY, ledgeX, ledgeY);
+    }
+    let best = [Infinity, 0];
+    for (const [fx, fy] of footprint) {
+        const result = closestLedgeWarpDistance(xb, yb, fx, fy, ledgeX, ledgeY);
+        if (result[0] < best[0]) best = result;
+    }
+    return best;
 }
 
 function closestLedgeWarpDistance(xb, yb, x, y, xl, yl) {
@@ -198,9 +253,19 @@ function nearestLoad(x, y) {
     let minDistance = Infinity;
     let closestLoad = "";
 
-    for (const load in loadTriggers) {
-        const [loadX, loadY, loadZ] = loadTriggers[load].coords;
-        const distance = distanceBetweenPoints(x, y, loadX, loadY);
+    for (const load of loadTriggers) {
+        const [loadX, loadY, loadZ] = load.coords;
+        // Distance to the real footprint's nearest corner when there is one,
+        // not just the center point -- for a large or off-center trigger a
+        // point on the beam could be genuinely closer to an edge/corner than
+        // to the recorded center.
+        let distance = distanceBetweenPoints(x, y, loadX, loadY);
+        if (load.footprint) {
+            for (const [fx, fy] of load.footprint) {
+                const d = distanceBetweenPoints(x, y, fx, fy);
+                if (d < distance) distance = d;
+            }
+        }
 
         if (distance < minDistance) {
             minDistance = distance;
