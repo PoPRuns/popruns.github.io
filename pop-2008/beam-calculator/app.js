@@ -6,8 +6,7 @@ loadTriggers.forEach((load, i) => {
     const loadOption = document.createElement('option');
     loadOption.textContent = load.name;
     // Index is carried in the option value so setLoadTriggerCoords can look up
-    // this trigger's real footprint (its true world-space quad), not just its
-    // center point -- see loads.js, which now has both.
+    // this trigger's real footprint (its true world-space quad), not just its center point
     loadOption.value = `${load.coords[0]},${load.coords[1]},${i}`;
     loadSelect.appendChild(loadOption);
 });
@@ -17,13 +16,6 @@ const tableBody = document.getElementById('tableBody');
 // The footprint of whichever load trigger is currently selected from the
 // dropdown, or null when the target was typed in manually (in which case the
 // math falls back to exact-point behaviour, same as before this change).
-//
-// Triggers are not points -- some of these quads are ~90 units across (see
-// loads.js) -- so "distance to one guessed interior point" and "distance to
-// the trigger's actual nearest edge" can disagree by a lot for a large or
-// rotated trigger. Manual X/Y entry still targets an exact point, since that
-// is meaningful too (e.g. probing a specific spot); the dropdown now targets
-// the trigger's real shape instead of an eyeballed single point inside it.
 let selectedFootprint = null;
 
 for (const id of ['pointX', 'pointY']) {
@@ -158,35 +150,126 @@ function distanceBetweenPoints(x1, y1, x2, y2) {
     return Math.sqrt(a * a + b * b)
 }
 
-// Both wrappers below reuse distanceFromLine / closestLedgeWarpDistance
-// completely unchanged -- just called once per corner of the trigger's real
-// footprint instead of once for a single guessed point, keeping whichever
-// result is best. A trigger with no footprint (manually typed target, or an
-// old entry with no match -- see loads.js) falls back to the original
-// single-point call, so behaviour is identical to before this change unless
-// a footprint is actually selected.
+function clipToValidHalfPlane(poly, x1, y1, x2, y2) {
+    const a = y2 - y1;
+    const b = x1 - x2;
+    const square = a * a + b * b;
+    // Mirrors distanceFromLine's own `d > square` test, shifted so that
+    // positive == valid and 0 == the same boundary distanceFromLine excludes.
+    const side = (px, py) => (px - x1) * (-b) + (py - y1) * a - square;
+
+    const out = [];
+    const n = poly.length;
+    for (let i = 0; i < n; i++) {
+        const curr = poly[i];
+        const prev = poly[(i + n - 1) % n];
+        const sCurr = side(curr[0], curr[1]);
+        const sPrev = side(prev[0], prev[1]);
+        if (sCurr > 0) {
+            if (sPrev <= 0) {
+                const t = sPrev / (sPrev - sCurr);
+                out.push([prev[0] + t * (curr[0] - prev[0]), prev[1] + t * (curr[1] - prev[1])]);
+            }
+            out.push(curr);
+        } else if (sPrev > 0) {
+            const t = sPrev / (sPrev - sCurr);
+            out.push([prev[0] + t * (curr[0] - prev[0]), prev[1] + t * (curr[1] - prev[1])]);
+        }
+    }
+    return out;
+}
+
 function bestDistanceFromLine(targetX, targetY, x1, y1, x2, y2, footprint) {
     if (!footprint) {
         return distanceFromLine(targetX, targetY, x1, y1, x2, y2);
     }
+
+    const clipped = clipToValidHalfPlane(footprint, x1, y1, x2, y2);
+    if (clipped.length === 0) {
+        return Infinity;
+    }
+
+    const a = y2 - y1;
+    const b = x1 - x2;
+    const c = x2 * y1 - x1 * y2;
+    const lineLen = Math.sqrt(a * a + b * b);
+
+    let minSigned = Infinity;
+    let maxSigned = -Infinity;
+    for (const [px, py] of clipped) {
+        const signed = a * px + b * py + c;
+        if (signed < minSigned) minSigned = signed;
+        if (signed > maxSigned) maxSigned = signed;
+    }
+
+    if (minSigned <= 0 && maxSigned >= 0) {
+        return 0; // the beam line crosses the trigger's (valid-region) footprint
+    }
+    return Math.min(Math.abs(minSigned), Math.abs(maxSigned)) / lineLen;
+}
+
+// Point-to-convex-polygon distance (0 if inside), giving the ledgewarp path
+// the same "real shape, not just corners" treatment as bestDistanceFromLine
+// above. Each simulated frame is a fixed point, so the true nearest distance
+// to the trigger can land on an edge interior -- or be 0 if a frame position
+// ends up inside the trigger -- not just at one of its 4 corners.
+function distanceToSegment(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const lenSq = dx * dx + dy * dy;
+    let t = lenSq === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    return distanceBetweenPoints(px, py, x1 + t * dx, y1 + t * dy);
+}
+
+function pointInConvexPolygon(px, py, poly) {
+    let sign = 0;
+    const n = poly.length;
+    for (let i = 0; i < n; i++) {
+        const [x1, y1] = poly[i];
+        const [x2, y2] = poly[(i + 1) % n];
+        const cross = (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
+        if (cross !== 0) {
+            const s = cross > 0 ? 1 : -1;
+            if (sign === 0) sign = s;
+            else if (s !== sign) return false;
+        }
+    }
+    return true;
+}
+
+function distanceToPolygon(px, py, poly) {
+    if (pointInConvexPolygon(px, py, poly)) return 0;
     let best = Infinity;
-    for (const [fx, fy] of footprint) {
-        const d = distanceFromLine(fx, fy, x1, y1, x2, y2);
+    const n = poly.length;
+    for (let i = 0; i < n; i++) {
+        const [x1, y1] = poly[i];
+        const [x2, y2] = poly[(i + 1) % n];
+        const d = distanceToSegment(px, py, x1, y1, x2, y2);
         if (d < best) best = d;
     }
     return best;
+}
+
+function closestLedgeWarpDistanceToShape(xb, yb, poly, xl, yl) {
+    let minDistance = distanceToPolygon(xb, yb, poly);
+    let closestFrame = 0;
+    for (let i = 1; i <= 15; i++) {
+        xb = 0.75 * xb + 0.25 * xl;
+        yb = 0.75 * yb + 0.25 * yl;
+        const distance = distanceToPolygon(xb, yb, poly);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestFrame = i;
+        }
+    }
+    return [minDistance, closestFrame];
 }
 
 function bestClosestLedgeWarpDistance(xb, yb, targetX, targetY, ledgeX, ledgeY, footprint) {
     if (!footprint) {
         return closestLedgeWarpDistance(xb, yb, targetX, targetY, ledgeX, ledgeY);
     }
-    let best = [Infinity, 0];
-    for (const [fx, fy] of footprint) {
-        const result = closestLedgeWarpDistance(xb, yb, fx, fy, ledgeX, ledgeY);
-        if (result[0] < best[0]) best = result;
-    }
-    return best;
+    return closestLedgeWarpDistanceToShape(xb, yb, footprint, ledgeX, ledgeY);
 }
 
 function closestLedgeWarpDistance(xb, yb, x, y, xl, yl) {
