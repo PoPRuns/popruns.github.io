@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PoP 2008 Mission Dependency Tree</title>
+    <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+
+<body>
+
+    <header>
+        <div class="navbar-title">
+            PoP 2008 Mission Dependency Tree
+        </div>
+        <div class="toolbar">
+            <button class="btn" id="expandBtn">Expand All</button>
+            <button class="btn" id="collapseBtn">Collapse All</button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <div class="tree-viewport">
+            <ul class="tree" id="treeRoot"></ul>
+        </div>
+
+        <aside>
+            <div class="inspector-header">
+                <h2 id="inspectName" style="font-size: 1.1rem; word-break: break-all;">Select a Node</h2>
+                <div id="inspectHash" class="meta-value" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">0x00000000</div>
+            </div>
+
+            <div class="inspector-body">
+                <div>
+                    <div class="section-title">Node Metadata</div>
+                    <div class="detail-card">
+                        <div class="meta-row">
+                            <span class="meta-label">Type</span>
+                            <span class="meta-value" id="metaType">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Sequence Mode</span>
+                            <span class="meta-value" id="metaSeqMode">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Parents</span>
+                            <span class="meta-value" id="metaParents">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Total In-Ports</span>
+                            <span class="meta-value" id="metaPorts">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-title">Unlock Requirements</div>
+                    <ul id="inspectReqList" class="conn-list"></ul>
+                </div>
+
+                <div>
+                    <div class="section-title">Nodes Dependent On This</div>
+                    <ul id="inspectDepList" class="conn-list"></ul>
+                </div>
+
+                <div>
+                    <div class="section-title">Completion Triggered By</div>
+                    <ul id="inspectCompletionTriggeredByList" class="conn-list"></ul>
+                </div>
+
+                <div>
+                    <div class="section-title">Triggers Completion Of</div>
+                    <ul id="inspectTriggersCompletionOfList" class="conn-list"></ul>
+                </div>
+
+                <div>
+                    <div class="section-title">Raw Payload</div>
+                    <pre id="inspectRaw" class="raw-view">{}</pre>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
