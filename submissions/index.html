@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoPRuns Marathon Submissions</title>
+    
+    <!-- Meta & Theme Color for Discord Embeds -->
+    <meta name="description" content="Submit your runs and availability for PoPRuns, and view community submissions.">
+    <meta name="theme-color" content="#d39c0a">
+
+    <!-- OpenGraph / Discord Embeds -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PoPRuns">
+    <meta property="og:title" content="PoPRuns Marathon Submissions">
+    <meta property="og:description" content="Submit your runs and availability for PoPRuns, and view community submissions.">
+    <meta property="og:url" content="https://popruns.github.io/submissions/">
+    <meta property="og:image" content="https://popruns.github.io/static/images/popruns_logo.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PoPRuns Marathon Submissions">
+    <meta name="twitter:description" content="Submit and manage your Prince of Persia speedrun marathon runs, track your runner schedule availability, and view community submissions.">
+    <meta name="twitter:image" content="https://popruns.github.io/static/images/popruns_logo.png">
+
+    <link rel="icon" type="image/png" href="https://speedrun.com/static/theme/mwzg4n8y/favicon.png?v=0697428" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="header-nav">
+        <a href="../" class="nav-brand">
+            <img src="../static/images/popruns_logo.png" alt="PoPRuns Logo">
+            <span class="nav-tagline">Marathon Submissions</span>
+        </a>
+
+        <div class="nav-actions">
+            <a href="../" class="nav-link" title="Return to PoPRuns Home">
+                <i class="fa fa-arrow-left"></i> <span class="nav-link-text">PoPRuns Home</span>
+            </a>
+            
+            <!-- Auth Container (Populated by app.js) -->
+            <div id="auth-section">
+                <button id="btn-login-discord" class="btn btn-discord btn-sm" onclick="loginWithDiscord()">
+                    <i class="fa-brands fa-discord"></i> <span class="btn-text-full">Login with Discord</span><span class="btn-text-short">Discord</span>
+                </button>
+                <button id="btn-login-twitch" class="btn btn-twitch btn-sm" onclick="loginWithTwitch()">
+                    <i class="fa-brands fa-twitch"></i> Twitch
+                </button>
+            </div>
+            
+            <!-- Logged-in Profile Widget -->
+            <div id="user-profile" class="user-profile-widget" style="display: none;">
+                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                <span id="user-display-name" class="user-name">Runner</span>
+                <span id="user-admin-badge" class="admin-badge" style="display: none;">Admin</span>
+                <button class="btn btn-secondary btn-sm" onclick="openProfileModal()" title="Edit Display Name"><i class="fa fa-user-edit"></i></button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()" title="Logout"><i class="fa fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+
+        <!-- Setup Alert (Visible if Supabase credentials are placeholders) -->
+        <div id="config-banner" class="config-banner">
+            <strong><i class="fa fa-info-circle"></i> Supabase Setup Required:</strong>
+            Please configure your Supabase Project URL and Anon Key in <code>submissions/config.js</code> to enable live database connections and OAuth.
+        </div>
+
+        <!-- Marathon Hero Banner -->
+        <section class="marathon-hero">
+            <h1 id="hero-title" class="hero-title">Prince of Persia Marathon 2026</h1>
+            <p id="hero-desc" class="hero-desc">Also known as PoPRuns 11</p>
+            <div class="hero-meta">
+                <span id="meta-status" class="meta-pill open"><i class="fa fa-clock"></i> Submissions Open</span>
+                <span id="meta-dates" class="meta-pill"><i class="fa fa-calendar-alt"></i> Dates Loading...</span>
+                <span id="meta-countdown" class="meta-pill"><i class="fa fa-hourglass-half"></i> Loading deadline...</span>
+            </div>
+        </section>
+
+        <!-- Tab Navigation (Styled matching pop-tlc/save-analyzer) -->
+        <div id="tab-buttons-container">
+            <button class="tab-button tab-button-selected active" onclick="switchTab('submit')">
+                <span><i class="fa fa-paper-plane"></i> Submit a Run</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('my-runs')">
+                <span><i class="fa fa-list-check"></i> My Submissions <span id="my-runs-count" class="tab-badge" style="display: none;">0</span></span>
+            </button>
+            <button class="tab-button" onclick="switchTab('availability')">
+                <span><i class="fa fa-calendar-check"></i> My Availability</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('all-runs')">
+                <span><i class="fa fa-list"></i> All Submissions <span id="all-runs-count" class="tab-badge" style="display: none;">0</span></span>
+            </button>
+            <button id="tab-admin-btn" class="tab-button" onclick="switchTab('admin')" style="display: none;">
+                <span><i class="fa fa-shield-halved"></i> Organizer Dashboard</span>
+            </button>
+        </div>
+
+        <!-- Submit Run -->
+        <section id="tab-submit" class="tab-pane active">
+            <div class="content-card">
+                <h2 class="section-title">Submit a Speedrun</h2>
+                
+                <div id="submit-login-prompt" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon"><i class="fa-brands fa-discord"></i></div>
+                    <h3>Login Required to Submit</h3>
+                    <p>Please log in with Discord or Twitch above to submit a run and set your availability.</p>
+                    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+                        <button class="btn btn-discord" onclick="loginWithDiscord()"><i class="fa-brands fa-discord"></i> Login with Discord</button>
+                        <button class="btn btn-twitch" onclick="loginWithTwitch()"><i class="fa-brands fa-twitch"></i> Login with Twitch</button>
+                    </div>
+                </div>
+
+                <form id="submission-form" onsubmit="handleRunSubmit(event)">
+                    <div class="form-grid">
+                        
+                        <div class="form-group full-width">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+                                <label class="form-label" style="margin-bottom: 0;">Prince of Persia Game <span class="required">*</span></label>
+                                <span id="selected-game-badge" style="font-size: 0.85rem; color: var(--gold-bright); font-weight: 600;">
+                                    Please pick a game below
+                                </span>
+                            </div>
+
+                            <input type="hidden" id="run-game" name="game" required>
+
+                            <div id="mainline-games-grid" class="game-select-grid"></div>
+
+                            <div class="spinoff-selection-wrap">
+                                <div class="spinoff-divider">
+                                    <span>or select a spin-off / multi-run / other game</span>
+                                </div>
+                                <div class="spinoff-select-row">
+                                    <label for="run-spinoff-select" class="spinoff-label">
+                                        <i class="fa fa-gamepad"></i> Non-Mainline:
+                                    </label>
+                                    <select id="run-spinoff-select" class="form-select" onchange="handleSpinoffChange(this.value)">
+                                        <option value="">--</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="selected-game-banner" class="selected-game-banner" style="display: none;">
+                                <div class="selected-game-banner-inner">
+                                    <div class="selected-game-icon"><i class="fa fa-circle-check"></i></div>
+                                    <div class="selected-game-details">
+                                        <span class="selected-game-tag">Selected Game</span>
+                                        <span id="selected-game-display-title" class="selected-game-title">None</span>
+                                    </div>
+                                    <button type="button" class="btn-change-game" onclick="clearSelectedGame()" title="Change selection">
+                                        <i class="fa fa-rotate-left"></i> Change
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="custom-game-group" class="form-group full-width" style="display: none;">
+                            <label class="form-label" for="run-game-custom">Custom Game Title <span class="required">*</span></label>
+                            <input type="text" id="run-game-custom" class="form-input" placeholder="e.g. 30th Anniversary Mod, 4D Prince of Persia">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-category">Category <span class="required">*</span></label>
+                                <button type="button" id="toggle-presets-btn" class="toggle-presets-btn" onclick="toggleCategoryPresets()" style="display: none;">
+                                    <i class="fa fa-lightbulb"></i> Show presets
+                                </button>
+                            </div>
+                            <input type="text" id="run-category" class="form-input" placeholder="e.g. Any%, 100%" autocomplete="off" oninput="handleCategoryInput()" required>
+                            <div id="category-chips-wrap" class="category-chips-wrap" style="display: none;">
+                                <span class="category-chips-label"><i class="fa fa-lightbulb"></i> Standard Presets:</span>
+                                <div id="category-chips" class="category-chips-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-platform">Platform <span class="required">*</span></label>
+                            </div>
+                            <select id="run-platform" class="form-select" onchange="handlePlatformChange()" required disabled>
+                                <option value="" disabled selected>Select a game first...</option>
+                            </select>
+                            <div id="custom-platform-wrap" style="display: none; margin-top: 0.5rem;">
+                                <input type="text" id="run-platform-custom" class="form-input" placeholder="e.g. Steam Deck, PS Vita, Emulated (Ares), etc.">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-estimate">Estimate (HH:MM:SS) <span class="required">*</span></label>
+                            </div>
+                            <input type="text" id="run-estimate" class="form-input" placeholder="01:15:00" pattern="^([0-9]{1,2}:)?[0-5]?[0-9]:[0-5][0-9]$" title="Format: HH:MM:SS or MM:SS (e.g. 01:25:00)" required>
+                            <span class="form-hint">Safe estimate including marathon buffer.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-video">Video / PB Link <span class="required">*</span></label>
+                            </div>
+                            <input type="url" id="run-video" class="form-input" placeholder="https://youtube.com/watch?v=..." required>
+                            <span class="form-hint">Proof of completion or personal best vod.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-type">Run Format <span class="required">*</span></label>
+                            </div>
+                            <select id="run-type" class="form-select" onchange="handleRunTypeChange()" required>
+                                <option value="solo" selected>Solo Run</option>
+                                <option value="race">Race (2+ Runners)</option>
+                                <option value="coop">Co-op / Relay</option>
+                                <option value="showcase">Glitch Showcase / Exhibition</option>
+                            </select>
+                        </div>
+
+                        <div id="co-runners-group" class="form-group" style="display: none;">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-co-runners">Co-runners</label>
+                            </div>
+                            <input type="text" id="run-co-runners" class="form-input" placeholder="e.g. RunnerA, RunnerB">
+                            <span class="form-hint">Separate multiple runner names with commas.</span>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="form-label-row">
+                                <label class="form-label" for="run-notes">Runner Notes &amp; Setup Requirements</label>
+                            </div>
+                            <textarea id="run-notes" class="form-textarea" rows="3" placeholder="Co-commentator info, tech requirements or anything you would like to let orga know..."></textarea>
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: right;">
+                        <button type="submit" id="btn-submit-run" class="btn btn-primary">
+                            <i class="fa fa-check-circle"></i> Submit Run
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- My Submissions -->
+        <section id="tab-my-runs" class="tab-pane">
+            <div class="content-card">
+                <h2 class="section-title">
+                    <span>My Submitted Runs</span>
+                    <button class="btn btn-secondary btn-sm" onclick="loadMySubmissions()"><i class="fa fa-sync-alt"></i> Refresh</button>
+                </h2>
+
+                <div id="my-submissions-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fa fa-inbox"></i></div>
+                        <p>You haven't submitted any runs yet.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Availability -->
+        <section id="tab-availability" class="tab-pane">
+            <div class="content-card">
+                <h2 class="section-title">
+                    <span>Runner Availability</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary btn-sm btn-reset-availability" onclick="resetAvailability()" disabled title="No unsaved changes">
+                            <i class="fa fa-undo"></i> Reset
+                        </button>
+                        <button class="btn btn-primary btn-sm btn-save-availability" onclick="saveAvailability()" disabled title="No unsaved changes">
+                            <i class="fa fa-save"></i> Save Availability
+                        </button>
+                    </div>
+                </h2>
+
+                <div class="availability-container">
+                    <div class="tz-banner">
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                            <label for="tz-select" style="font-weight: 700; color: var(--gold-bright); display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fa fa-globe"></i> Timezone:
+                            </label>
+                            <select id="tz-select" class="form-select" style="padding: 0.45rem 2.4rem 0.45rem 0.85rem; font-size: 0.88rem; width: auto; min-width: 260px;" onchange="handleTimezoneChange(event)">
+                            </select>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="resetToDetectedTimezone()" title="Reset to browser auto-detected timezone" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
+                                <i class="fa fa-crosshairs"></i> Auto-Detect
+                            </button>
+                        </div>
+                        <span class="form-hint">Stored in standard UTC on the server.</span>
+                    </div>
+
+                    <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(211, 156, 10, 0.2); padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.88rem; color: var(--gold-bright); display: flex; flex-direction: column; gap: 0.3rem;">
+                        <div><i class="fa fa-mouse-pointer"></i> <strong>Click & Drag:</strong> Click and drag across slots to quickly select or deselect time windows.</div>
+                        <div><i class="fa fa-clock"></i> <strong>30-Minute Segments:</strong> Each block indicates the <strong>start time</strong> of a 30-minute segment (e.g., selecting <code>14:00</code> means available from <strong>14:00 to 14:30</strong>).</div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="setAvailabilityPreset('all')"><i class="fa fa-check-double"></i> Select All</button>
+                        <button class="btn btn-secondary btn-sm" onclick="setAvailabilityPreset('evenings')"><i class="fa fa-moon"></i> Evenings (18:00 - 24:00)</button>
+                        <button class="btn btn-secondary btn-sm" onclick="setAvailabilityPreset('clear')"><i class="fa fa-times"></i> Clear All</button>
+                    </div>
+
+                    <div id="availability-days-list"></div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="avail-notes">Availability Notes</label>
+                        <input type="text" id="avail-notes" class="form-input" placeholder="e.g. 'Can run after 18:00 on Saturday, prefer Sunday morning'" oninput="updateAvailabilityDirtyState()">
+                    </div>
+
+                    <div style="text-align: right; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                        <button class="btn btn-secondary btn-reset-availability" onclick="resetAvailability()" disabled title="No unsaved changes">
+                            <i class="fa fa-undo"></i> Reset Changes
+                        </button>
+                        <button class="btn btn-primary btn-save-availability" onclick="saveAvailability()" disabled title="No unsaved changes">
+                            <i class="fa fa-save"></i> Save Availability
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- All Submissions -->
+        <section id="tab-all-runs" class="tab-pane">
+            <div class="content-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+                    <h2 class="section-title" style="margin-bottom: 0;">
+                        <span>All Submissions</span>
+                    </h2>
+                    <div class="filter-toolbar">
+                        <input type="text" id="all-runs-search" class="form-input" placeholder="Search runner, game..." oninput="filterAllSubmissions()">
+                        <select id="all-runs-filter-game" class="form-select" onchange="filterAllSubmissions()">
+                            <option value="all">All Games</option>
+                        </select>
+                        <select id="all-runs-filter-status" class="form-select" onchange="filterAllSubmissions()">
+                            <option value="all">All Statuses</option>
+                            <option value="submitted">Submitted</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="backup">Backup</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAllSubmissions()"><i class="fa fa-sync-alt"></i> Refresh</button>
+                    </div>
+                </div>
+
+                <div id="all-submissions-stats" style="display: flex; gap: 1.25rem; margin-bottom: 1.25rem; font-size: 0.92rem; color: var(--gold-bright); flex-wrap: wrap;"></div>
+
+                <div id="all-submissions-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fa fa-inbox"></i></div>
+                        <p>Loading submissions...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Organizer Dashboard -->
+        <section id="tab-admin" class="tab-pane">
+            <div class="content-card">
+                <h2 class="section-title">
+                    <span>Marathon Organizer Dashboard</span>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="exportHoraro()"><i class="fa fa-file-export"></i> Horaro Export</button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportCSV()"><i class="fa fa-file-csv"></i> CSV</button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportJSON()"><i class="fa fa-file-code"></i> JSON</button>
+                    </div>
+                </h2>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div id="stat-total" class="stat-number">0</div>
+                        <div class="stat-label">Total Submissions</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-accepted" class="stat-number" style="color: #2ecc71;">0</div>
+                        <div class="stat-label">Accepted</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-backup" class="stat-number" style="color: #c39bd3;">0</div>
+                        <div class="stat-label">Backup</div>
+                    </div>
+                    <div class="stat-box">
+                        <div id="stat-rejected" class="stat-number" style="color: #e74c3c;">0</div>
+                        <div class="stat-label">Rejected</div>
+                    </div>
+                </div>
+
+                <div class="filter-toolbar" style="margin-bottom: 1.5rem;">
+                    <input type="text" id="admin-search" class="form-input" style="flex: 2 1 200px;" placeholder="Search runner, game, category..." oninput="filterAdminSubmissions()">
+                    <select id="admin-filter-status" class="form-select" onchange="filterAdminSubmissions()">
+                        <option value="all">All Statuses</option>
+                        <option value="submitted">Submitted (Pending)</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="backup">Backup</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div id="admin-submissions-list">
+                    <div class="empty-state">Loading submissions...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Profile Settings -->
+    <div id="profile-modal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Runner Profile Settings</h3>
+                <button class="modal-close" onclick="closeModal('profile-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="profile-form" onsubmit="handleProfileUpdate(event)">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="profile-display-name">Marathon Display Name <span class="required">*</span></label>
+                        <input type="text" id="profile-display-name" class="form-input" required maxlength="32">
+                        <span class="form-hint">The name shown on the schedule, stream overlay, and submissions.</span>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="profile-pronouns">Pronouns</label>
+                        <input type="text" id="profile-pronouns" class="form-input" placeholder="e.g. he/him, they/them, she/her">
+                    </div>
+
+                    <div class="modal-footer" style="padding-left: 0; padding-right: 0; padding-bottom: 0;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('profile-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Submission -->
+    <div id="edit-submission-modal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Run Submission</h3>
+                <button class="modal-close" onclick="closeModal('edit-submission-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-submission-form" onsubmit="handleRunUpdate(event)">
+                    <input type="hidden" id="edit-run-id">
+                    
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-game">Game</label>
+                        <input type="text" id="edit-run-game" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-category">Category</label>
+                        <input type="text" id="edit-run-category" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-platform">Platform</label>
+                        <input type="text" id="edit-run-platform" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-estimate">Estimate (HH:MM:SS)</label>
+                        <input type="text" id="edit-run-estimate" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-video">Video Link</label>
+                        <input type="url" id="edit-run-video" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-notes">Runner Notes</label>
+                        <textarea id="edit-run-notes" class="form-textarea" rows="2"></textarea>
+                    </div>
+
+                    <div class="modal-footer" style="padding-left: 0; padding-right: 0; padding-bottom: 0;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('edit-submission-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Run</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: View Notes -->
+    <div id="note-modal" class="modal-backdrop">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fa fa-sticky-note" style="color: var(--gold-bright);"></i> Runner Notes</h3>
+                <button class="modal-close" onclick="closeModal('note-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="note-modal-subtitle" style="font-size: 0.88rem; color: var(--gold); margin-bottom: 0.85rem; font-weight: 600;"></div>
+                <div id="note-modal-content" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(211, 156, 10, 0.25); border-radius: 6px; padding: 1rem; color: #f1e6d0; font-size: 0.92rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto;"></div>
+                <div class="modal-footer" style="padding-left: 0; padding-right: 0; padding-bottom: 0; margin-top: 1rem;">
+                    <button type="button" class="btn btn-primary" onclick="closeModal('note-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
