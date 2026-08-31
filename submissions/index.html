@@ -80,6 +80,7 @@
                 <span id="meta-status" class="meta-pill open"><i class="fa fa-clock"></i> Submissions Open</span>
                 <span id="meta-dates" class="meta-pill"><i class="fa fa-calendar-alt"></i> Dates Loading...</span>
                 <span id="meta-countdown" class="meta-pill"><i class="fa fa-hourglass-half"></i> Loading deadline...</span>
+                <div id="hero-social-links" class="hero-social-pills" style="display: none;"></div>
             </div>
         </section>
 
@@ -187,7 +188,25 @@
                                 <option value="" disabled selected>Select a game first...</option>
                             </select>
                             <div id="custom-platform-wrap" style="display: none; margin-top: 0.5rem;">
-                                <input type="text" id="run-platform-custom" class="form-input" placeholder="e.g. Steam Deck, PS Vita, Emulated (Ares), etc.">
+                                <input type="text" id="run-platform-custom" class="form-input" placeholder="e.g. Atari, Web, Flash, VR, etc.">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label-row">
+                                <label class="form-label">Ratio / Resolution <span class="required">*</span></label>
+                            </div>
+                            <div class="ratio-input-group">
+                                <input type="text" id="run-ratio-width" class="form-input ratio-input" placeholder="16" required maxlength="6" value="16">
+                                <span class="ratio-divider">:</span>
+                                <input type="text" id="run-ratio-height" class="form-input ratio-input" placeholder="9" required maxlength="6" value="9">
+                            </div>
+                            <div class="ratio-presets">
+                                <button type="button" class="ratio-chip" onclick="setRatioPreset('4', '3')">4:3</button>
+                                <button type="button" class="ratio-chip" onclick="setRatioPreset('16', '9')">16:9</button>
+                                <button type="button" class="ratio-chip" onclick="setRatioPreset('16', '10')">16:10</button>
+                                <button type="button" class="ratio-chip" onclick="setRatioPreset('1920', '1080')">1080p</button>
+                                <button type="button" class="ratio-chip" onclick="setRatioPreset('1280', '720')">720p</button>
                             </div>
                         </div>
 
@@ -424,6 +443,12 @@
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label class="form-label" for="profile-pronouns">Pronouns</label>
                         <input type="text" id="profile-pronouns" class="form-input" placeholder="e.g. he/him, they/them, she/her">
+                        <span class="form-hint">Leave blank if you do not want it displayed on stream.</span>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label">Verified OAuth Identity</label>
+                        <div id="profile-connected-accounts" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; min-height: 28px;"></div>
                     </div>
 
                     <div class="modal-footer" style="padding-left: 0; padding-right: 0; padding-bottom: 0;">
@@ -459,6 +484,15 @@
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label class="form-label" for="edit-run-platform">Platform</label>
                         <input type="text" id="edit-run-platform" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label">Ratio / Resolution</label>
+                        <div class="ratio-input-group">
+                            <input type="text" id="edit-run-ratio-width" class="form-input ratio-input" placeholder="16" required maxlength="6">
+                            <span class="ratio-divider">:</span>
+                            <input type="text" id="edit-run-ratio-height" class="form-input ratio-input" placeholder="9" required maxlength="6">
+                        </div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1rem;">

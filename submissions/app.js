@@ -53,9 +53,9 @@ function initSupabase() {
             } else if (event === "SIGNED_OUT") {
                 currentUser = null;
                 currentProfile = null;
+                userSubmissions = [];
+                selectedAvailabilitySlots.clear();
                 updateAuthUI();
-            } else if (session?.user) {
-                currentUser = session.user;
             }
         });
 
@@ -132,6 +132,24 @@ async function logout() {
     showToast("Successfully logged out.", "success");
 }
 
+function handleAuthFailure(error) {
+    if (!error) return false;
+    if (
+        error.status === 401 ||
+        error.status === 403 ||
+        error.code === "401" ||
+        error.code === "403" ||
+        error.message?.includes("JWT") ||
+        error.message?.includes("token is expired") ||
+        error.message?.includes("invalid claim")
+    ) {
+        console.warn("API returned auth error, clearing session:", error);
+        logout();
+        return true;
+    }
+    return false;
+}
+
 async function loadUserProfile() {
     if (!supabaseClient || !currentUser) return;
 
@@ -141,6 +159,14 @@ async function loadUserProfile() {
             .select("*")
             .eq("id", currentUser.id)
             .single();
+
+        if (error) {
+            // User was deleted on backend (PGRST116 = no rows) or token is invalid
+            if (error.code === "PGRST116" || handleAuthFailure(error)) {
+                await logout();
+                return;
+            }
+        }
 
         if (data) {
             currentProfile = data;
@@ -152,6 +178,42 @@ async function loadUserProfile() {
                 is_admin: false
             };
         }
+
+        // Automatic client-side OAuth username sync fallback if missing in profile
+        const meta = currentUser.user_metadata || {};
+        const identities = currentUser.identities || [];
+        const provider = currentUser.app_metadata?.provider || "";
+
+        let detectedDiscord = null;
+        let detectedTwitch = null;
+
+        const discordId = identities.find(i => i.provider === "discord");
+        if (discordId?.identity_data) {
+            detectedDiscord = discordId.identity_data.full_name || (discordId.identity_data.name ? discordId.identity_data.name.split("#")[0] : null);
+        } else if (provider === "discord" || meta.avatar_url?.includes("discord") || (meta.iss && meta.iss.includes("discord.com"))) {
+            detectedDiscord = meta.full_name || (meta.name ? meta.name.split("#")[0] : null);
+        }
+
+        const twitchId = identities.find(i => i.provider === "twitch");
+        if (twitchId?.identity_data) {
+            detectedTwitch = twitchId.identity_data.slug || twitchId.identity_data.name || twitchId.identity_data.full_name;
+        } else if (provider === "twitch" || meta.avatar_url?.includes("jtvnw.net") || (meta.iss && meta.iss.includes("twitch.tv"))) {
+            detectedTwitch = meta.slug || meta.name || meta.full_name;
+        }
+
+        if ((detectedDiscord && !currentProfile.discord_username) || (detectedTwitch && !currentProfile.twitch_username)) {
+            const syncPayload = {};
+            if (detectedDiscord && !currentProfile.discord_username) {
+                syncPayload.discord_username = detectedDiscord;
+                currentProfile.discord_username = detectedDiscord;
+            }
+            if (detectedTwitch && !currentProfile.twitch_username) {
+                syncPayload.twitch_username = detectedTwitch;
+                currentProfile.twitch_username = detectedTwitch;
+            }
+            supabaseClient.from("profiles").update(syncPayload).eq("id", currentUser.id).then(() => {});
+        }
+
         updateAuthUI();
         updateSubmissionsOpenState();
     } catch (err) {
@@ -201,7 +263,10 @@ async function loadActiveEvent() {
         description: "Also known as PoPRuns 11",
         submissions_open: true,
         start_date: "2026-10-16T12:00:00Z",
-        end_date: "2026-10-18T23:59:59Z"
+        end_date: "2026-10-18T23:59:59Z",
+        discord_url: "https://discord.gg/0uN0p5UvU3lXmFkW",
+        twitch_url: "https://twitch.tv/PoPRuns",
+        youtube_url: "https://youtube.com/@PoPRuns"
     };
 
     if (supabaseClient) {
@@ -291,6 +356,22 @@ function renderHeroMeta() {
 
     document.getElementById("hero-title").textContent = currentEvent.title;
     document.getElementById("hero-desc").textContent = currentEvent.description;
+
+    const socialEl = document.getElementById("hero-social-links");
+    if (socialEl) {
+        let html = "";
+        if (currentEvent.discord_url) {
+            html += `<a href="${escapeHTML(currentEvent.discord_url)}" target="_blank" rel="noopener" class="hero-social-icon-btn discord" title="PoPRuns Discord Server"><i class="fa-brands fa-discord"></i></a>`;
+        }
+        if (currentEvent.youtube_url) {
+            html += `<a href="${escapeHTML(currentEvent.youtube_url)}" target="_blank" rel="noopener" class="hero-social-icon-btn youtube" title="PoPRuns YouTube Channel"><i class="fa-brands fa-youtube"></i></a>`;
+        }
+        if (currentEvent.twitch_url) {
+            html += `<a href="${escapeHTML(currentEvent.twitch_url)}" target="_blank" rel="noopener" class="hero-social-icon-btn twitch" title="PoPRuns Twitch Channel"><i class="fa-brands fa-twitch"></i></a>`;
+        }
+        socialEl.innerHTML = html;
+        socialEl.style.display = html ? "inline-flex" : "none";
+    }
 
     const metaStatus = document.getElementById("meta-status");
     if (currentEvent.submissions_open) {
@@ -486,14 +567,35 @@ function toggleCategoryPresets() {
     }
 }
 
+// Platform-Aware Game Resolution Helper
+function getGameDefinition(gameName) {
+    if (!gameName) return null;
+    return CONFIG.GAMES.find(g => 
+        g.name === gameName || 
+        (g.platformGameNames && Object.values(g.platformGameNames).includes(gameName))
+    );
+}
+
+function getResolvedGameName(gameDef, platform) {
+    if (!gameDef) return "";
+    if (gameDef.platformGameNames && platform && gameDef.platformGameNames[platform]) {
+        return gameDef.platformGameNames[platform];
+    }
+    return gameDef.name;
+}
+
 function handlePlatformChange() {
     const platformSelect = document.getElementById("run-platform");
     const customWrap = document.getElementById("custom-platform-wrap");
     const customInput = document.getElementById("run-platform-custom");
+    const hiddenGameInput = document.getElementById("run-game");
+    const bannerTitle = document.getElementById("selected-game-display-title");
 
     if (!platformSelect || !customWrap) return;
 
-    if (platformSelect.value === "Other") {
+    const selectedPlatform = platformSelect.value;
+
+    if (selectedPlatform === "Other") {
         customWrap.style.display = "block";
         if (customInput) {
             customInput.required = true;
@@ -503,6 +605,22 @@ function handlePlatformChange() {
         customWrap.style.display = "none";
         if (customInput) {
             customInput.required = false;
+        }
+    }
+
+    // Dynamic game title adaptation based on platform
+    if (hiddenGameInput && hiddenGameInput.value) {
+        const gameDef = getGameDefinition(hiddenGameInput.value);
+        if (gameDef) {
+            const resolvedName = getResolvedGameName(gameDef, selectedPlatform);
+            hiddenGameInput.value = resolvedName;
+            if (bannerTitle) {
+                if (resolvedName !== gameDef.name) {
+                    bannerTitle.innerHTML = `${escapeHTML(resolvedName)} <span class="platform-alias-note" style="font-size: 0.8rem; font-weight: normal; color: var(--gold); margin-left: 0.5rem;"><i class="fa fa-info-circle"></i> ${escapeHTML(selectedPlatform)} title</span>`;
+                } else {
+                    bannerTitle.textContent = resolvedName;
+                }
+            }
         }
     }
 }
@@ -527,7 +645,7 @@ function handleGameChange() {
         if (customInput) customInput.required = false;
     }
 
-    const matchedGame = CONFIG.GAMES.find(g => g.name === gameName);
+    const matchedGame = getGameDefinition(gameName);
     if (matchedGame) {
         if (chipsWrap && chipsContainer) {
             if (matchedGame.categories && matchedGame.categories.length > 0) {
@@ -602,6 +720,13 @@ function handleRunTypeChange() {
     }
 }
 
+function setRatioPreset(w, h) {
+    const wInput = document.getElementById("run-ratio-width");
+    const hInput = document.getElementById("run-ratio-height");
+    if (wInput) wInput.value = w;
+    if (hInput) hInput.value = h;
+}
+
 // Run Submission & Management
 async function handleRunSubmit(e) {
     e.preventDefault();
@@ -630,6 +755,15 @@ async function handleRunSubmit(e) {
     if (platform === "Other") {
         platform = document.getElementById("run-platform-custom")?.value.trim() || "Other";
     }
+
+    const ratioWidth = document.getElementById("run-ratio-width") ? document.getElementById("run-ratio-width").value.trim() : "";
+    const ratioHeight = document.getElementById("run-ratio-height") ? document.getElementById("run-ratio-height").value.trim() : "";
+    let formattedRatio = "16:9";
+    if (ratioWidth && ratioHeight) {
+        const isResolution = parseInt(ratioWidth) > 50 || parseInt(ratioHeight) > 50;
+        formattedRatio = `${ratioWidth}${isResolution ? 'x' : ':'}${ratioHeight}`;
+    }
+
     const estimateStr = document.getElementById("run-estimate").value.trim();
     const estimateSeconds = parseTimeToSeconds(estimateStr);
     const videoUrl = document.getElementById("run-video").value.trim();
@@ -655,6 +789,7 @@ async function handleRunSubmit(e) {
                 game,
                 category,
                 platform,
+                ratio: formattedRatio,
                 estimate_seconds: estimateSeconds,
                 video_url: videoUrl,
                 run_type: runType,
@@ -693,7 +828,10 @@ async function loadMySubmissions() {
             .eq("user_id", currentUser.id)
             .order("created_at", { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+            if (handleAuthFailure(error)) return;
+            throw error;
+        }
 
         userSubmissions = data || [];
         renderMySubmissions();
@@ -738,6 +876,7 @@ function renderMySubmissions() {
             </div>
 
             <div class="submission-details">
+                <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
                 <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
                 <span><i class="fa fa-gamepad"></i> Format: <strong>${run.run_type.toUpperCase()}</strong></span>
                 ${run.co_runners ? `<span><i class="fa fa-users"></i> Co-runners: <strong>${escapeHTML(run.co_runners)}</strong></span>` : ""}
@@ -770,6 +909,13 @@ function openEditSubmissionModal(runId) {
     document.getElementById("edit-run-game").value = run.game;
     document.getElementById("edit-run-category").value = run.category;
     document.getElementById("edit-run-platform").value = run.platform;
+
+    const ratioParts = (run.ratio || "16:9").split(/[:x×/]/);
+    const editW = document.getElementById("edit-run-ratio-width");
+    const editH = document.getElementById("edit-run-ratio-height");
+    if (editW) editW.value = ratioParts[0] || "16";
+    if (editH) editH.value = ratioParts[1] || "9";
+
     document.getElementById("edit-run-estimate").value = formatSecondsToTime(run.estimate_seconds);
     document.getElementById("edit-run-video").value = run.video_url;
     document.getElementById("edit-run-notes").value = run.notes || "";
@@ -790,6 +936,15 @@ async function handleRunUpdate(e) {
     const game = document.getElementById("edit-run-game").value.trim();
     const category = document.getElementById("edit-run-category").value.trim();
     const platform = document.getElementById("edit-run-platform").value.trim();
+
+    const editW = document.getElementById("edit-run-ratio-width") ? document.getElementById("edit-run-ratio-width").value.trim() : "";
+    const editH = document.getElementById("edit-run-ratio-height") ? document.getElementById("edit-run-ratio-height").value.trim() : "";
+    let editRatio = "16:9";
+    if (editW && editH) {
+        const isResolution = parseInt(editW) > 50 || parseInt(editH) > 50;
+        editRatio = `${editW}${isResolution ? 'x' : ':'}${editH}`;
+    }
+
     const estimateStr = document.getElementById("edit-run-estimate").value.trim();
     const estimateSeconds = parseTimeToSeconds(estimateStr);
     const videoUrl = document.getElementById("edit-run-video").value.trim();
@@ -802,6 +957,7 @@ async function handleRunUpdate(e) {
                 game,
                 category,
                 platform,
+                ratio: editRatio,
                 estimate_seconds: estimateSeconds,
                 video_url: videoUrl,
                 notes,
@@ -814,6 +970,7 @@ async function handleRunUpdate(e) {
         showToast("Run updated successfully!", "success");
         closeModal("edit-submission-modal");
         await loadMySubmissions();
+        await loadAllSubmissions();
         if (currentProfile?.is_admin) await loadAdminSubmissions();
 
     } catch (err) {
@@ -840,6 +997,7 @@ async function deleteSubmission(runId) {
 
         showToast("Submission deleted.", "success");
         await loadMySubmissions();
+        await loadAllSubmissions();
         if (currentProfile?.is_admin) await loadAdminSubmissions();
     } catch (err) {
         showToast("Failed to delete: " + err.message, "error");
@@ -1410,7 +1568,10 @@ async function loadUserAvailability(force = false) {
             .eq("event_id", currentEvent.id)
             .eq("user_id", currentUser.id);
 
-        if (error) throw error;
+        if (error) {
+            if (handleAuthFailure(error)) return;
+            throw error;
+        }
 
         selectedAvailabilitySlots.clear();
         let loadedNotes = "";
@@ -1454,7 +1615,7 @@ async function loadAllSubmissions() {
         const { data, error } = await supabaseClient
             .from("submissions")
             .select(`
-                id, game, category, platform, estimate_seconds, run_type, co_runners, notes, status, created_at,
+                id, game, category, platform, ratio, estimate_seconds, run_type, co_runners, notes, status, created_at,
                 profiles:user_id (display_name, discord_username, twitch_username, avatar_url)
             `)
             .eq("event_id", currentEvent.id)
@@ -1495,15 +1656,19 @@ function filterAllSubmissions() {
     renderAllSubmissions();
 }
 
-function openRunNote(runner, game, category, notes) {
+function openRunNote(runId) {
+    const run = (allSubmissions || []).find(r => r.id === runId) || (allAdminSubmissions || []).find(r => r.id === runId);
+    if (!run) return;
+
+    const runner = run.profiles?.display_name || "Runner";
     const subtitleEl = document.getElementById("note-modal-subtitle");
     const contentEl = document.getElementById("note-modal-content");
 
     if (subtitleEl) {
-        subtitleEl.textContent = `${runner} • ${game} (${category})`;
+        subtitleEl.textContent = `${runner} • ${run.game} (${run.category})`;
     }
     if (contentEl) {
-        contentEl.textContent = notes || "No notes provided.";
+        contentEl.textContent = run.notes || "No notes provided.";
     }
 
     openModal("note-modal");
@@ -1576,9 +1741,10 @@ function renderAllSubmissions() {
                         <th>Game</th>
                         <th>Category</th>
                         <th>Platform</th>
+                        <th>Ratio</th>
                         <th>Estimate</th>
                         <th>Format</th>
-                        <th>Status</th>
+                        <th class="col-status">Status</th>
                         <th style="text-align: center;">Notes</th>
                     </tr>
                 </thead>
@@ -1589,12 +1755,7 @@ function renderAllSubmissions() {
                         const discord = run.profiles?.discord_username ? `Discord: @${escapeHTML(run.profiles.discord_username)}` : "";
                         const twitch = run.profiles?.twitch_username ? `Twitch: ${escapeHTML(run.profiles.twitch_username)}` : "";
                         const runnerTooltip = [runner, discord, twitch].filter(Boolean).join(" | ");
-
                         const hasNotes = run.notes && run.notes.trim().length > 0;
-                        const encodedNotes = hasNotes ? encodeURIComponent(run.notes) : "";
-                        const safeRunner = (run.profiles?.display_name || "Runner").replace(/'/g, "\\'");
-                        const safeGame = (run.game || "").replace(/'/g, "\\'");
-                        const safeCategory = (run.category || "").replace(/'/g, "\\'");
 
                         return `
                             <tr>
@@ -1607,15 +1768,16 @@ function renderAllSubmissions() {
                                 <td style="font-weight: 600; color: var(--gold);">${escapeHTML(run.game)}</td>
                                 <td style="color: var(--text-main);">${escapeHTML(run.category)}</td>
                                 <td><span style="color: var(--text-muted);">${escapeHTML(run.platform)}</span></td>
-                                <td style="font-family: monospace; font-size: 0.95rem; white-space: nowrap;">${formatSecondsToTime(run.estimate_seconds)}</td>
+                                <td><span style="font-family: monospace; font-size: 0.84rem; color: var(--gold-bright);">${escapeHTML(run.ratio || "16:9")}</span></td>
+                                <td style="font-family: monospace; font-size: 0.9rem; white-space: nowrap;">${formatSecondsToTime(run.estimate_seconds)}</td>
                                 <td style="white-space: nowrap;">
                                     <span style="font-size: 0.85rem; text-transform: uppercase;">${run.run_type}</span>
                                     ${run.co_runners ? `<div style="font-size: 0.78rem; color: var(--text-muted);"><i class="fa fa-users"></i> ${escapeHTML(run.co_runners)}</div>` : ""}
                                 </td>
-                                <td><span class="badge badge-${run.status}">${run.status}</span></td>
+                                <td class="col-status"><span class="badge badge-${run.status}">${run.status}</span></td>
                                 <td style="text-align: center;">
                                     ${hasNotes 
-                                        ? `<button type="button" class="notes-tooltip-icon" onclick="openRunNote('${escapeHTML(safeRunner)}', '${escapeHTML(safeGame)}', '${escapeHTML(safeCategory)}', decodeURIComponent('${encodedNotes}'))" title="Click to view notes: ${escapeHTML(run.notes)}">
+                                        ? `<button type="button" class="notes-tooltip-icon" onclick="openRunNote(${run.id})" title="Click to view notes">
                                             <i class="fa fa-comment-dots"></i>
                                            </button>` 
                                         : `<span style="color: rgba(255,255,255,0.2);">&mdash;</span>`
@@ -1696,6 +1858,7 @@ function renderAdminSubmissions(runs) {
 
             <div class="submission-details">
                 <span><i class="fa fa-user"></i> Runner: <strong>${escapeHTML(run.profiles?.display_name || "Runner")}</strong> (${escapeHTML(run.profiles?.discord_username || "No Discord")})</span>
+                <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
                 <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
                 <span><i class="fa fa-gamepad"></i> Type: <strong>${run.run_type}</strong></span>
                 <span><i class="fa fa-video"></i> <a href="${escapeHTML(run.video_url)}" target="_blank" style="color: var(--accent-blue);">Video Proof <i class="fa fa-external-link-alt"></i></a></span>
@@ -1805,6 +1968,19 @@ function openProfileModal() {
     if (!currentProfile) return;
     document.getElementById("profile-display-name").value = currentProfile.display_name || "";
     document.getElementById("profile-pronouns").value = currentProfile.pronouns || "";
+
+    const accountsEl = document.getElementById("profile-connected-accounts");
+    if (accountsEl) {
+        let html = "";
+        if (currentProfile.discord_username) {
+            html += `<span class="badge" style="background: rgba(88, 101, 242, 0.2); color: #7289da; border: 1px solid rgba(88, 101, 242, 0.4); font-size: 0.85rem; padding: 0.25rem 0.6rem;"><i class="fa-brands fa-discord"></i> @${escapeHTML(currentProfile.discord_username)}</span> `;
+        }
+        if (currentProfile.twitch_username) {
+            html += `<span class="badge" style="background: rgba(145, 71, 255, 0.2); color: #a970ff; border: 1px solid rgba(145, 71, 255, 0.4); font-size: 0.85rem; padding: 0.25rem 0.6rem;"><i class="fa-brands fa-twitch"></i> ${escapeHTML(currentProfile.twitch_username)}</span>`;
+        }
+        accountsEl.innerHTML = html || '<span style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No OAuth username stored yet (log out and log in to sync).</span>';
+    }
+
     openModal("profile-modal");
 }
 
@@ -1951,6 +2127,7 @@ window.toggleCategoryPresets = toggleCategoryPresets;
 window.handlePlatformChange = handlePlatformChange;
 window.handleGameChange = handleGameChange;
 window.handleRunTypeChange = handleRunTypeChange;
+window.setRatioPreset = setRatioPreset;
 window.handleRunSubmit = handleRunSubmit;
 window.loadMySubmissions = loadMySubmissions;
 window.openEditSubmissionModal = openEditSubmissionModal;

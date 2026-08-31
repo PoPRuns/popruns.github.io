@@ -14,7 +14,7 @@ const CONFIG = {
             shortTitle: "PoP 1 (1989)",
             bg: "../static/images/pop1_bg.jpg",
             logo: "../static/images/pop1_logo.svg",
-            platforms: ["DOS", "SNES", "NES", "Amiga", "GBC", "Apple II", "Sega Genesis / Mega Drive"],
+            platforms: ["DOS", "SNES", "NES", "Amiga", "GBC", "Apple II", "Genesis / MD"],
             categories: ["Any% (Standard)", "Any% (No Major Glitches)", "Any% (No Exit Glitch)", "100%", "100% (No Major Glitches)", "All Levels"]
         },
         {
@@ -28,11 +28,14 @@ const CONFIG = {
         },
         {
             id: "pop3d",
-            name: "Prince of Persia 3D / Arabian Nights (1999)",
-            shortTitle: "PoP 3D / AN (1999)",
+            name: "Prince of Persia 3D (1999)",
+            shortTitle: "PoP 3D / Arabian Nights",
             bg: "../static/images/pop_3d_bg.jpg",
             logo: "../static/images/pop_3d.png",
             platforms: ["PC", "Dreamcast"],
+            platformGameNames: {
+                "Dreamcast": "Prince of Persia: Arabian Nights (2000)"
+            },
             categories: ["Any%", "Any% Alt-Tab"]
         },
         {
@@ -41,34 +44,41 @@ const CONFIG = {
             shortTitle: "The Sands of Time",
             bg: "../static/images/pop_sot_bg.jpg",
             logo: "../static/images/pop_sot_logo.png",
-            platforms: ["PC", "PlayStation 2", "GameCube", "Xbox"],
+            platforms: ["PC", "PS2", "GCN", "Xbox"],
             categories: ["Any% (Standard)", "Any% (Zipless)", "Any% (No Major Glitches)", "All Collectibles (Standard)", "All Collectibles (Zipless)", "All Collectibles (NMG)", "100%", "100% (No Major Glitches)"]
         },
         {
             id: "ww",
-            name: "Prince of Persia: Warrior Within / Revelations (2004)",
-            shortTitle: "Warrior Within",
+            name: "Prince of Persia: Warrior Within (2004)",
+            shortTitle: "PoP: WW / Revelations",
             bg: "../static/images/pop_ww_bg.jpg",
             logo: "../static/images/pop_ww_logo.png",
-            platforms: ["PC", "PlayStation 2", "GameCube", "Xbox", "PSP", "iOS"],
+            platforms: ["PC", "PS2", "GCN", "Xbox", "PSP", "iOS"],
+            platformGameNames: {
+                "PSP": "Prince of Persia: Revelations (2005)"
+            },
             categories: ["Any% (Standard)", "Any% (Zipless)", "Any% (No Major Glitches)", "True Ending (Standard)", "True Ending (Zipless)", "True Ending (NMG)", "All Collectibles (Zipless)", "All Collectibles (NMG)", "All Artwork (Standard)"]
         },
         {
             id: "t2t",
-            name: "Prince of Persia: The Two Thrones / Rival Swords (2005)",
-            shortTitle: "The Two Thrones",
+            name: "Prince of Persia: The Two Thrones (2005)",
+            shortTitle: "PoP: T2T / Rival Swords",
             bg: "../static/images/pop_t2t_bg.jpeg",
             logo: "../static/images/pop_t2t_logo.webp",
-            platforms: ["PC", "PlayStation 2", "GameCube", "Xbox", "PSP", "Wii"],
+            platforms: ["PC", "PS2", "GCN", "Xbox", "PSP", "Wii"],
+            platformGameNames: {
+                "PSP": "Prince of Persia: Rival Swords (2007)",
+                "Wii": "Prince of Persia: Rival Swords (2007)"
+            },
             categories: ["Any% (Standard)", "Any% (Zipless)", "Any% (No Major Glitches)", "All Collectibles (Standard)", "All Collectibles (Zipless)", "All Collectibles (NMG)", "100%", "100% (No Major Glitches)"]
         },
         {
             id: "pop2008",
             name: "Prince of Persia (2008)",
-            shortTitle: "PoP (2008)",
+            shortTitle: "PoP 2008",
             bg: "../static/images/pop_2008_bg.jpg",
             logo: "../static/images/pop_2008.webp",
-            platforms: ["PC", "PlayStation 3", "Xbox 360"],
+            platforms: ["PC", "PS3", "X360"],
             categories: ["Any% (Standard)", "Any% (No Major Glitches)", "All Seeds (Standard)", "All Seeds (No Major Glitches)", "Epilogue Any%", "Epilogue All Frescos"]
         },
         {
@@ -77,7 +87,7 @@ const CONFIG = {
             shortTitle: "The Forgotten Sands",
             bg: "../static/images/pop_tfs_bg.jpg",
             logo: "../static/images/pop_tfs_logo.png",
-            platforms: ["PC", "PlayStation 3", "Xbox 360"],
+            platforms: ["PC", "PS3", "X360"],
             categories: ["Any% (Standard)", "Any% (No Energy Glitches)", "Any% (No Major Glitches)"]
         },
         {
@@ -86,7 +96,7 @@ const CONFIG = {
             shortTitle: "The Lost Crown",
             bg: "../static/images/pop_tlc_bg.webp",
             logo: "../static/images/pop_tlc.webp",
-            platforms: ["PC", "PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"],
+            platforms: ["PC", "PS5", "PS4", "Series X/S", "XOne", "Switch", "Switch 2"],
             categories: ["Any% (Unrestricted)", "Any% (Restricted)", "Mask of Darkness (Unrestricted)", "Mask of Darkness (Restricted)", "All Overworld Bosses", "All Collectibles & Quests"]
         },
         {
@@ -95,7 +105,7 @@ const CONFIG = {
             shortTitle: "The Rogue PoP",
             bg: "../static/images/rogue_pop_bg.png",
             logo: "../static/images/rogue_pop.png",
-            platforms: ["PC", "PlayStation 5", "Xbox Series X/S", "Nintendo Switch", "Nintendo Switch 2"],
+            platforms: ["PC", "PS5", "Series X/S", "Switch", "Switch 2"],
             categories: ["Any% (Unseeded)", "Any% (Seeded)", "Fresh File (Corrupted)", "Story Journey"]
         }
     ],
@@ -104,47 +114,47 @@ const CONFIG = {
     SPINOFF_GAMES: [
         {
             name: "Prince of Persia: The Sands of Time [GBA] (2003)",
-            platforms: ["Game Boy Advance"],
+            platforms: ["GBA"],
             categories: ["Any% (Standard)", "Any% (No Zombie Glitch)"]
         },
         {
             name: "Battles of Prince of Persia (2005)",
-            platforms: ["Nintendo DS"],
+            platforms: ["NDS"],
             categories: ["Any% (Emulator)", "Any% (Console)", "Defeat Army", "Defeat General", "Hold the Flag"]
         },
         {
             name: "Prince of Persia Classic (2007)",
-            platforms: ["PlayStation 3", "Xbox 360", "XboxOne", "Xbox Series X/S"],
+            platforms: ["PS3", "X360", "XOne", "Series X/S"],
             categories: ["Any%"]
         },
         {
             name: "Prince of Persia: The Fallen King (2008)",
-            platforms: ["Nintendo DS"],
+            platforms: ["NDS"],
             categories: ["Any% (Emulator)", "Any% (Console)"]
         },
         {
             name: "Prince of Persia: The Forgotten Sands [Wii] (2010)",
-            platforms: ["Wii", "PSP", "Nintendo DS"],
+            platforms: ["Wii", "PSP", "NDS"],
             categories: ["Any%", "All Powers Early", "Retell Story"]
         },
         {
             name: "Prince of Persia: The Forgotten Sands [PSP] (2010)",
-            platforms: ["Wii", "PSP", "Nintendo DS"],
+            platforms: ["PSP"],
             categories: ["Any%"]
         },
         {
             name: "Prince of Persia: The Forgotten Sands [NDS] (2010)",
-            platforms: ["Nintendo DS"],
+            platforms: ["NDS"],
             categories: ["Any% (Emulator)", "Any% (Console)"]
         },
         {
             name: "Prince of Persia Sands Trilogy",
-            platforms: ["PC", "PlayStation 2", "GameCube", "Xbox"],
+            platforms: ["PC", "PS2", "GCN", "Xbox"],
             categories: ["Any% (Standard)", "Any% (Zipless)", "Any% (No Major Glitches)", "Completionist (Standard)", "Completionist (Zipless)", "Completionist (NMG)"]
         },
         {
             name: "Prince of Persia Mobile Games",
-            platforms: ["Java Mobile (J2ME)", "Symbian", "Android", "iOS"],
+            platforms: ["J2ME", "Symbian", "Android", "iOS"],
             categories: ["Harem Adventures", "Shadow and the Flame (Remake)", "Sands of Time", "Warrior Within", "The Two Thrones", "Classic", "2008", "The Forgotten Sands"]
         },
         {
