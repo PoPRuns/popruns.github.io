@@ -14,16 +14,36 @@
             -moz-background-size: cover;
             -o-background-size: cover;
             background-size: cover;
+            min-height: 100%;
         }
 
         body {
-            background: #00000080;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             color: white;
             color-scheme: dark;
             font-family: sans-serif;
-            margin: auto;
-            padding: max(2vw, 15px);
+        }
+
+        .page-wrapper {
+            flex: 1 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .page-container {
+            background: #00000080;
+            padding: max(2vw, 25px);
             max-width: max(60vw, 750px);
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -115,10 +135,16 @@
             text-decoration: underline;
         }
     </style>
+    <script src="../../static/js/navbar.js" defer></script>
 </head>
 
 <body data-bs-theme="dark">
-    <h1>PoP 2008 Beam Calculator</h1>
+    <popruns-navbar tagline="PoP 2008 Beam Calculator">
+        <a href="../" class="nav-link" title="PoP 2008 Hub">PoP 2008</a>
+    </popruns-navbar>
+    <div class="page-wrapper">
+        <div class="page-container">
+            <h1>PoP 2008 Beam Calculator</h1>
 
     <div class="input-container">
         <div>
@@ -178,8 +204,11 @@
             </table>
         </div>
     </div>
+    </div>
+    </div>
 
     <script type="module" src="app.js"></script>
+    <script src="../../static/js/footer.js" defer></script>
 </body>
 
 </html>

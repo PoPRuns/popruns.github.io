@@ -7,19 +7,15 @@
     <title>PoP 2008 Mission Dependency Tree</title>
     <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
     <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script src="../../static/js/navbar.js" defer></script>
 </head>
 
 <body>
-
-    <header>
-        <div class="navbar-title">
-            PoP 2008 Mission Dependency Tree
-        </div>
-        <div class="toolbar">
-            <button class="btn" id="expandBtn">Expand All</button>
-            <button class="btn" id="collapseBtn">Collapse All</button>
-        </div>
-    </header>
+    <popruns-navbar tagline="PoP 2008 Mission Tree">
+        <a href="../" class="nav-link" title="PoP 2008 Hub">PoP 2008</a>
+        <button class="btn" id="expandBtn">Expand All</button>
+        <button class="btn" id="collapseBtn">Collapse All</button>
+    </popruns-navbar>
 
     <div class="app-container">
         <div class="tree-viewport">
@@ -84,6 +80,7 @@
     </div>
 
     <script type="module" src="app.js"></script>
+    <script src="../../static/js/footer.js" defer></script>
 </body>
 
 </html>

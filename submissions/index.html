@@ -27,41 +27,31 @@
     <link rel="icon" type="image/png" href="https://speedrun.com/static/theme/mwzg4n8y/favicon.png?v=0697428" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="../static/js/navbar.js" defer></script>
 </head>
 <body>
 
     <!-- Header Navigation -->
-    <header class="header-nav">
-        <a href="../" class="nav-brand">
-            <img src="../static/images/popruns_logo.png" alt="PoPRuns Logo">
-            <span class="nav-tagline">Marathon Submissions</span>
-        </a>
-
-        <div class="nav-actions">
-            <a href="../" class="nav-link" title="Return to PoPRuns Home">
-                <i class="fa fa-arrow-left"></i> <span class="nav-link-text">PoPRuns Home</span>
-            </a>
-            
-            <!-- Auth Container (Populated by app.js) -->
-            <div id="auth-section">
-                <button id="btn-login-discord" class="btn btn-discord btn-sm" onclick="loginWithDiscord()">
-                    <i class="fa-brands fa-discord"></i> <span class="btn-text-full">Login with Discord</span><span class="btn-text-short">Discord</span>
-                </button>
-                <button id="btn-login-twitch" class="btn btn-twitch btn-sm" onclick="loginWithTwitch()">
-                    <i class="fa-brands fa-twitch"></i> Twitch
-                </button>
-            </div>
-            
-            <!-- Logged-in Profile Widget -->
-            <div id="user-profile" class="user-profile-widget" style="display: none;">
-                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
-                <span id="user-display-name" class="user-name">Runner</span>
-                <span id="user-admin-badge" class="admin-badge" style="display: none;">Admin</span>
-                <button class="btn btn-secondary btn-sm" onclick="openProfileModal()" title="Edit Display Name"><i class="fa fa-user-edit"></i></button>
-                <button class="btn btn-secondary btn-sm" onclick="logout()" title="Logout"><i class="fa fa-sign-out-alt"></i></button>
-            </div>
+    <popruns-navbar tagline="Marathon Submissions">
+        <!-- Auth Container (Populated by app.js) -->
+        <div id="auth-section">
+            <button id="btn-login-discord" class="btn btn-discord btn-sm" onclick="loginWithDiscord()">
+                <i class="fa-brands fa-discord"></i> <span class="btn-text-full">Login with Discord</span><span class="btn-text-short">Discord</span>
+            </button>
+            <button id="btn-login-twitch" class="btn btn-twitch btn-sm" onclick="loginWithTwitch()">
+                <i class="fa-brands fa-twitch"></i> Twitch
+            </button>
         </div>
-    </header>
+        
+        <!-- Logged-in Profile Widget -->
+        <div id="user-profile" class="user-profile-widget" style="display: none;">
+            <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+            <span id="user-display-name" class="user-name">Runner</span>
+            <span id="user-admin-badge" class="admin-badge" style="display: none;">Admin</span>
+            <button class="btn btn-secondary btn-sm" onclick="openProfileModal()" title="Edit Display Name"><i class="fa fa-user-edit"></i></button>
+            <button class="btn btn-secondary btn-sm" onclick="logout()" title="Logout"><i class="fa fa-sign-out-alt"></i></button>
+        </div>
+    </popruns-navbar>
 
     <!-- Main Container -->
     <main class="container">
@@ -541,5 +531,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="app.js"></script>
+    <script src="../static/js/footer.js" defer></script>
 </body>
 </html>

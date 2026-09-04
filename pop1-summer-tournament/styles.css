@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'PortLligat Sans';
+    font-style: normal;
+    font-weight: normal;
+    src: local('PortLligat Sans'), url('../static/fonts/PortLligatSans-Regular.woff') format('woff');
+}
+
 body {
     font-family: 'Istok Web', sans-serif;
     background: #000000 url('https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4aYyFLkVPIx2XdHuFecdxp/b7c267a2f15d2cd9f2e38fdcb8507f35/Memory_textured_background.png') no-repeat center center fixed;
@@ -34,7 +41,7 @@ ul {
 
 .header-flex {
     width: 100%;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -181,7 +188,7 @@ ul {
 
 .hero-wrap {
     margin-top: 20px;
-    padding: 3.5em 10px 10px 10px;
+    padding: 1.5em 10px 10px 10px;
 }
 
 .hero p.intro {
@@ -324,7 +331,7 @@ ul {
     display: inline-block;
     width: 12px;
     color: #2C7399;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
 }
 
 .life {
@@ -338,7 +345,7 @@ ul {
     float: right;
     color: seagreen;
     font-weight: bold;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     position: absolute;
     right: 5px;
 }
@@ -349,7 +356,7 @@ ul {
     float: right;
     color: seagreen;
     font-weight: bold;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     position: absolute;
     right: 25px;
 }
@@ -419,7 +426,7 @@ ul {
 }
 
 .round-details {
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     font-size: 13px;
     color: #fff;
     text-transform: uppercase;

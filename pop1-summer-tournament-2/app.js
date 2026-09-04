@@ -273,12 +273,14 @@ function showBracket() {
   leaderboardElement.style.display = "none";
   scheduleElement.style.display = "none";
   bracketElement.style.display = "block";
+  if (window.setPoprunsActiveTab) window.setPoprunsActiveTab('bracket');
 }
 
 function showSchedule() {
   leaderboardElement.style.display = "none";
   bracketElement.style.display = "none";
   scheduleElement.style.display = "block";
+  if (window.setPoprunsActiveTab) window.setPoprunsActiveTab('schedule');
 }
 
 function showLB() {

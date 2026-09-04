@@ -4,15 +4,25 @@
 <head>
     <title>PoPRuns - Prince of Persia Speedruns</title>
     <link rel="icon" type="image/png" href="https://speedrun.com/static/theme/mwzg4n8y/favicon.png?v=0697428" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="main.css" />
     <!-- <link rel="stylesheet" type="text/css" href="theme_main.css" title="Home" /> -->
+    <script src="static/js/navbar.js" defer></script>
 </head>
 
 <body>
-    <div id="header">
-        <img src="static/images/popruns_logo.png" width="250"></img>
-        <div class="header-text">Welcome to PoPRuns, home of Prince of Persia speedruns, challenge runs and other nerdy stuff.</div>
-    </div>
+    <popruns-navbar home-link="false" tagline="Prince of Persia Speedruns">
+        <a href="submissions/" class="nav-link nav-link-highlight" title="Marathon Submissions">
+            <i class="fa fa-flag-checkered"></i>
+            <span class="nav-link-text">Marathon Submissions</span>
+        </a>
+        <a href="tool-assisted-runs/" class="nav-link" title="Tool-Assisted Runs">
+            <i class="fa fa-bolt"></i>
+            <span class="nav-link-text">Tool-Assisted Runs</span>
+        </a>
+    </popruns-navbar>
+
+    <div id="wrapper">
     <div class="rows">
         <div class="main-items-container">
             <div class="main-item">
@@ -141,7 +151,8 @@
             </div>
         </div>
     </div>
-
+    </div>
+    <script src="static/js/footer.js" defer></script>
 </body>
 
 </html>

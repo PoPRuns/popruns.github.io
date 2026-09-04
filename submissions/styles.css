@@ -1,10 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400&family=Roboto+Condensed:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400&display=swap');
 
 @font-face {
     font-family: 'Trajan Pro Regular';
     font-style: normal;
     font-weight: normal;
     src: local('Trajan Pro Regular'), url('../static/fonts/TrajanPro-Regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'PortLligat Sans';
+    font-style: normal;
+    font-weight: normal;
+    src: local('PortLligat Sans'), url('../static/fonts/PortLligatSans-Regular.woff') format('woff');
 }
 
 :root {
@@ -98,7 +105,7 @@ body {
     color: var(--gold);
     text-decoration: none;
     font-size: 0.95rem;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     padding: 0.4rem 0.7rem;
     border-radius: 4px;
     transition: all 0.2s ease;
@@ -311,7 +318,7 @@ body {
     border: none;
     cursor: pointer;
     color: white;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     font-size: 1.05rem;
     margin: .25rem .5rem .25rem .25rem;
     padding: .45rem 1.4rem;
@@ -407,7 +414,7 @@ body {
     justify-content: center;
     gap: 0.5rem;
     padding: 0.65rem 1.25rem;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
     font-size: 1rem;
     font-weight: 700;
     border-radius: 6px;
@@ -753,7 +760,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: 'PortLligat Sans', sans-serif;
 }
 
 .game-card-check {

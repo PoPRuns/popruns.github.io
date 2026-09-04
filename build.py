@@ -63,15 +63,22 @@ def generate_sitemap_html(routes, output="sitemap.html"):
     SubElement(head, "meta", name="viewport", content="width=device-width, initial-scale=1.0")
     SubElement(head, "title").text = "Site Map"
 
+    script_nav = SubElement(head, "script", src="/static/js/navbar.js", defer="defer")
+    script_nav.text = ""
+
     style = SubElement(head, "style")
     style.text = """
-        body { font-family: sans-serif; }
+        body { font-family: sans-serif; margin: 0; }
+        .sitemap-content { padding: 20px 40px; }
         ul { line-height: 1.8; }
     """
 
     body = SubElement(html, "body")
-    SubElement(body, "h1").text = "Site Map"
-    ul = SubElement(body, "ul")
+    nav = SubElement(body, "popruns-navbar", tagline="Sitemap")
+    nav.text = ""
+    content_div = SubElement(body, "div", attrib={"class": "sitemap-content"})
+    SubElement(content_div, "h1").text = "Site Map"
+    ul = SubElement(content_div, "ul")
 
     for route in routes:
         path = route or "/"
@@ -79,8 +86,14 @@ def generate_sitemap_html(routes, output="sitemap.html"):
         a = SubElement(li, "a", href=path)
         a.text = path
 
+    footer_script = SubElement(body, "script", src="/static/js/footer.js", defer="defer")
+    footer_script.text = ""
+
     doc_type = "<!DOCTYPE html>\n"
     pretty_html = minidom.parseString(tostring(html, encoding="utf-8")).toprettyxml(indent="  ")
+    pretty_html = pretty_html.replace('<script src="/static/js/navbar.js" defer="defer"/>', '<script src="/static/js/navbar.js" defer="defer"></script>')
+    pretty_html = pretty_html.replace('<script src="/static/js/footer.js" defer="defer"/>', '<script src="/static/js/footer.js" defer="defer"></script>')
+    pretty_html = pretty_html.replace('<popruns-navbar tagline="Sitemap"/>', '<popruns-navbar tagline="Sitemap"></popruns-navbar>')
 
     with open(output, "w", encoding="utf-8") as f:
         f.write(doc_type + pretty_html)

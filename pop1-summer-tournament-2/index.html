@@ -4,24 +4,20 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href='https://fonts.googleapis.com/css?family=Istok+Web|Roboto+Condensed:700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Istok+Web' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="styles.css">
+    <script src="../static/js/navbar.js" defer></script>
 
     <title>PoP1 Summer Tournament</title>
 </head>
 
 <body>
-    <div class="header-flex">
-        <div class="header-left">
-            &#10087; <a class="section-link" onclick="showBracket()">BRACKET</a> &#9753;
+    <popruns-navbar>
+        <div slot="left">
+            <a class="nav-link active" data-tab="bracket" onclick="showBracket()">Bracket</a>
+            <a class="nav-link" data-tab="schedule" onclick="showSchedule()">Schedule &amp; Results</a>
         </div>
-        <div class="header-left">
-            &#10087; <a class="section-link" onclick="showSchedule()">SCHEDULE & RESULTS</a> &#9753;
-        </div>
-        <!-- <div class="header-right">
-            &#10087; <a class="section-link" onclick="showLB()">LEADERBOARD</a> &#9753;
-        </div> -->
-    </div>
+    </popruns-navbar>
     <header class="hero">
         <div class="hero-wrap">
             <h1 id="headline">Summer Tournament</h1>
@@ -176,5 +172,5 @@
         </div>
     </section>
     <script src="app.js"></script>
-
+    <script src="../static/js/footer.js" defer></script>
 </body>

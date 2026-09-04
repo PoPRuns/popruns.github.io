@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tool-Assisted Speedruns - PoPRuns</title>
+
+    <link rel="icon" type="image/png" href="https://speedrun.com/static/theme/mwzg4n8y/favicon.png?v=0697428" />
+    <link rel="canonical" href="https://popruns.github.io/tool-assisted-runs/" />
+
+    <!-- Open Graph / Social Embeds -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PoPRuns">
+    <meta property="og:title" content="Prince of Persia Tool-Assisted Speedruns - PoPRuns">
+    <meta property="og:description" content="Community archive of Prince of Persia Tool-Assisted Speedruns (TAS). Explore video encodes, commentary tracks, and author notes.">
+    <meta property="og:url" content="https://popruns.github.io/tool-assisted-runs/">
+    <meta property="og:image" content="https://popruns.github.io/static/images/popruns_logo.png">
+
+    <!-- Meta Tags -->
+    <meta name="keywords" content="Prince of Persia, PoP, Tool-Assisted Speedrun, TAS, PoP1, PoP2, Sands of Time, Warrior Within, Two Thrones, Speedrun Archive">
+    <meta name="author" content="PoPRuns Community">
+    <meta name="theme-color" content="#d39c0a">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css" />
+    <script src="../static/js/navbar.js" defer></script>
+</head>
+
+<body>
+
+    <!-- Header Navigation -->
+    <popruns-navbar tagline="Tool-Assisted Runs"></popruns-navbar>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="wrap">
+            <div class="hero-content">
+                <h1 class="hero-title">Prince of Persia <span class="gold-text">Tool-Assisted Speedruns</span></h1>
+                <p class="hero-bio">
+                    Community archive of Prince of Persia Tool-Assisted Speedruns (TAS). Explore video encodes, commentary tracks, and author notes.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="wrap">
+
+        <!-- Controls -->
+        <section class="controls-panel">
+            <!-- Top Controls -->
+            <div class="filters-row top-controls-row">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fa fa-tv"></i> Platform:</label>
+                    <select id="platform-select" class="form-select">
+                        <option value="all">All Platforms</option>
+                        <option value="DOS">DOS</option>
+                        <option value="NES">NES</option>
+                        <option value="SNES">SNES</option>
+                        <option value="Genesis">Genesis / Mega Drive</option>
+                        <option value="GBC">Game Boy Color</option>
+                        <option value="GBA">Game Boy Advance</option>
+                        <option value="GCN">GameCube</option>
+                        <option value="SegaCD">Sega CD</option>
+                        <option value="TG-16">TurboGrafx-16 (PCECD)</option>
+                        <option value="DS">Nintendo DS</option>
+                        <option value="Amiga">Amiga</option>
+                        <option value="Flash">Flash</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fa fa-trophy"></i> Status:</label>
+                    <div class="filter-pills" id="status-filters">
+                        <button type="button" class="filter-pill active" data-filter="status" data-value="all">All Runs</button>
+                        <button type="button" class="filter-pill pill-record" data-filter="status" data-value="fastest">Records</button>
+                        <button type="button" class="filter-pill" data-filter="status" data-value="obsolete">Obsolete</button>
+                    </div>
+                </div>
+
+                <div class="search-bar-wrap">
+                    <i class="fa fa-search search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search runner, category, year..." autocomplete="off">
+                    <button type="button" id="search-clear-btn" class="search-clear-btn" title="Clear search" style="display: none;">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <button type="button" id="reset-filters-btn" class="btn btn-secondary btn-sm" style="display: none;">
+                    <i class="fa fa-undo"></i> Reset
+                </button>
+            </div>
+
+            <!-- Games Filter Row -->
+            <div class="filters-row games-row">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fa fa-gamepad"></i> Game:</label>
+                    <div class="filter-pills" id="game-filters">
+                        <button type="button" class="filter-pill active" data-filter="game" data-value="all">All Games</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop1">PoP 1 (1989)</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop2">PoP 2: Shadow &amp; Flame</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop_sot">Sands of Time</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop_ww">Warrior Within</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop_t2t">The Two Thrones</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop_tfk">The Fallen King</button>
+                        <button type="button" class="filter-pill" data-filter="game" data-value="pop_special_edition">Special Edition</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Records Table -->
+        <section class="records-section">
+            <div class="section-head">
+                <div>
+                    <p class="section-subtitle">Click on any run to expand video encodes, commentary tracks, and author notes.</p>
+                </div>
+                <div class="results-meta">
+                    <span class="count-badge" id="visible-count">Showing 45 of 45 runs</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 220px;">Game</th>
+                            <th scope="col" style="width: 145px;">Category</th>
+                            <th scope="col" style="width: 135px;">TASer(s)</th>
+                            <th scope="col" style="width: 110px;">Date</th>
+                            <th scope="col" style="width: 165px;">Time / Status</th>
+                            <th scope="col" style="width: 105px;">Links</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-body"></tbody>
+                </table>
+            </div>
+
+            <div id="no-results" class="no-results-card" style="display: none;">
+                <i class="fa fa-ghost"></i>
+                <h3>No speedruns match your current filters</h3>
+                <p>Try searching for a different game, runner, or clearing selected filters.</p>
+                <button type="button" class="btn btn-gold" onclick="resetAllFilters()">Clear All Filters</button>
+            </div>
+        </section>
+
+        <!-- Bonus Runs -->
+        <section class="bonus-section">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title"><i class="fa fa-flask"></i> Bonus Runs &amp; Showcases</h2>
+                    <p class="section-subtitle">Notable partial runs, route tests and individual segment TASes.</p>
+                </div>
+            </div>
+
+            <div class="bonus-grid" id="bonus-grid"></div>
+        </section>
+
+    </main>
+
+    <!-- App Scripts -->
+    <script type="module" src="app.js"></script>
+    <script src="../static/js/footer.js" defer></script>
+</body>
+
+</html>

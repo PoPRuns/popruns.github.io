@@ -3,3 +3,4 @@ __blazor
 sitemap.html
 sitemap.xml
 *.sql
+*.pyc

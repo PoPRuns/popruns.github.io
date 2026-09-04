@@ -7,6 +7,10 @@
     <link rel="icon" type="image/png" href="https://www.speedrun.com/static/theme/9wp0mv83/favicon.png?v=67ce752">
     <style>
         body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             background: #000000 url('../../static/images/pop_2008_map_bg.png') no-repeat center center fixed;
             -webkit-background-size: cover;
             -moz-background-size: cover;
@@ -18,6 +22,12 @@
 
         .main-container {
             display: flex;
+            flex: 1 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 20px 40px;
+            align-items: flex-start;
+            justify-content: center;
         }
 
         .bubble-group {
@@ -54,9 +64,13 @@
             filter: drop-shadow(0px 0px 5px aqua);
         }
     </style>
+    <script src="../../static/js/navbar.js" defer></script>
 </head>
 
 <body>
+    <popruns-navbar tagline="PoP 2008 Playlists">
+        <a href="../" class="nav-link" title="PoP 2008 Hub">PoP 2008</a>
+    </popruns-navbar>
     <div class="main-container">
         <svg viewBox="0 30 500 300" xmlns="http://www.w3.org/2000/svg">
             <g id="map-elements" transform="matrix(1, 0, 0, 1, 0.7970069765598708, 0.7757420059404048)">
@@ -104,5 +118,6 @@
     </div>
 
     <script type="module" src="app.js"></script>
-
+    <script src="../../static/js/footer.js" defer></script>
+</body>
 </html>

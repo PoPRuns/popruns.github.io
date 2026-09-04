@@ -35,23 +35,21 @@ html {
 
 body {
     margin: 0;
-    height: 100vh;
-    /* This is the page canvas around the app card -- padding above leaves it exposed on every
-     side. background-color is a fallback in case the image is ever missing/slow to load. */
+    min-height: 100vh;
     background: var(--page-bg) url('../../static/images/pop_2008_scene_bg.png') center / cover no-repeat;
     color: var(--text);
     font-family: var(--font-sans);
     font-size: 13px;
-    overflow: hidden;
     user-select: none;
-    padding: 32px;
-    padding-left: 100px;
-    padding-right: 100px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ---- app card ---- */
 #app {
-    height: 100%;
+    flex: 1 0 auto;
+    min-height: calc(100vh - 120px);
+    margin: 32px 100px;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -60,7 +58,6 @@ body {
     border-radius: 0;
     overflow: hidden;
     display: flex;
-    min-height: 0;
 }
 
 #sidebar {
