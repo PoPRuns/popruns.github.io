@@ -354,8 +354,8 @@ function updateSubmissionsOpenState() {
 function renderHeroMeta() {
     if (!currentEvent) return;
 
-    document.getElementById("hero-title").textContent = currentEvent.title;
-    document.getElementById("hero-desc").textContent = currentEvent.description;
+    document.getElementById("hero-title").textContent = currentEvent.title || "Prince of Persia Marathon";
+    document.getElementById("hero-desc").textContent = currentEvent.description || "";
 
     const socialEl = document.getElementById("hero-social-links");
     if (socialEl) {
