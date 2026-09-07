@@ -3,15 +3,23 @@
  */
 
 // Application State
-let supabaseClient = null;
-let currentUser = null;
-let currentProfile = null;
-let currentEvent = null;
-let userSubmissions = [];
-let allAdminSubmissions = [];
-let selectedAvailabilitySlots = new Set();
+let supabaseClient = null, currentUser = null, currentProfile = null, currentEvent = null;
+let userSubmissions = [], allSubmissions = [], allAdminSubmissions = [];
+let selectedAvailabilitySlots = new Set(), savedAvailabilitySlots = new Set(), savedAvailabilityNotes = "";
 
-// Initialization
+// Timezone & Availability State
+const THIRTY_MIN_MS = 30 * 60 * 1000;
+let detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+let selectedTimezone = detectedTimezone;
+let isDragging = false, dragMode = null, dragStartSlotKey = null, dragInitialSelection = null;
+const slotElementsMap = new Map();
+
+// Shorthands & Escaping
+const $ = (id) => document.getElementById(id);
+const $$ = (sel) => document.querySelectorAll(sel);
+const escapeHTML = (s) => (s ? String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "");
+
+// Global Listeners
 document.addEventListener("DOMContentLoaded", async () => {
     initSupabase();
     initUI();
@@ -21,28 +29,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupTimezone();
 });
 
-function initSupabase() {
-    const isConfigured = typeof CONFIG !== "undefined" &&
-                         CONFIG.SUPABASE_URL && 
-                         !CONFIG.SUPABASE_URL.includes("your-project-ref") &&
-                         CONFIG.SUPABASE_ANON_KEY && 
-                         !CONFIG.SUPABASE_ANON_KEY.includes("your-anon-public-key");
+window.addEventListener("mouseup", () => {
+    if (isDragging) {
+        isDragging = false;
+        dragMode = dragStartSlotKey = dragInitialSelection = null;
+        updateAvailabilityDirtyState();
+    }
+});
 
-    const configBanner = document.getElementById("config-banner");
+// Supabase & Auth
+function initSupabase() {
+    const isConfigured = typeof CONFIG !== "undefined" && CONFIG.SUPABASE_URL && !CONFIG.SUPABASE_URL.includes("your-project-ref") &&
+                         CONFIG.SUPABASE_ANON_KEY && !CONFIG.SUPABASE_ANON_KEY.includes("your-anon-public-key");
+
     if (!isConfigured) {
-        if (configBanner) configBanner.classList.add("active");
+        if ($("config-banner")) $("config-banner").classList.add("active");
         console.warn("Supabase credentials not configured in submissions/config.js");
         return;
     }
 
     try {
-        if (window.supabase && typeof window.supabase.createClient === "function") {
+        if (window.supabase?.createClient) {
             supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         } else {
             console.error("Supabase SDK library not loaded from CDN.");
             return;
         }
-        
+
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
                 if (session?.user && (!currentUser || currentUser.id !== session.user.id)) {
@@ -52,8 +65,7 @@ function initSupabase() {
                     await loadUserAvailability();
                 }
             } else if (event === "SIGNED_OUT") {
-                currentUser = null;
-                currentProfile = null;
+                currentUser = currentProfile = null;
                 userSubmissions = [];
                 selectedAvailabilitySlots.clear();
                 updateAuthUI();
@@ -70,7 +82,6 @@ function initSupabase() {
                 updateAuthUI();
             }
         });
-
     } catch (err) {
         console.error("Failed to initialize Supabase:", err);
     }
@@ -80,44 +91,26 @@ function initUI() {
     const urlParams = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const errorDesc = urlParams.get("error_description") || hashParams.get("error_description");
-
     if (errorDesc) {
         showToast("Auth Error: " + decodeURIComponent(errorDesc.replace(/\+/g, " ")), "error");
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-
     const hash = window.location.hash.replace("#", "");
-    if (["submit", "my-runs", "availability", "all-runs", "admin"].includes(hash)) {
-        switchTab(hash);
-    }
+    if (["submit", "my-runs", "availability", "all-runs", "admin"].includes(hash)) switchTab(hash);
 }
 
-// Authentication
 async function loginWithDiscord() {
-    if (!supabaseClient) {
-        showToast("Supabase is not configured yet in submissions/config.js", "error");
-        return;
-    }
+    if (!supabaseClient) return showToast("Supabase is not configured yet in submissions/config.js", "error");
     const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "discord",
-        options: {
-            scopes: "identify",
-            redirectTo: window.location.origin + window.location.pathname
-        }
+        provider: "discord", options: { scopes: "identify", redirectTo: window.location.origin + window.location.pathname }
     });
     if (error) showToast("Login failed: " + error.message, "error");
 }
 
 async function loginWithTwitch() {
-    if (!supabaseClient) {
-        showToast("Supabase is not configured yet in submissions/config.js", "error");
-        return;
-    }
+    if (!supabaseClient) return showToast("Supabase is not configured yet in submissions/config.js", "error");
     const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "twitch",
-        options: {
-            redirectTo: window.location.origin + window.location.pathname
-        }
+        provider: "twitch", options: { redirectTo: window.location.origin + window.location.pathname }
     });
     if (error) showToast("Login failed: " + error.message, "error");
 }
@@ -125,8 +118,7 @@ async function loginWithTwitch() {
 async function logout() {
     if (!supabaseClient) return;
     await supabaseClient.auth.signOut();
-    currentUser = null;
-    currentProfile = null;
+    currentUser = currentProfile = null;
     userSubmissions = [];
     selectedAvailabilitySlots.clear();
     updateAuthUI();
@@ -135,16 +127,9 @@ async function logout() {
 
 function handleAuthFailure(error) {
     if (!error) return false;
-    if (
-        error.status === 401 ||
-        error.status === 403 ||
-        error.code === "401" ||
-        error.code === "403" ||
-        error.message?.includes("JWT") ||
-        error.message?.includes("token is expired") ||
-        error.message?.includes("invalid claim")
-    ) {
-        console.warn("API returned auth error, clearing session:", error);
+    if (error.status === 401 || error.status === 403 || error.code === "401" || error.code === "403" ||
+        error.message?.includes("JWT") || error.message?.includes("token is expired") || error.message?.includes("invalid claim")) {
+        console.warn("Auth error returned, resetting session:", error);
         logout();
         return true;
     }
@@ -153,66 +138,28 @@ function handleAuthFailure(error) {
 
 async function loadUserProfile() {
     if (!supabaseClient || !currentUser) return;
-
     try {
-        const { data, error } = await supabaseClient
-            .from("profiles")
-            .select("*")
-            .eq("id", currentUser.id)
-            .single();
+        const { data, error } = await supabaseClient.from("profiles").select("*").eq("id", currentUser.id).single();
+        if (error && (error.code === "PGRST116" || handleAuthFailure(error))) { await logout(); return; }
 
-        if (error) {
-            // User was deleted on backend (PGRST116 = no rows) or token is invalid
-            if (error.code === "PGRST116" || handleAuthFailure(error)) {
-                await logout();
-                return;
-            }
-        }
+        currentProfile = data || {
+            id: currentUser.id,
+            display_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.user_name || "Runner",
+            avatar_url: currentUser.user_metadata?.avatar_url || "",
+            is_admin: false
+        };
 
-        if (data) {
-            currentProfile = data;
-        } else {
-            currentProfile = {
-                id: currentUser.id,
-                display_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.user_name || "Runner",
-                avatar_url: currentUser.user_metadata?.avatar_url || "",
-                is_admin: false
-            };
-        }
-
-        // Automatic client-side OAuth username sync fallback if missing in profile
-        const meta = currentUser.user_metadata || {};
-        const identities = currentUser.identities || [];
-        const provider = currentUser.app_metadata?.provider || "";
-
-        let detectedDiscord = null;
-        let detectedTwitch = null;
-
-        const discordId = identities.find(i => i.provider === "discord");
-        if (discordId?.identity_data) {
-            detectedDiscord = discordId.identity_data.full_name || (discordId.identity_data.name ? discordId.identity_data.name.split("#")[0] : null);
-        } else if (provider === "discord" || meta.avatar_url?.includes("discord") || (meta.iss && meta.iss.includes("discord.com"))) {
-            detectedDiscord = meta.full_name || (meta.name ? meta.name.split("#")[0] : null);
-        }
-
-        const twitchId = identities.find(i => i.provider === "twitch");
-        if (twitchId?.identity_data) {
-            detectedTwitch = twitchId.identity_data.slug || twitchId.identity_data.name || twitchId.identity_data.full_name;
-        } else if (provider === "twitch" || meta.avatar_url?.includes("jtvnw.net") || (meta.iss && meta.iss.includes("twitch.tv"))) {
-            detectedTwitch = meta.slug || meta.name || meta.full_name;
-        }
+        const meta = currentUser.user_metadata || {}, identities = currentUser.identities || [], provider = currentUser.app_metadata?.provider || "";
+        const detectedDiscord = identities.find(i => i.provider === "discord")?.identity_data?.full_name ||
+            (provider === "discord" || meta.avatar_url?.includes("discord") ? (meta.full_name || meta.name?.split("#")[0]) : null);
+        const detectedTwitch = identities.find(i => i.provider === "twitch")?.identity_data?.slug ||
+            (provider === "twitch" || meta.avatar_url?.includes("jtvnw.net") ? (meta.slug || meta.name || meta.full_name) : null);
 
         if ((detectedDiscord && !currentProfile.discord_username) || (detectedTwitch && !currentProfile.twitch_username)) {
-            const syncPayload = {};
-            if (detectedDiscord && !currentProfile.discord_username) {
-                syncPayload.discord_username = detectedDiscord;
-                currentProfile.discord_username = detectedDiscord;
-            }
-            if (detectedTwitch && !currentProfile.twitch_username) {
-                syncPayload.twitch_username = detectedTwitch;
-                currentProfile.twitch_username = detectedTwitch;
-            }
-            supabaseClient.from("profiles").update(syncPayload).eq("id", currentUser.id).then(() => {});
+            const sync = {};
+            if (detectedDiscord && !currentProfile.discord_username) sync.discord_username = currentProfile.discord_username = detectedDiscord;
+            if (detectedTwitch && !currentProfile.twitch_username) sync.twitch_username = currentProfile.twitch_username = detectedTwitch;
+            supabaseClient.from("profiles").update(sync).eq("id", currentUser.id).then(() => {});
         }
 
         updateAuthUI();
@@ -223,64 +170,34 @@ async function loadUserProfile() {
 }
 
 function updateAuthUI() {
-    const authSection = document.getElementById("auth-section");
-    const userProfile = document.getElementById("user-profile");
-    const submitLoginPrompt = document.getElementById("submit-login-prompt");
-    const submissionForm = document.getElementById("submission-form");
-    const tabAdminBtn = document.getElementById("tab-admin-btn");
+    const isAuth = Boolean(currentUser && currentProfile);
+    if ($("auth-section")) $("auth-section").style.display = isAuth ? "none" : "flex";
+    if ($("user-profile")) $("user-profile").style.display = isAuth ? "flex" : "none";
+    if ($("tab-admin-btn")) $("tab-admin-btn").style.display = isAuth && currentProfile.is_admin ? "flex" : "none";
+    if ($("submit-login-prompt")) $("submit-login-prompt").style.display = isAuth ? "none" : "block";
+    if ($("submission-form")) $("submission-form").style.display = isAuth ? "block" : "none";
 
-    if (currentUser && currentProfile) {
-        authSection.style.display = "none";
-        userProfile.style.display = "flex";
-        document.getElementById("user-display-name").textContent = currentProfile.display_name;
-        document.getElementById("user-avatar").src = currentProfile.avatar_url || "../static/images/popruns_logo.png";
-        
-        const adminBadge = document.getElementById("user-admin-badge");
-        if (currentProfile.is_admin) {
-            adminBadge.style.display = "inline-block";
-            tabAdminBtn.style.display = "flex";
-        } else {
-            adminBadge.style.display = "none";
-            tabAdminBtn.style.display = "none";
-        }
-
-        if (submitLoginPrompt) submitLoginPrompt.style.display = "none";
-        if (submissionForm) submissionForm.style.display = "block";
-    } else {
-        authSection.style.display = "flex";
-        userProfile.style.display = "none";
-        tabAdminBtn.style.display = "none";
-        if (submitLoginPrompt) submitLoginPrompt.style.display = "block";
-        if (submissionForm) submissionForm.style.display = "none";
+    if (isAuth) {
+        if ($("user-display-name")) $("user-display-name").textContent = currentProfile.display_name;
+        if ($("user-avatar")) $("user-avatar").src = currentProfile.avatar_url || "../static/images/popruns_logo.png";
+        if ($("user-admin-badge")) $("user-admin-badge").style.display = currentProfile.is_admin ? "inline-block" : "none";
     }
 }
 
-// Active Marathon Event
+// Active Event & Hero Meta
 async function loadActiveEvent() {
     currentEvent = {
-        id: 1,
-        slug: CONFIG.DEFAULT_EVENT_SLUG,
-        title: "Prince of Persia Marathon 2026",
-        description: "Also known as PoPRuns 11",
-        submissions_open: true,
-        start_date: "2026-10-16T12:00:00Z",
-        end_date: "2026-10-18T23:59:59Z",
-        discord_url: "https://discord.gg/0uN0p5UvU3lXmFkW",
-        twitch_url: "https://twitch.tv/PoPRuns",
-        youtube_url: "https://youtube.com/@PoPRuns"
+        id: 1, slug: CONFIG.DEFAULT_EVENT_SLUG, title: "Prince of Persia Marathon 2026", description: "Also known as PoPRuns 11",
+        submissions_open: true, start_date: "2026-10-16T12:00:00Z", end_date: "2026-10-18T23:59:59Z",
+        discord_url: "https://discord.gg/0uN0p5UvU3lXmFkW", twitch_url: "https://twitch.tv/PoPRuns", youtube_url: "https://youtube.com/@PoPRuns"
     };
 
     if (supabaseClient) {
         try {
-            const { data, error } = await supabaseClient
-                .from("events")
-                .select("*")
-                .eq("slug", CONFIG.DEFAULT_EVENT_SLUG)
-                .single();
-
+            const { data } = await supabaseClient.from("events").select("*").eq("slug", CONFIG.DEFAULT_EVENT_SLUG).single();
             if (data) currentEvent = data;
         } catch (err) {
-            console.error("Error fetching event from DB:", err);
+            console.error("Error fetching active event:", err);
         }
     }
 
@@ -291,14 +208,9 @@ async function loadActiveEvent() {
 
 function updateSubmissionsOpenState() {
     if (!currentEvent) return;
-
-    const isOpen = currentEvent.submissions_open;
-    const isAdmin = Boolean(currentProfile && currentProfile.is_admin);
-
-    const submitForm = document.getElementById("submission-form");
-    const submitBtn = document.getElementById("btn-submit-run");
-    const submitTabCard = document.querySelector("#tab-submit .content-card");
-    let existingSubmitNotice = document.getElementById("submissions-closed-notice");
+    const isOpen = currentEvent.submissions_open, isAdmin = Boolean(currentProfile?.is_admin);
+    const submitForm = $("submission-form"), submitBtn = $("btn-submit-run"), submitTabCard = document.querySelector("#tab-submit .content-card");
+    let existingSubmitNotice = $("submissions-closed-notice");
 
     if (!isOpen) {
         if (!existingSubmitNotice && submitTabCard && submitForm) {
@@ -308,27 +220,17 @@ function updateSubmissionsOpenState() {
             existingSubmitNotice.innerHTML = '<i class="fa fa-lock" style="font-size: 1.4rem;"></i> <div><strong>Submissions are Closed:</strong> Submissions for this marathon are currently closed. New run submissions are no longer accepted.</div>';
             submitTabCard.insertBefore(existingSubmitNotice, submitForm);
         }
-        if (submitForm) {
-            submitForm.querySelectorAll("input, select, textarea, button[type='submit']").forEach(el => el.disabled = true);
-        }
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa fa-lock"></i> Submissions Closed';
-        }
+        if (submitForm) submitForm.querySelectorAll("input, select, textarea, button[type='submit']").forEach(el => el.disabled = true);
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa fa-lock"></i> Submissions Closed'; }
     } else {
         if (existingSubmitNotice) existingSubmitNotice.remove();
-        if (submitForm) {
-            submitForm.querySelectorAll("input, select, textarea, button[type='submit']").forEach(el => el.disabled = false);
-        }
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa fa-check-circle"></i> Submit Run';
-        }
+        if (submitForm) submitForm.querySelectorAll("input, select, textarea, button[type='submit']").forEach(el => el.disabled = false);
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa fa-check-circle"></i> Submit Run'; }
     }
 
     const availContainer = document.querySelector(".availability-container");
-    let existingAvailNotice = document.getElementById("availability-closed-notice");
-    const availNotes = document.getElementById("avail-notes");
+    let existingAvailNotice = $("availability-closed-notice");
+    const availNotes = $("avail-notes");
     const presetButtons = document.querySelectorAll("#tab-availability .btn-secondary:not([onclick*='resetToDetectedTimezone'])");
 
     if (!isOpen && !isAdmin) {
@@ -354,53 +256,36 @@ function updateSubmissionsOpenState() {
 
 function renderHeroMeta() {
     if (!currentEvent) return;
+    if ($("hero-title")) $("hero-title").textContent = currentEvent.title || "Prince of Persia Marathon";
+    if ($("hero-desc")) $("hero-desc").textContent = currentEvent.description || "";
 
-    document.getElementById("hero-title").textContent = currentEvent.title || "Prince of Persia Marathon";
-    document.getElementById("hero-desc").textContent = currentEvent.description || "";
-
-    const socialEl = document.getElementById("hero-social-links");
+    const socialEl = $("hero-social-links");
     if (socialEl) {
-        let html = "";
-        if (currentEvent.discord_url) {
-            html += `<a href="${escapeHTML(currentEvent.discord_url)}" target="_blank" rel="noopener" class="hero-social-icon-btn discord" title="PoPRuns Discord Server"><i class="fa-brands fa-discord"></i></a>`;
-        }
-        if (currentEvent.youtube_url) {
-            html += `<a href="${escapeHTML(currentEvent.youtube_url)}" target="_blank" rel="noopener" class="hero-social-icon-btn youtube" title="PoPRuns YouTube Channel"><i class="fa-brands fa-youtube"></i></a>`;
-        }
-        if (currentEvent.twitch_url) {
-            html += `<a href="${escapeHTML(currentEvent.twitch_url)}" target="_blank" rel="noopener" class="hero-social-icon-btn twitch" title="PoPRuns Twitch Channel"><i class="fa-brands fa-twitch"></i></a>`;
-        }
-        socialEl.innerHTML = html;
-        socialEl.style.display = html ? "inline-flex" : "none";
+        const links = [
+            { url: currentEvent.discord_url, cls: "discord", icon: "discord", title: "PoPRuns Discord Server" },
+            { url: currentEvent.youtube_url, cls: "youtube", icon: "youtube", title: "PoPRuns YouTube Channel" },
+            { url: currentEvent.twitch_url, cls: "twitch", icon: "twitch", title: "PoPRuns Twitch Channel" }
+        ].filter(l => Boolean(l.url));
+        socialEl.innerHTML = links.map(l => `<a href="${escapeHTML(l.url)}" target="_blank" rel="noopener" class="hero-social-icon-btn ${l.cls}" title="${l.title}"><i class="fa-brands fa-${l.icon}"></i></a>`).join("");
+        socialEl.style.display = links.length ? "inline-flex" : "none";
     }
 
-    const metaStatus = document.getElementById("meta-status");
-    if (currentEvent.submissions_open) {
-        metaStatus.className = "meta-pill open";
-        metaStatus.innerHTML = '<i class="fa fa-door-open"></i> Submissions Open';
-    } else {
-        metaStatus.className = "meta-pill closed";
-        metaStatus.innerHTML = '<i class="fa fa-door-closed"></i> Submissions Closed';
+    const metaStatus = $("meta-status");
+    if (metaStatus) {
+        metaStatus.className = `meta-pill ${currentEvent.submissions_open ? "open" : "closed"}`;
+        metaStatus.innerHTML = `<i class="fa fa-door-${currentEvent.submissions_open ? "open" : "closed"}"></i> Submissions ${currentEvent.submissions_open ? "Open" : "Closed"}`;
     }
 
-    const startDate = new Date(currentEvent.start_date);
-    const endDate = new Date(currentEvent.end_date);
-    const options = { month: "short", day: "numeric", year: "numeric" };
-    document.getElementById("meta-dates").innerHTML = 
-        `<i class="fa fa-calendar-alt"></i> ${startDate.toLocaleDateString(undefined, options)} - ${endDate.toLocaleDateString(undefined, options)}`;
-
-    document.getElementById("meta-countdown").innerHTML = 
-        `<i class="fa fa-clock"></i> Starts in ${Math.max(0, Math.ceil((startDate - new Date()) / (1000 * 60 * 60 * 24)))} days`;
+    const startDate = new Date(currentEvent.start_date), endDate = new Date(currentEvent.end_date);
+    const opts = { month: "short", day: "numeric", year: "numeric" };
+    if ($("meta-dates")) $("meta-dates").innerHTML = `<i class="fa fa-calendar-alt"></i> ${startDate.toLocaleDateString(undefined, opts)} - ${endDate.toLocaleDateString(undefined, opts)}`;
+    if ($("meta-countdown")) $("meta-countdown").innerHTML = `<i class="fa fa-clock"></i> Starts in ${Math.max(0, Math.ceil((startDate - new Date()) / (1000 * 60 * 60 * 24)))} days`;
 }
 
 // Game Selection UI
 function populateGameDropdown() {
-    renderGameSelectionUI();
-}
-
-function renderGameSelectionUI() {
-    const grid = document.getElementById("mainline-games-grid");
-    if (grid) {
+    const grid = $("mainline-games-grid");
+    if (grid && CONFIG.MAINLINE_GAMES) {
         grid.innerHTML = CONFIG.MAINLINE_GAMES.map(game => `
             <div class="game-card" data-game-id="${game.id}" onclick="selectMainlineGame('${game.id}')" title="${escapeHTML(game.name)}">
                 <div class="game-card-bg" style="background-image: url('${game.bg}');"></div>
@@ -411,371 +296,183 @@ function renderGameSelectionUI() {
         `).join("");
     }
 
-    const spinoffSelect = document.getElementById("run-spinoff-select");
-    if (spinoffSelect) {
-        spinoffSelect.innerHTML = '<option value="">--</option>' +
+    if ($("run-spinoff-select") && CONFIG.SPINOFF_GAMES) {
+        $("run-spinoff-select").innerHTML = '<option value="">--</option>' +
             CONFIG.SPINOFF_GAMES.map(g => `<option value="${escapeHTML(g.name)}">${escapeHTML(g.name)}</option>`).join("");
     }
 
-    const editSelect = document.getElementById("edit-run-game");
-    if (editSelect) {
-        editSelect.innerHTML = '<option value="" disabled selected>Select a Prince of Persia game...</option>' +
-            '<optgroup label="Mainline Games">' +
-            CONFIG.MAINLINE_GAMES.map(g => `<option value="${escapeHTML(g.name)}">${escapeHTML(g.name)}</option>`).join("") +
-            '</optgroup>' +
-            '<optgroup label="Spin-offs & Custom">' +
-            CONFIG.SPINOFF_GAMES.map(g => `<option value="${escapeHTML(g.name)}">${escapeHTML(g.name)}</option>`).join("") +
-            '</optgroup>';
+    if ($("edit-run-game") && CONFIG.MAINLINE_GAMES && CONFIG.SPINOFF_GAMES) {
+        $("edit-run-game").innerHTML = '<option value="" disabled selected>Select a Prince of Persia game...</option>' +
+            '<optgroup label="Mainline Games">' + CONFIG.MAINLINE_GAMES.map(g => `<option value="${escapeHTML(g.name)}">${escapeHTML(g.name)}</option>`).join("") + '</optgroup>' +
+            '<optgroup label="Spin-offs & Custom">' + CONFIG.SPINOFF_GAMES.map(g => `<option value="${escapeHTML(g.name)}">${escapeHTML(g.name)}</option>`).join("") + '</optgroup>';
     }
 }
 
 function selectMainlineGame(gameId) {
-    const game = CONFIG.MAINLINE_GAMES.find(g => g.id === gameId);
+    const game = CONFIG.MAINLINE_GAMES?.find(g => g.id === gameId);
     if (!game) return;
-
-    const spinoffSelect = document.getElementById("run-spinoff-select");
-    if (spinoffSelect) spinoffSelect.value = "";
-
-    const hiddenInput = document.getElementById("run-game");
-    if (hiddenInput) hiddenInput.value = game.name;
-
-    document.querySelectorAll(".game-card").forEach(c => {
-        c.classList.toggle("selected", c.dataset.gameId === gameId);
-    });
-
-    const badge = document.getElementById("selected-game-badge");
-    if (badge) {
-        badge.innerHTML = `<i class="fa fa-check"></i> Game Selected`;
+    if ($("run-spinoff-select")) $("run-spinoff-select").value = "";
+    if ($("run-game")) $("run-game").value = game.name;
+    $$(".game-card").forEach(c => c.classList.toggle("selected", c.dataset.gameId === gameId));
+    if ($("selected-game-badge")) $("selected-game-badge").innerHTML = '<i class="fa fa-check"></i> Game Selected';
+    if ($("selected-game-banner") && $("selected-game-display-title")) {
+        $("selected-game-display-title").textContent = game.name;
+        $("selected-game-banner").style.display = "block";
     }
-
-    const banner = document.getElementById("selected-game-banner");
-    const bannerTitle = document.getElementById("selected-game-display-title");
-    if (banner && bannerTitle) {
-        bannerTitle.textContent = game.name;
-        banner.style.display = "block";
-    }
-
-    // Clear category input on game change
-    const categoryInput = document.getElementById("run-category");
-    if (categoryInput) categoryInput.value = "";
-
+    if ($("run-category")) $("run-category").value = "";
     handleGameChange();
 }
 
 function handleSpinoffChange(gameName) {
-    document.querySelectorAll(".game-card").forEach(c => c.classList.remove("selected"));
-
-    const hiddenInput = document.getElementById("run-game");
-    if (hiddenInput) hiddenInput.value = gameName || "";
-
-    const badge = document.getElementById("selected-game-badge");
-    const banner = document.getElementById("selected-game-banner");
-    const bannerTitle = document.getElementById("selected-game-display-title");
-
-    if (gameName) {
-        if (badge) badge.innerHTML = `<i class="fa fa-check"></i> Game Selected`;
-        if (banner && bannerTitle) {
-            bannerTitle.textContent = gameName;
-            banner.style.display = "block";
-        }
-    } else {
-        if (badge) badge.innerHTML = `<i class="fa fa-hand-point-down"></i> Please pick a game below`;
-        if (banner) banner.style.display = "none";
+    $$(".game-card").forEach(c => c.classList.remove("selected"));
+    if ($("run-game")) $("run-game").value = gameName || "";
+    if ($("selected-game-badge")) $("selected-game-badge").innerHTML = gameName ? '<i class="fa fa-check"></i> Game Selected' : '<i class="fa fa-hand-point-down"></i> Please pick a game below';
+    if ($("selected-game-banner")) {
+        $("selected-game-banner").style.display = gameName ? "block" : "none";
+        if ($("selected-game-display-title")) $("selected-game-display-title").textContent = gameName || "";
     }
-
-    // Clear category input on game change
-    const categoryInput = document.getElementById("run-category");
-    if (categoryInput) categoryInput.value = "";
-
+    if ($("run-category")) $("run-category").value = "";
     handleGameChange();
 }
 
 function clearSelectedGame() {
-    const hiddenInput = document.getElementById("run-game");
-    if (hiddenInput) hiddenInput.value = "";
-
-    document.querySelectorAll(".game-card").forEach(c => c.classList.remove("selected"));
-
-    const spinoffSelect = document.getElementById("run-spinoff-select");
-    if (spinoffSelect) spinoffSelect.value = "";
-
-    const badge = document.getElementById("selected-game-badge");
-    if (badge) badge.innerHTML = `<i class="fa fa-hand-point-down"></i> Please pick a game below`;
-
-    const banner = document.getElementById("selected-game-banner");
-    if (banner) banner.style.display = "none";
-
-    const categoryInput = document.getElementById("run-category");
-    if (categoryInput) categoryInput.value = "";
-
+    if ($("run-game")) $("run-game").value = "";
+    $$(".game-card").forEach(c => c.classList.remove("selected"));
+    if ($("run-spinoff-select")) $("run-spinoff-select").value = "";
+    if ($("selected-game-badge")) $("selected-game-badge").innerHTML = '<i class="fa fa-hand-point-down"></i> Please pick a game below';
+    if ($("selected-game-banner")) $("selected-game-banner").style.display = "none";
+    if ($("run-category")) $("run-category").value = "";
     handleGameChange();
 }
 
-function applyCategoryChip(categoryText) {
-    const input = document.getElementById("run-category");
+function applyCategoryChip(cat) {
+    const input = $("run-category");
     if (!input) return;
-    input.value = categoryText;
+    input.value = cat;
     input.focus();
-
-    // Collapse presets once selected
-    const chipsWrap = document.getElementById("category-chips-wrap");
-    const toggleBtn = document.getElementById("toggle-presets-btn");
-    if (chipsWrap) chipsWrap.style.display = "none";
-    if (toggleBtn) {
-        toggleBtn.style.display = "inline-flex";
-        toggleBtn.innerHTML = '<i class="fa fa-lightbulb"></i> Show presets';
+    if ($("category-chips-wrap")) $("category-chips-wrap").style.display = "none";
+    if ($("toggle-presets-btn")) {
+        $("toggle-presets-btn").style.display = "inline-flex";
+        $("toggle-presets-btn").innerHTML = '<i class="fa fa-lightbulb"></i> Show presets';
     }
 }
 
 function handleCategoryInput() {
-    const input = document.getElementById("run-category");
-    const chipsWrap = document.getElementById("category-chips-wrap");
-    const toggleBtn = document.getElementById("toggle-presets-btn");
-    const chipsContainer = document.getElementById("category-chips");
-
-    if (!input || !chipsWrap || !toggleBtn || !chipsContainer) return;
-
-    // Only interact if presets exist for currently selected game
-    if (chipsContainer.children.length === 0) {
-        chipsWrap.style.display = "none";
-        toggleBtn.style.display = "none";
-        return;
-    }
-
-    if (input.value.trim().length > 0) {
-        // Collapse presets when text is entered
-        chipsWrap.style.display = "none";
-        toggleBtn.style.display = "inline-flex";
-        toggleBtn.innerHTML = '<i class="fa fa-lightbulb"></i> Show presets';
-    } else {
-        // Re-expand presets if input is cleared
-        chipsWrap.style.display = "flex";
-        toggleBtn.style.display = "none";
-    }
+    const input = $("run-category"), chipsWrap = $("category-chips-wrap"), toggleBtn = $("toggle-presets-btn"), chipsContainer = $("category-chips");
+    if (!input || !chipsWrap || !toggleBtn || !chipsContainer || !chipsContainer.children.length) return;
+    const hasText = input.value.trim().length > 0;
+    chipsWrap.style.display = hasText ? "none" : "flex";
+    toggleBtn.style.display = hasText ? "inline-flex" : "none";
+    if (hasText) toggleBtn.innerHTML = '<i class="fa fa-lightbulb"></i> Show presets';
 }
 
 function toggleCategoryPresets() {
-    const chipsWrap = document.getElementById("category-chips-wrap");
-    const toggleBtn = document.getElementById("toggle-presets-btn");
+    const chipsWrap = $("category-chips-wrap"), toggleBtn = $("toggle-presets-btn");
     if (!chipsWrap || !toggleBtn) return;
-
-    if (chipsWrap.style.display === "none") {
-        chipsWrap.style.display = "flex";
-        toggleBtn.innerHTML = '<i class="fa fa-chevron-up"></i> Hide presets';
-    } else {
-        chipsWrap.style.display = "none";
-        toggleBtn.innerHTML = '<i class="fa fa-lightbulb"></i> Show presets';
-    }
+    const isHidden = chipsWrap.style.display === "none";
+    chipsWrap.style.display = isHidden ? "flex" : "none";
+    toggleBtn.innerHTML = isHidden ? '<i class="fa fa-chevron-up"></i> Hide presets' : '<i class="fa fa-lightbulb"></i> Show presets';
 }
 
-// Platform-Aware Game Resolution Helper
-function getGameDefinition(gameName) {
-    if (!gameName) return null;
-    return CONFIG.GAMES.find(g => 
-        g.name === gameName || 
-        (g.platformGameNames && Object.values(g.platformGameNames).includes(gameName))
-    );
+function getGameDefinition(name) {
+    return CONFIG.GAMES?.find(g => g.name === name || (g.platformGameNames && Object.values(g.platformGameNames).includes(name)));
 }
 
 function getResolvedGameName(gameDef, platform) {
-    if (!gameDef) return "";
-    if (gameDef.platformGameNames && platform && gameDef.platformGameNames[platform]) {
-        return gameDef.platformGameNames[platform];
-    }
-    return gameDef.name;
+    return (gameDef?.platformGameNames && platform && gameDef.platformGameNames[platform]) || gameDef?.name || "";
 }
 
 function handlePlatformChange() {
-    const platformSelect = document.getElementById("run-platform");
-    const customWrap = document.getElementById("custom-platform-wrap");
-    const customInput = document.getElementById("run-platform-custom");
-    const hiddenGameInput = document.getElementById("run-game");
-    const bannerTitle = document.getElementById("selected-game-display-title");
-
+    const platformSelect = $("run-platform"), customWrap = $("custom-platform-wrap"), customInput = $("run-platform-custom");
+    const hiddenGameInput = $("run-game"), bannerTitle = $("selected-game-display-title");
     if (!platformSelect || !customWrap) return;
 
-    const selectedPlatform = platformSelect.value;
+    const isOther = platformSelect.value === "Other";
+    customWrap.style.display = isOther ? "block" : "none";
+    if (customInput) { customInput.required = isOther; if (isOther) customInput.focus(); }
 
-    if (selectedPlatform === "Other") {
-        customWrap.style.display = "block";
-        if (customInput) {
-            customInput.required = true;
-            customInput.focus();
-        }
-    } else {
-        customWrap.style.display = "none";
-        if (customInput) {
-            customInput.required = false;
-        }
-    }
-
-    // Dynamic game title adaptation based on platform
-    if (hiddenGameInput && hiddenGameInput.value) {
+    if (hiddenGameInput?.value) {
         const gameDef = getGameDefinition(hiddenGameInput.value);
         if (gameDef) {
-            const resolvedName = getResolvedGameName(gameDef, selectedPlatform);
+            const resolvedName = getResolvedGameName(gameDef, platformSelect.value);
             hiddenGameInput.value = resolvedName;
             if (bannerTitle) {
-                if (resolvedName !== gameDef.name) {
-                    bannerTitle.innerHTML = `${escapeHTML(resolvedName)} <span class="platform-alias-note" style="font-size: 0.8rem; font-weight: normal; color: var(--gold); margin-left: 0.5rem;"><i class="fa fa-info-circle"></i> ${escapeHTML(selectedPlatform)} title</span>`;
-                } else {
-                    bannerTitle.textContent = resolvedName;
-                }
+                bannerTitle.innerHTML = resolvedName !== gameDef.name
+                    ? `${escapeHTML(resolvedName)} <span class="platform-alias-note" style="font-size: 0.8rem; font-weight: normal; color: var(--gold); margin-left: 0.5rem;"><i class="fa fa-info-circle"></i> ${escapeHTML(platformSelect.value)} title</span>`
+                    : escapeHTML(resolvedName);
             }
         }
     }
 }
 
 function handleGameChange() {
-    const gameName = document.getElementById("run-game") ? document.getElementById("run-game").value : "";
-    const customGameGroup = document.getElementById("custom-game-group");
-    const chipsWrap = document.getElementById("category-chips-wrap");
-    const chipsContainer = document.getElementById("category-chips");
-    const toggleBtn = document.getElementById("toggle-presets-btn");
-    const platformSelect = document.getElementById("run-platform");
-    const categoryInput = document.getElementById("run-category");
-    const customWrap = document.getElementById("custom-platform-wrap");
+    const gameName = $("run-game")?.value || "";
+    const isCustom = gameName.startsWith("Other");
+    if ($("custom-game-group")) $("custom-game-group").style.display = isCustom ? "block" : "none";
+    if ($("run-game-custom")) $("run-game-custom").required = isCustom;
 
-    if (gameName.startsWith("Other")) {
-        if (customGameGroup) customGameGroup.style.display = "block";
-        const customInput = document.getElementById("run-game-custom");
-        if (customInput) customInput.required = true;
-    } else {
-        if (customGameGroup) customGameGroup.style.display = "none";
-        const customInput = document.getElementById("run-game-custom");
-        if (customInput) customInput.required = false;
-    }
+    const matched = getGameDefinition(gameName);
+    const platformSelect = $("run-platform"), chipsWrap = $("category-chips-wrap"), chipsContainer = $("category-chips"), toggleBtn = $("toggle-presets-btn");
 
-    const matchedGame = getGameDefinition(gameName);
-    if (matchedGame) {
+    if (matched) {
         if (chipsWrap && chipsContainer) {
-            if (matchedGame.categories && matchedGame.categories.length > 0) {
-                chipsContainer.innerHTML = matchedGame.categories.map(cat => `
-                    <button type="button" class="category-chip" onclick="applyCategoryChip('${escapeHTML(cat).replace(/'/g, "\\'")}')" title="Click to use preset '${escapeHTML(cat)}'">
-                        ${escapeHTML(cat)}
-                    </button>
+            if (matched.categories?.length) {
+                chipsContainer.innerHTML = matched.categories.map(cat => `
+                    <button type="button" class="category-chip" onclick="applyCategoryChip('${escapeHTML(cat).replace(/'/g, "\\'")}')" title="Use preset '${escapeHTML(cat)}'">${escapeHTML(cat)}</button>
                 `).join("");
-
-                // If input is empty, show presets; if already filled, collapse and offer show button
-                if (!categoryInput || categoryInput.value.trim().length === 0) {
-                    chipsWrap.style.display = "flex";
-                    if (toggleBtn) toggleBtn.style.display = "none";
-                } else {
-                    chipsWrap.style.display = "none";
-                    if (toggleBtn) {
-                        toggleBtn.style.display = "inline-flex";
-                        toggleBtn.innerHTML = '<i class="fa fa-lightbulb"></i> Show presets';
-                    }
-                }
+                const isCatEmpty = !$("run-category")?.value.trim().length;
+                chipsWrap.style.display = isCatEmpty ? "flex" : "none";
+                if (toggleBtn) { toggleBtn.style.display = isCatEmpty ? "none" : "inline-flex"; toggleBtn.innerHTML = '<i class="fa fa-lightbulb"></i> Show presets'; }
             } else {
                 chipsContainer.innerHTML = "";
                 chipsWrap.style.display = "none";
                 if (toggleBtn) toggleBtn.style.display = "none";
             }
         }
-
         if (platformSelect) {
             platformSelect.disabled = false;
-            platformSelect.innerHTML = "";
-            (matchedGame.platforms || []).forEach(plat => {
-                if (plat !== "Other") {
-                    const opt = document.createElement("option");
-                    opt.value = plat;
-                    opt.textContent = plat;
-                    platformSelect.appendChild(opt);
-                }
-            });
-
-            // Always add 'Other' option for custom platform input
-            const otherOpt = document.createElement("option");
-            otherOpt.value = "Other";
-            otherOpt.textContent = "Other (Specify...)";
-            platformSelect.appendChild(otherOpt);
-
-            // Select first platform by default
-            if (matchedGame.platforms && matchedGame.platforms.length > 0 && matchedGame.platforms[0] !== "Other") {
-                platformSelect.value = matchedGame.platforms[0];
-            }
-
+            platformSelect.innerHTML = (matched.platforms || []).filter(p => p !== "Other").map(p => `<option value="${escapeHTML(p)}">${escapeHTML(p)}</option>`).join("") + '<option value="Other">Other (Specify...)</option>';
+            if (matched.platforms?.length && matched.platforms[0] !== "Other") platformSelect.value = matched.platforms[0];
             handlePlatformChange();
         }
     } else {
-        // No game selected: disable platform and reset options
-        if (platformSelect) {
-            platformSelect.disabled = true;
-            platformSelect.innerHTML = '<option value="" disabled selected>Select a game first...</option>';
-        }
-        if (customWrap) customWrap.style.display = "none";
+        if (platformSelect) { platformSelect.disabled = true; platformSelect.innerHTML = '<option value="" disabled selected>Select a game first...</option>'; }
+        if ($("custom-platform-wrap")) $("custom-platform-wrap").style.display = "none";
         if (chipsWrap) chipsWrap.style.display = "none";
         if (toggleBtn) toggleBtn.style.display = "none";
     }
 }
 
-// Run Format & Ratio Helpers (DRY)
+// Run Format & Ratio Helpers
 function formatRunType(type) {
-    if (!type) return "Solo";
-    const t = String(type).toLowerCase();
-    if (typeof CONFIG !== "undefined" && Array.isArray(CONFIG.RUN_FORMATS)) {
-        const matched = CONFIG.RUN_FORMATS.find(rf => rf.value.toLowerCase() === t);
-        if (matched) return matched.shortLabel || matched.label;
-    }
-    switch (t) {
-        case "solo": return "Solo";
-        case "race": return "Race";
-        case "btr_lta":
-        case "btr":
-        case "lta": return "BTR / LTA";
-        case "coop": return "Co-op";
-        case "showcase": return "Showcase";
-        default: return type.toUpperCase();
-    }
+    const matched = CONFIG.RUN_FORMATS?.find(rf => rf.value.toLowerCase() === String(type || "").toLowerCase());
+    return matched?.shortLabel || matched?.label || (type ? type.toUpperCase() : "Solo");
 }
 
 function isMultiRunnerType(type) {
-    if (!type) return false;
-    const t = String(type).toLowerCase();
-    if (typeof CONFIG !== "undefined" && Array.isArray(CONFIG.RUN_FORMATS)) {
-        const matched = CONFIG.RUN_FORMATS.find(rf => rf.value.toLowerCase() === t);
-        if (matched) return Boolean(matched.multiRunner);
-    }
-    return t === "race" || t === "coop" || t === "btr_lta" || t === "lta" || t === "btr";
+    const matched = CONFIG.RUN_FORMATS?.find(rf => rf.value.toLowerCase() === String(type || "").toLowerCase());
+    return Boolean(matched?.multiRunner);
 }
 
 function updateCoRunnersVisibility(selectId, groupId) {
-    const selectEl = document.getElementById(selectId);
-    const groupEl = document.getElementById(groupId);
-    if (selectEl && groupEl) {
-        groupEl.style.display = isMultiRunnerType(selectEl.value) ? "block" : "none";
-    }
+    if ($(selectId) && $(groupId)) $(groupId).style.display = isMultiRunnerType($(selectId).value) ? "block" : "none";
 }
 
-function handleRunTypeChange() {
-    updateCoRunnersVisibility("run-type", "co-runners-group");
-}
+function handleRunTypeChange() { updateCoRunnersVisibility("run-type", "co-runners-group"); }
+function handleEditRunTypeChange() { updateCoRunnersVisibility("edit-run-type", "edit-co-runners-group"); }
 
-function handleEditRunTypeChange() {
-    updateCoRunnersVisibility("edit-run-type", "edit-co-runners-group");
-}
-
-function formatRatioString(width, height) {
-    const w = String(width || "").trim();
-    const h = String(height || "").trim();
-    if (!w || !h) return "16:9";
-    const isResolution = parseInt(w, 10) > 50 || parseInt(h, 10) > 50;
-    return `${w}${isResolution ? "x" : ":"}${h}`;
+function formatRatioString(w, h) {
+    const sw = String(w || "").trim(), sh = String(h || "").trim();
+    if (!sw || !sh) return "16:9";
+    return `${sw}${parseInt(sw, 10) > 50 || parseInt(sh, 10) > 50 ? "x" : ":"}${sh}`;
 }
 
 function parseRatioString(ratioStr) {
-    const parts = String(ratioStr || "16:9").split(/[:x×/]/);
-    return {
-        width: parts[0]?.trim() || "16",
-        height: parts[1]?.trim() || "9"
-    };
+    const p = String(ratioStr || "16:9").split(/[:x×/]/);
+    return { width: p[0]?.trim() || "16", height: p[1]?.trim() || "9" };
 }
 
-function canModifySubmissions() {
-    return Boolean(currentEvent?.submissions_open || currentProfile?.is_admin);
-}
+function canModifySubmissions() { return Boolean(currentEvent?.submissions_open || currentProfile?.is_admin); }
 
 function checkSubmissionsEditable(action = "modify") {
     if (!canModifySubmissions()) {
@@ -796,167 +493,93 @@ function getRunnerDisplayInfo(profile) {
     const avatar = profile?.avatar_url || "../static/images/popruns_logo.png";
     const discord = profile?.discord_username ? `Discord: @${profile.discord_username}` : "";
     const twitch = profile?.twitch_username ? `Twitch: ${profile.twitch_username}` : "";
-    const tooltip = [name, discord, twitch].filter(Boolean).join(" | ");
-    return { name, avatar, discord, twitch, tooltip };
+    return { name, avatar, discord, twitch, tooltip: [name, discord, twitch].filter(Boolean).join(" | ") };
 }
 
 function populateDynamicOptions() {
     if (typeof CONFIG === "undefined") return;
 
-    // 1. Run Format Dropdowns
-    const runTypeSelects = [
-        document.getElementById("run-type"),
-        document.getElementById("edit-run-type")
-    ];
-    if (CONFIG.RUN_FORMATS && Array.isArray(CONFIG.RUN_FORMATS)) {
-        runTypeSelects.forEach(sel => {
-            if (!sel) return;
-            const currentVal = sel.value;
-            sel.innerHTML = CONFIG.RUN_FORMATS.map(rf =>
-                `<option value="${escapeHTML(rf.value)}">${escapeHTML(rf.label)}</option>`
-            ).join("");
-            if (currentVal) sel.value = currentVal;
+    if (CONFIG.RUN_FORMATS) {
+        const opts = CONFIG.RUN_FORMATS.map(rf => `<option value="${escapeHTML(rf.value)}">${escapeHTML(rf.label)}</option>`).join("");
+        [$("run-type"), $("edit-run-type")].forEach(sel => { if (sel) { const v = sel.value; sel.innerHTML = opts; if (v) sel.value = v; } });
+    }
+
+    if (CONFIG.RATIO_PRESETS) {
+        [{ id: "ratio-presets-container", pfx: "run" }, { id: "edit-ratio-presets-container", pfx: "edit-run" }].forEach(({ id, pfx }) => {
+            if ($(id)) $(id).innerHTML = CONFIG.RATIO_PRESETS.map(r => `<button type="button" class="ratio-chip" onclick="setRatioPreset('${r.width}', '${r.height}', '${pfx}')">${escapeHTML(r.label)}</button>`).join("");
         });
     }
 
-    // 2. Ratio Presets
-    const ratioPresetContainers = [
-        { containerId: "ratio-presets-container", prefix: "run" },
-        { containerId: "edit-ratio-presets-container", prefix: "edit-run" }
-    ];
-    if (CONFIG.RATIO_PRESETS && Array.isArray(CONFIG.RATIO_PRESETS)) {
-        ratioPresetContainers.forEach(({ containerId, prefix }) => {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            container.innerHTML = CONFIG.RATIO_PRESETS.map(preset =>
-                `<button type="button" class="ratio-chip" onclick="setRatioPreset('${preset.width}', '${preset.height}', '${prefix}')">${escapeHTML(preset.label)}</button>`
-            ).join("");
-        });
-    }
-
-    // 3. Status Filter Dropdowns
-    const statusSelects = [
-        document.getElementById("all-runs-filter-status"),
-        document.getElementById("admin-filter-status")
-    ];
-    if (CONFIG.STATUS_OPTIONS && Array.isArray(CONFIG.STATUS_OPTIONS)) {
-        statusSelects.forEach(sel => {
-            if (!sel) return;
-            const currentVal = sel.value || "all";
-            sel.innerHTML = CONFIG.STATUS_OPTIONS.map(st =>
-                `<option value="${escapeHTML(st.value)}">${escapeHTML(st.label)}</option>`
-            ).join("");
-            if (currentVal) sel.value = currentVal;
-        });
+    if (CONFIG.STATUS_OPTIONS) {
+        const statusOpts = CONFIG.STATUS_OPTIONS.map(s => `<option value="${escapeHTML(s.value)}">${escapeHTML(s.label)}</option>`).join("");
+        [$("all-runs-filter-status"), $("admin-filter-status")].forEach(sel => { if (sel) { const v = sel.value || "all"; sel.innerHTML = statusOpts; sel.value = v; } });
     }
 }
 
-function setRatioPreset(w, h, targetPrefix = "run") {
-    const wInput = document.getElementById(`${targetPrefix}-ratio-width`);
-    const hInput = document.getElementById(`${targetPrefix}-ratio-height`);
-    if (wInput) wInput.value = w;
-    if (hInput) hInput.value = h;
+function setRatioPreset(w, h, pfx = "run") {
+    if ($(`${pfx}-ratio-width`)) $(`${pfx}-ratio-width`).value = w;
+    if ($(`${pfx}-ratio-height`)) $(`${pfx}-ratio-height`).value = h;
 }
 
-// Run Submission & Management
+// Submissions - Form Processing
+function getRunFormData(prefix = "run") {
+    let game = $(`${prefix}-game`)?.value.trim() || "";
+    if (game.startsWith("Other") && $(`${prefix}-game-custom`)) game = $(`${prefix}-game-custom`).value.trim() || game;
+    if (!game) { showToast("Please select a game from the grid or spin-offs list.", "error"); return null; }
+
+    const category = $(`${prefix}-category`)?.value.trim() || "";
+    if (!category) { showToast("Please enter a category name.", "error"); return null; }
+
+    let platform = $(`${prefix}-platform`)?.value || "";
+    if (platform === "Other" && $(`${prefix}-platform-custom`)) platform = $(`${prefix}-platform-custom`).value.trim() || "Other";
+    if (!platform) { showToast("Please select a platform.", "error"); return null; }
+
+    const ratio = formatRatioString($(`${prefix}-ratio-width`)?.value, $(`${prefix}-ratio-height`)?.value);
+    const estSec = parseTimeToSeconds($(`${prefix}-estimate`)?.value.trim());
+    if (!estSec || estSec <= 0) { showToast("Please enter a valid estimate in HH:MM:SS format (e.g. 01:25:00)", "error"); return null; }
+
+    const runType = $(`${prefix}-type`)?.value || "solo";
+    const coRunners = isMultiRunnerType(runType) ? ($(`${prefix}-co-runners`)?.value.trim() || "") : "";
+    const videoUrl = $(`${prefix}-video`)?.value.trim() || "";
+    if (!videoUrl) { showToast("Please provide a valid video proof link.", "error"); return null; }
+    const notes = $(`${prefix}-notes`)?.value.trim() || "";
+
+    return { game, category, platform, ratio, estimate_seconds: estSec, run_type: runType, co_runners: coRunners, video_url: videoUrl, notes };
+}
+
 async function handleRunSubmit(e) {
     e.preventDefault();
-    if (!supabaseClient || !currentUser) {
-        showToast("Please log in to submit a run.", "error");
-        return;
-    }
-
+    if (!supabaseClient || !currentUser) return showToast("Please log in to submit a run.", "error");
     if (!checkSubmissionsEditable("submit")) return;
 
-    let game = document.getElementById("run-game") ? document.getElementById("run-game").value.trim() : "";
-    if (game.startsWith("Other")) {
-        game = document.getElementById("run-game-custom")?.value.trim() || game;
-    }
+    const data = getRunFormData("run");
+    if (!data) return;
 
-    if (!game) {
-        showToast("Please select a game from the grid or spin-offs list.", "error");
-        return;
-    }
-
-    const category = document.getElementById("run-category").value.trim();
-    let platform = document.getElementById("run-platform").value;
-    if (platform === "Other") {
-        platform = document.getElementById("run-platform-custom")?.value.trim() || "Other";
-    }
-
-    const formattedRatio = formatRatioString(
-        document.getElementById("run-ratio-width")?.value,
-        document.getElementById("run-ratio-height")?.value
-    );
-
-    const estimateStr = document.getElementById("run-estimate").value.trim();
-    const estimateSeconds = parseTimeToSeconds(estimateStr);
-    if (!estimateSeconds || estimateSeconds <= 0) {
-        showToast("Please enter a valid estimate in HH:MM:SS format (e.g. 01:25:00)", "error");
-        return;
-    }
-
-    const runType = document.getElementById("run-type").value;
-    const coRunners = isMultiRunnerType(runType) ? (document.getElementById("run-co-runners")?.value.trim() || "") : "";
-    const videoUrl = document.getElementById("run-video").value.trim();
-    const notes = document.getElementById("run-notes").value.trim();
-
-    const submitBtn = document.getElementById("btn-submit-run");
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+    const btn = $("btn-submit-run");
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...'; }
 
     try {
-        const { error } = await supabaseClient
-            .from("submissions")
-            .insert([{
-                event_id: currentEvent.id,
-                user_id: currentUser.id,
-                game,
-                category,
-                platform,
-                ratio: formattedRatio,
-                estimate_seconds: estimateSeconds,
-                video_url: videoUrl,
-                run_type: runType,
-                co_runners: coRunners,
-                notes,
-                status: "submitted"
-            }]);
-
+        const { error } = await supabaseClient.from("submissions").insert([{ ...data, event_id: currentEvent.id, user_id: currentUser.id, status: "submitted" }]);
         if (error) throw error;
-
         showToast("Run submitted successfully!", "success");
-        document.getElementById("submission-form").reset();
+        if ($("submission-form")) $("submission-form").reset();
         clearSelectedGame();
         handleRunTypeChange();
         await refreshAllSubmissionsViews();
         switchTab("my-runs");
-
     } catch (err) {
-        console.error("Submission error:", err);
         showToast("Failed to submit run: " + err.message, "error");
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa fa-check-circle"></i> Submit Run';
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa fa-check-circle"></i> Submit Run'; }
     }
 }
 
 async function loadMySubmissions() {
     if (!supabaseClient || !currentUser || !currentEvent) return;
-
     try {
-        const { data, error } = await supabaseClient
-            .from("submissions")
-            .select("*")
-            .eq("event_id", currentEvent.id)
-            .eq("user_id", currentUser.id)
-            .order("created_at", { ascending: false });
-
-        if (error) {
-            if (handleAuthFailure(error)) return;
-            throw error;
-        }
-
+        const { data, error } = await supabaseClient.from("submissions").select("*").eq("event_id", currentEvent.id).eq("user_id", currentUser.id).order("created_at", { ascending: false });
+        if (error && handleAuthFailure(error)) return;
+        if (error) throw error;
         userSubmissions = data || [];
         renderMySubmissions();
     } catch (err) {
@@ -965,28 +588,21 @@ async function loadMySubmissions() {
 }
 
 function renderMySubmissions() {
-    const listEl = document.getElementById("my-submissions-list");
-    const countBadge = document.getElementById("my-runs-count");
+    const listEl = $("my-submissions-list"), countBadge = $("my-runs-count");
+    if (!listEl) return;
+    if (countBadge) { countBadge.textContent = userSubmissions.length; countBadge.style.display = userSubmissions.length ? "inline-block" : "none"; }
 
-    if (userSubmissions.length > 0) {
-        countBadge.textContent = userSubmissions.length;
-        countBadge.style.display = "inline-block";
-    } else {
-        countBadge.style.display = "none";
-    }
-
-    if (userSubmissions.length === 0) {
+    if (!userSubmissions.length) {
         listEl.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="fa fa-inbox"></i></div>
                 <p>You haven't submitted any runs yet.</p>
-                ${currentEvent?.submissions_open ? `<button class="btn btn-primary btn-sm" onclick="switchTab('submit')" style="margin-top: 1rem;">Submit a Run</button>` : ''}
+                ${currentEvent?.submissions_open ? '<button class="btn btn-primary btn-sm" onclick="switchTab(\'submit\')" style="margin-top: 1rem;">Submit a Run</button>' : ''}
             </div>`;
         return;
     }
 
     const isLocked = !canModifySubmissions();
-
     listEl.innerHTML = userSubmissions.map(run => `
         <div class="submission-card">
             <div class="submission-header">
@@ -994,11 +610,8 @@ function renderMySubmissions() {
                     <div class="submission-game">${escapeHTML(run.game)}</div>
                     <div class="submission-category">${escapeHTML(run.category)} &bull; ${escapeHTML(run.platform)}</div>
                 </div>
-                <div>
-                    <span class="badge badge-${run.status}">${run.status}</span>
-                </div>
+                <div><span class="badge badge-${run.status}">${run.status}</span></div>
             </div>
-
             <div class="submission-details">
                 <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
                 <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
@@ -1006,12 +619,10 @@ function renderMySubmissions() {
                 ${run.co_runners ? `<span><i class="fa fa-users"></i> Co-runners: <strong>${escapeHTML(run.co_runners)}</strong></span>` : ""}
                 <span><i class="fa fa-video"></i> <a href="${escapeHTML(run.video_url)}" target="_blank" style="color: var(--accent-blue);">Video Proof <i class="fa fa-external-link-alt"></i></a></span>
             </div>
-
             ${run.notes ? `<div class="submission-notes"><i class="fa fa-sticky-note"></i> ${escapeHTML(run.notes)}</div>` : ""}
-
             <div class="submission-actions">
                 ${isLocked
-                    ? `<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;"><i class="fa fa-lock"></i> Locked for review (submissions closed)</span>`
+                    ? '<span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;"><i class="fa fa-lock"></i> Locked for review (submissions closed)</span>'
                     : `<button class="btn btn-secondary btn-sm" onclick="openEditSubmissionModal(${run.id})"><i class="fa fa-edit"></i> Edit</button>
                        <button class="btn btn-danger btn-sm" onclick="deleteSubmission(${run.id})"><i class="fa fa-trash"></i> Delete</button>`
                 }
@@ -1022,111 +633,52 @@ function renderMySubmissions() {
 
 function openEditSubmissionModal(runId) {
     if (!checkSubmissionsEditable("edit")) return;
-
     const run = userSubmissions.find(r => r.id === runId) || allAdminSubmissions.find(r => r.id === runId);
     if (!run) return;
 
-    document.getElementById("edit-run-id").value = run.id;
-    document.getElementById("edit-run-game").value = run.game;
-    document.getElementById("edit-run-category").value = run.category;
-    document.getElementById("edit-run-platform").value = run.platform;
+    if ($("edit-run-id")) $("edit-run-id").value = run.id;
+    if ($("edit-run-game")) $("edit-run-game").value = run.game;
+    if ($("edit-run-category")) $("edit-run-category").value = run.category;
+    if ($("edit-run-platform")) $("edit-run-platform").value = run.platform;
 
     const { width, height } = parseRatioString(run.ratio);
-    const editW = document.getElementById("edit-run-ratio-width");
-    const editH = document.getElementById("edit-run-ratio-height");
-    if (editW) editW.value = width;
-    if (editH) editH.value = height;
+    if ($("edit-run-ratio-width")) $("edit-run-ratio-width").value = width;
+    if ($("edit-run-ratio-height")) $("edit-run-ratio-height").value = height;
+    if ($("edit-run-estimate")) $("edit-run-estimate").value = formatSecondsToTime(run.estimate_seconds);
 
-    document.getElementById("edit-run-estimate").value = formatSecondsToTime(run.estimate_seconds);
-
-    const editRunTypeEl = document.getElementById("edit-run-type");
-    if (editRunTypeEl) {
-        editRunTypeEl.value = run.run_type || "solo";
-        handleEditRunTypeChange();
-    }
-    const editCoRunnersEl = document.getElementById("edit-run-co-runners");
-    if (editCoRunnersEl) {
-        editCoRunnersEl.value = run.co_runners || "";
-    }
-
-    document.getElementById("edit-run-video").value = run.video_url;
-    document.getElementById("edit-run-notes").value = run.notes || "";
+    if ($("edit-run-type")) { $("edit-run-type").value = run.run_type || "solo"; handleEditRunTypeChange(); }
+    if ($("edit-co-runners-group")) $("edit-co-runners-group").style.display = isMultiRunnerType(run.run_type) ? "block" : "none";
+    if ($("edit-run-co-runners")) $("edit-run-co-runners").value = run.co_runners || "";
+    if ($("edit-run-video")) $("edit-run-video").value = run.video_url || "";
+    if ($("edit-run-notes")) $("edit-run-notes").value = run.notes || "";
 
     openModal("edit-submission-modal");
 }
 
 async function handleRunUpdate(e) {
     e.preventDefault();
-    if (!supabaseClient) return;
+    if (!supabaseClient || !checkSubmissionsEditable("modify")) return;
 
-    if (!checkSubmissionsEditable("modify")) return;
-
-    const id = parseInt(document.getElementById("edit-run-id").value, 10);
-    const game = document.getElementById("edit-run-game").value.trim();
-    const category = document.getElementById("edit-run-category").value.trim();
-    const platform = document.getElementById("edit-run-platform").value.trim();
-
-    const editRatio = formatRatioString(
-        document.getElementById("edit-run-ratio-width")?.value,
-        document.getElementById("edit-run-ratio-height")?.value
-    );
-
-    const estimateStr = document.getElementById("edit-run-estimate").value.trim();
-    const estimateSeconds = parseTimeToSeconds(estimateStr);
-    if (!estimateSeconds || estimateSeconds <= 0) {
-        showToast("Please enter a valid estimate in HH:MM:SS format (e.g. 01:25:00)", "error");
-        return;
-    }
-
-    const runType = document.getElementById("edit-run-type") ? document.getElementById("edit-run-type").value : "solo";
-    const coRunners = isMultiRunnerType(runType)
-        ? (document.getElementById("edit-run-co-runners") ? document.getElementById("edit-run-co-runners").value.trim() : "")
-        : null;
-    const videoUrl = document.getElementById("edit-run-video").value.trim();
-    const notes = document.getElementById("edit-run-notes").value.trim();
+    const id = parseInt($("edit-run-id")?.value, 10);
+    const data = getRunFormData("edit-run");
+    if (!data) return;
 
     try {
-        const { error } = await supabaseClient
-            .from("submissions")
-            .update({
-                game,
-                category,
-                platform,
-                ratio: editRatio,
-                estimate_seconds: estimateSeconds,
-                run_type: runType,
-                co_runners: coRunners,
-                video_url: videoUrl,
-                notes,
-                updated_at: new Date().toISOString()
-            })
-            .eq("id", id);
-
+        const { error } = await supabaseClient.from("submissions").update({ ...data, updated_at: new Date().toISOString() }).eq("id", id);
         if (error) throw error;
-
         showToast("Run updated successfully!", "success");
         closeModal("edit-submission-modal");
         await refreshAllSubmissionsViews();
-
     } catch (err) {
         showToast("Failed to update run: " + err.message, "error");
     }
 }
 
 async function deleteSubmission(runId) {
-    if (!checkSubmissionsEditable("delete")) return;
-
-    if (!confirm("Are you sure you want to delete this submission?")) return;
-    if (!supabaseClient) return;
-
+    if (!checkSubmissionsEditable("delete") || !confirm("Are you sure you want to delete this submission?") || !supabaseClient) return;
     try {
-        const { error } = await supabaseClient
-            .from("submissions")
-            .delete()
-            .eq("id", runId);
-
+        const { error } = await supabaseClient.from("submissions").delete().eq("id", runId);
         if (error) throw error;
-
         showToast("Submission deleted.", "success");
         await refreshAllSubmissionsViews();
     } catch (err) {
@@ -1135,54 +687,19 @@ async function deleteSubmission(runId) {
 }
 
 // Availability Calendar & Grid
-const THIRTY_MIN_MS = 30 * 60 * 1000;
-let detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-let selectedTimezone = detectedTimezone;
-let savedAvailabilitySlots = new Set();
-let savedAvailabilityNotes = "";
-let isDragging = false;
-let dragMode = null; // 'select' | 'deselect'
-let dragStartSlotKey = null;
-let dragInitialSelection = null;
-const slotElementsMap = new Map();
-
-// Global mouseup to finish drag selection
-window.addEventListener("mouseup", () => {
-    if (isDragging) {
-        isDragging = false;
-        dragMode = null;
-        dragStartSlotKey = null;
-        dragInitialSelection = null;
-        updateAvailabilityDirtyState();
-    }
-});
-
 function tzSlotToUtcDate(dayKey, timeStr, timeZone) {
     const [y, m, d] = dayKey.split("-").map(Number);
     const [hr, min] = timeStr.split(":").map(Number);
     const utcDate = new Date(Date.UTC(y, m - 1, d, hr, min, 0));
-
     const invDate = new Date(utcDate.toLocaleString("en-US", { timeZone: "UTC" }));
     const targetDate = new Date(utcDate.toLocaleString("en-US", { timeZone }));
-    const diff = invDate.getTime() - targetDate.getTime();
-
-    return new Date(utcDate.getTime() + diff);
+    return new Date(utcDate.getTime() + (invDate.getTime() - targetDate.getTime()));
 }
 
 function utcDateToTzSlot(utcDate, timeZone) {
-    const formatterDate = new Intl.DateTimeFormat("en-CA", {
-        timeZone,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    });
-    const formatterTime = new Intl.DateTimeFormat("en-GB", {
-        timeZone,
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-    });
-    return `${formatterDate.format(utcDate)}T${formatterTime.format(utcDate)}`;
+    const fDate = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+    const fTime = new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hour12: false });
+    return `${fDate.format(utcDate)}T${fTime.format(utcDate)}`;
 }
 
 function getTimezoneOffsetMinutes(timeZone) {
@@ -1191,103 +708,53 @@ function getTimezoneOffsetMinutes(timeZone) {
         const invDate = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
         const targetDate = new Date(now.toLocaleString("en-US", { timeZone }));
         return Math.round((targetDate.getTime() - invDate.getTime()) / (60 * 1000));
-    } catch (e) {
-        return 0;
-    }
+    } catch (e) { return 0; }
 }
 
 function formatTimezoneOffset(offsetMinutes) {
     const sign = offsetMinutes >= 0 ? "+" : "-";
     const abs = Math.abs(offsetMinutes);
-    const hrs = String(Math.floor(abs / 60)).padStart(2, "0");
-    const mins = String(abs % 60).padStart(2, "0");
-    return `UTC${sign}${hrs}:${mins}`;
+    return `UTC${sign}${String(Math.floor(abs / 60)).padStart(2, "0")}:${String(abs % 60).padStart(2, "0")}`;
 }
 
 function setupTimezone() {
-    populateTimezoneDropdown();
-}
-
-function populateTimezoneDropdown() {
-    const tzSelect = document.getElementById("tz-select");
+    const tzSelect = $("tz-select");
     if (!tzSelect) return;
 
     let timezones = [];
     if (typeof Intl.supportedValuesOf === "function") {
-        try {
-            timezones = Intl.supportedValuesOf("timeZone");
-        } catch (e) {
-            console.warn("Intl.supportedValuesOf failed:", e);
-        }
+        try { timezones = Intl.supportedValuesOf("timeZone"); } catch (e) {}
     }
-
-    if (!timezones || timezones.length === 0) {
-        timezones = [
-            "UTC",
-            "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-            "America/Toronto", "America/Vancouver", "America/Sao_Paulo", "America/Argentina/Buenos_Aires",
-            "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Rome", "Europe/Madrid", "Europe/Amsterdam", "Europe/Stockholm", "Europe/Moscow",
-            "Asia/Kolkata", "Asia/Tokyo", "Asia/Shanghai", "Asia/Hong_Kong", "Asia/Singapore", "Asia/Seoul", "Asia/Dubai", "Asia/Bangkok",
-            "Australia/Sydney", "Australia/Melbourne", "Australia/Perth", "Pacific/Auckland", "Pacific/Honolulu"
-        ];
+    if (!timezones?.length) {
+        timezones = ["UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Paris", "Europe/Berlin", "Asia/Kolkata", "Asia/Tokyo", "Australia/Sydney"];
     }
-
-    // Ensure detectedTimezone and UTC are included
     if (!timezones.includes(detectedTimezone)) timezones.push(detectedTimezone);
     if (!timezones.includes("UTC")) timezones.push("UTC");
-
-    // Remove duplicates
     timezones = Array.from(new Set(timezones));
 
-    // Map each timezone to an object with calculated UTC offset
     const tzObjects = timezones.map(tz => {
         const offset = getTimezoneOffsetMinutes(tz);
-        const offsetStr = formatTimezoneOffset(offset);
-        const cleanName = tz.replace(/_/g, " ");
-        return {
-            tz,
-            offset,
-            offsetStr,
-            cleanName,
-            label: `(${offsetStr}) ${cleanName}`
-        };
-    });
+        return { tz, offset, label: `(${formatTimezoneOffset(offset)}) ${tz.replace(/_/g, " ")}` };
+    }).sort((a, b) => a.offset - b.offset || a.label.localeCompare(b.label));
 
-    // Sort by UTC offset ascending, then alphabetically by name
-    tzObjects.sort((a, b) => a.offset - b.offset || a.cleanName.localeCompare(b.cleanName));
-
-    tzSelect.innerHTML = "";
-    tzObjects.forEach(item => {
-        const opt = document.createElement("option");
-        opt.value = item.tz;
-        opt.textContent = item.label;
-        if (item.tz === selectedTimezone) opt.selected = true;
-        tzSelect.appendChild(opt);
-    });
+    tzSelect.innerHTML = tzObjects.map(item => `<option value="${item.tz}" ${item.tz === selectedTimezone ? "selected" : ""}>${item.label}</option>`).join("");
 }
 
 function handleTimezoneChange(e) {
     const newTz = e.target.value;
     if (newTz === selectedTimezone) return;
 
-    // Translate selected slots from old timezone to new timezone
-    const translatedSelected = new Set();
-    selectedAvailabilitySlots.forEach(slotKey => {
-        const [dayKey, timeStr] = slotKey.split("T");
-        const utcDate = tzSlotToUtcDate(dayKey, timeStr, selectedTimezone);
-        translatedSelected.add(utcDateToTzSlot(utcDate, newTz));
-    });
-    selectedAvailabilitySlots = translatedSelected;
+    const translate = (set) => {
+        const res = new Set();
+        set.forEach(k => {
+            const [d, t] = k.split("T");
+            res.add(utcDateToTzSlot(tzSlotToUtcDate(d, t, selectedTimezone), newTz));
+        });
+        return res;
+    };
 
-    // Translate saved slots as well
-    const translatedSaved = new Set();
-    savedAvailabilitySlots.forEach(slotKey => {
-        const [dayKey, timeStr] = slotKey.split("T");
-        const utcDate = tzSlotToUtcDate(dayKey, timeStr, selectedTimezone);
-        translatedSaved.add(utcDateToTzSlot(utcDate, newTz));
-    });
-    savedAvailabilitySlots = translatedSaved;
-
+    selectedAvailabilitySlots = translate(selectedAvailabilitySlots);
+    savedAvailabilitySlots = translate(savedAvailabilitySlots);
     selectedTimezone = newTz;
     buildAvailabilityCalendar();
     showToast(`Timezone set to ${selectedTimezone}`, "info");
@@ -1295,76 +762,45 @@ function handleTimezoneChange(e) {
 
 function resetToDetectedTimezone() {
     if (selectedTimezone === detectedTimezone) return;
-    const tzSelect = document.getElementById("tz-select");
-    if (tzSelect) tzSelect.value = detectedTimezone;
+    if ($("tz-select")) $("tz-select").value = detectedTimezone;
     handleTimezoneChange({ target: { value: detectedTimezone } });
 }
 
 function updateAvailabilityDirtyState() {
-    const notesInput = document.getElementById("avail-notes");
-    const currentNotes = notesInput ? notesInput.value.trim() : "";
-
-    let isDirty = false;
-
-    if (currentNotes !== savedAvailabilityNotes) {
-        isDirty = true;
-    } else if (selectedAvailabilitySlots.size !== savedAvailabilitySlots.size) {
-        isDirty = true;
-    } else {
+    const currentNotes = $("avail-notes")?.value.trim() || "";
+    let isDirty = currentNotes !== savedAvailabilityNotes || selectedAvailabilitySlots.size !== savedAvailabilitySlots.size;
+    if (!isDirty) {
         for (const slot of selectedAvailabilitySlots) {
-            if (!savedAvailabilitySlots.has(slot)) {
-                isDirty = true;
-                break;
-            }
+            if (!savedAvailabilitySlots.has(slot)) { isDirty = true; break; }
         }
     }
 
-    const saveBtns = document.querySelectorAll(".btn-save-availability");
-    const resetBtns = document.querySelectorAll(".btn-reset-availability");
-
-    saveBtns.forEach(btn => {
+    $$(".btn-save-availability").forEach(btn => {
         btn.disabled = !isDirty;
-        if (!isDirty) {
-            btn.classList.add("btn-disabled");
-            btn.title = "No unsaved changes";
-        } else {
-            btn.classList.remove("btn-disabled");
-            btn.title = "Save your availability";
-        }
+        btn.classList.toggle("btn-disabled", !isDirty);
+        btn.title = isDirty ? "Save your availability" : "No unsaved changes";
     });
 
-    resetBtns.forEach(btn => {
+    $$(".btn-reset-availability").forEach(btn => {
         btn.disabled = !isDirty;
-        if (!isDirty) {
-            btn.classList.add("btn-disabled");
-            btn.title = "No unsaved changes";
-        } else {
-            btn.classList.remove("btn-disabled");
-            btn.title = "Reset to saved state";
-        }
+        btn.classList.toggle("btn-disabled", !isDirty);
+        btn.title = isDirty ? "Reset to saved state" : "No unsaved changes";
     });
 }
 
 function buildAvailabilityCalendar() {
     if (!currentEvent) return;
-
-    const listEl = document.getElementById("availability-days-list");
+    const listEl = $("availability-days-list");
     if (!listEl) return;
     listEl.innerHTML = "";
     slotElementsMap.clear();
 
     const isLocked = !currentEvent.submissions_open && (!currentProfile || !currentProfile.is_admin);
+    const startUtc = new Date(currentEvent.start_date), endUtc = new Date(currentEvent.end_date);
+    const startUtcMs = startUtc.getTime(), endUtcMs = endUtc.getTime();
 
-    const startUtc = new Date(currentEvent.start_date);
-    const endUtc = new Date(currentEvent.end_date);
-    const startUtcMs = startUtc.getTime();
-    const endUtcMs = endUtc.getTime();
-
-    const startSlot = utcDateToTzSlot(startUtc, selectedTimezone);
-    const endSlot = utcDateToTzSlot(endUtc, selectedTimezone);
-
-    const [startDayY, startDayM, startDayD] = startSlot.split("T")[0].split("-").map(Number);
-    const [endDayY, endDayM, endDayD] = endSlot.split("T")[0].split("-").map(Number);
+    const [startDayY, startDayM, startDayD] = utcDateToTzSlot(startUtc, selectedTimezone).split("T")[0].split("-").map(Number);
+    const [endDayY, endDayM, endDayD] = utcDateToTzSlot(endUtc, selectedTimezone).split("T")[0].split("-").map(Number);
 
     let currentDate = new Date(Date.UTC(startDayY, startDayM - 1, startDayD));
     const endBoundary = new Date(Date.UTC(endDayY, endDayM - 1, endDayD));
@@ -1373,42 +809,26 @@ function buildAvailabilityCalendar() {
         const dayKey = currentDate.toISOString().slice(0, 10);
         const [y, m, d] = dayKey.split("-").map(Number);
 
-        // Collect valid slots for this day within [startUtcMs, endUtcMs)
-        const validSlotsForDay = [];
+        const validSlots = [];
         for (let h = 0; h < 24; h++) {
             for (let min of [0, 30]) {
                 const hourStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
                 const endH = min === 30 ? (h === 23 ? 0 : h + 1) : h;
-                const endM = min === 30 ? "00" : "30";
-                const endHourStr = `${String(endH).padStart(2, "0")}:${endM}`;
-
+                const endHourStr = `${String(endH).padStart(2, "0")}:${min === 30 ? "00" : "30"}`;
                 const slotKey = `${dayKey}T${hourStr}`;
-                const slotUtcDate = tzSlotToUtcDate(dayKey, hourStr, selectedTimezone);
-                const slotStartMs = slotUtcDate.getTime();
+                const slotStartMs = tzSlotToUtcDate(dayKey, hourStr, selectedTimezone).getTime();
 
-                // Slot is valid if it starts at or after marathon start, and before marathon end
                 if (slotStartMs >= startUtcMs && slotStartMs < endUtcMs) {
-                    validSlotsForDay.push({
-                        slotKey,
-                        hourStr,
-                        endHourStr
-                    });
+                    validSlots.push({ slotKey, hourStr, endHourStr });
                 }
             }
         }
 
-        // Only render the day card if there are valid slots within the marathon window
-        if (validSlotsForDay.length > 0) {
-            const dayTitle = new Intl.DateTimeFormat("en-US", {
-                weekday: "long",
-                month: "short",
-                day: "numeric"
-            }).format(new Date(y, m - 1, d));
-
+        if (validSlots.length > 0) {
+            const dayTitle = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "short", day: "numeric" }).format(new Date(y, m - 1, d));
             const dayCard = document.createElement("div");
             dayCard.className = "avail-day-card";
             dayCard.style.marginBottom = "1rem";
-
             dayCard.innerHTML = `
                 <div class="avail-day-title">
                     <span>${dayTitle}</span>
@@ -1416,45 +836,32 @@ function buildAvailabilityCalendar() {
                 </div>
                 <div class="hours-grid" id="hours-${dayKey}"></div>
             `;
-
             listEl.appendChild(dayCard);
 
             const hoursContainer = dayCard.querySelector(`#hours-${dayKey}`);
-
-            validSlotsForDay.forEach(({ slotKey, hourStr, endHourStr }) => {
+            validSlots.forEach(({ slotKey, hourStr, endHourStr }) => {
                 const slotBtn = document.createElement("div");
                 slotBtn.className = "hour-slot" + (selectedAvailabilitySlots.has(slotKey) ? " selected" : "") + (isLocked ? " locked" : "");
                 slotBtn.textContent = hourStr;
-                slotBtn.title = isLocked
-                    ? `Slot start: ${hourStr} (Window: ${hourStr} - ${endHourStr}) [Read-only]`
-                    : `Slot start: ${hourStr} (Window: ${hourStr} - ${endHourStr})`;
+                slotBtn.title = `Slot start: ${hourStr} (Window: ${hourStr} - ${endHourStr})${isLocked ? ' [Read-only]' : ''}`;
                 slotBtn.dataset.slot = slotKey;
 
-                // Only attach drag/click listeners if unlocked
                 if (!isLocked) {
-                    slotBtn.onmousedown = (e) => {
-                        e.preventDefault();
-                        startDrag(slotBtn, slotKey);
-                    };
-                    slotBtn.onmouseenter = () => {
-                        onDragOver(slotBtn, slotKey);
-                    };
+                    slotBtn.onmousedown = (e) => { e.preventDefault(); startDrag(slotBtn, slotKey); };
+                    slotBtn.onmouseenter = () => onDragOver(slotBtn, slotKey);
                 }
 
                 slotElementsMap.set(slotKey, slotBtn);
                 hoursContainer.appendChild(slotBtn);
             });
         }
-
         currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }
-
     updateAvailabilityDirtyState();
 }
 
 function startDrag(el, slotKey) {
     if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) return;
-
     isDragging = true;
     dragStartSlotKey = slotKey;
     dragInitialSelection = new Set(selectedAvailabilitySlots);
@@ -1473,56 +880,34 @@ function startDrag(el, slotKey) {
 
 function onDragOver(el, slotKey) {
     if (!isDragging || !dragStartSlotKey) return;
-
     const tStart = tzSlotToUtcDate(dragStartSlotKey.split("T")[0], dragStartSlotKey.split("T")[1], selectedTimezone).getTime();
     const tCurrent = tzSlotToUtcDate(slotKey.split("T")[0], slotKey.split("T")[1], selectedTimezone).getTime();
+    const minT = Math.min(tStart, tCurrent), maxT = Math.max(tStart, tCurrent);
 
-    const minT = Math.min(tStart, tCurrent);
-    const maxT = Math.max(tStart, tCurrent);
-
-    // Compute all slot keys in the continuous range [minT, maxT] that exist in the calendar
     const rangeSlots = new Set();
     for (let t = minT; t <= maxT; t += THIRTY_MIN_MS) {
         const sKey = utcDateToTzSlot(new Date(t), selectedTimezone);
-        if (slotElementsMap.has(sKey)) {
-            rangeSlots.add(sKey);
-        }
+        if (slotElementsMap.has(sKey)) rangeSlots.add(sKey);
     }
 
-    // Apply continuous range onto initial selection state
     const newSelection = new Set(dragInitialSelection);
-    if (dragMode === "select") {
-        for (const s of rangeSlots) {
-            newSelection.add(s);
-        }
-    } else if (dragMode === "deselect") {
-        for (const s of rangeSlots) {
-            newSelection.delete(s);
-        }
-    }
+    if (dragMode === "select") rangeSlots.forEach(s => newSelection.add(s));
+    else if (dragMode === "deselect") rangeSlots.forEach(s => newSelection.delete(s));
 
     selectedAvailabilitySlots = newSelection;
-
-    // Update DOM classes for all rendered slots in the calendar
-    slotElementsMap.forEach((btn, key) => {
-        btn.classList.toggle("selected", selectedAvailabilitySlots.has(key));
-    });
+    slotElementsMap.forEach((btn, key) => btn.classList.toggle("selected", selectedAvailabilitySlots.has(key)));
 }
 
 function toggleSlot(el, slotKey) {
     if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) return;
-
     startDrag(el, slotKey);
     isDragging = false;
-    dragMode = null;
-    dragStartSlotKey = null;
-    dragInitialSelection = null;
+    dragMode = dragStartSlotKey = dragInitialSelection = null;
 }
 
 function toggleWholeDay(dayKey) {
     if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) return;
-
-    const container = document.getElementById(`hours-${dayKey}`);
+    const container = $(`hours-${dayKey}`);
     if (!container) return;
 
     const slots = container.querySelectorAll(".hour-slot");
@@ -1530,256 +915,163 @@ function toggleWholeDay(dayKey) {
 
     slots.forEach(slot => {
         const slotKey = slot.dataset.slot;
-        if (allSelected) {
-            selectedAvailabilitySlots.delete(slotKey);
-            slot.classList.remove("selected");
-        } else {
-            selectedAvailabilitySlots.add(slotKey);
-            slot.classList.add("selected");
-        }
+        if (allSelected) { selectedAvailabilitySlots.delete(slotKey); slot.classList.remove("selected"); }
+        else { selectedAvailabilitySlots.add(slotKey); slot.classList.add("selected"); }
     });
-
     updateAvailabilityDirtyState();
 }
 
 function setAvailabilityPreset(type) {
     if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) return;
-
-    const allSlots = document.querySelectorAll(".hour-slot");
+    const allSlots = $$(".hour-slot");
 
     if (type === "clear") {
         selectedAvailabilitySlots.clear();
         allSlots.forEach(s => s.classList.remove("selected"));
         showToast("Cleared all availability slots.", "info");
     } else if (type === "all") {
-        allSlots.forEach(s => {
-            selectedAvailabilitySlots.add(s.dataset.slot);
-            s.classList.add("selected");
-        });
+        allSlots.forEach(s => { selectedAvailabilitySlots.add(s.dataset.slot); s.classList.add("selected"); });
         showToast("Selected all slots.", "success");
     } else if (type === "evenings") {
         allSlots.forEach(s => {
-            const timePart = s.dataset.slot.split("T")[1];
-            const hour = parseInt(timePart.split(":")[0]);
-            if (hour >= 18 && hour <= 23) {
-                selectedAvailabilitySlots.add(s.dataset.slot);
-                s.classList.add("selected");
-            }
+            const h = parseInt(s.dataset.slot.split("T")[1].split(":")[0], 10);
+            if (h >= 18 && h <= 23) { selectedAvailabilitySlots.add(s.dataset.slot); s.classList.add("selected"); }
         });
         showToast("Selected evening hours (18:00 - 24:00).", "success");
     }
-
     updateAvailabilityDirtyState();
 }
 
 function resetAvailability() {
     if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) return;
-
     selectedAvailabilitySlots = new Set(savedAvailabilitySlots);
-    const notesInput = document.getElementById("avail-notes");
-    if (notesInput) notesInput.value = savedAvailabilityNotes;
-
-    document.querySelectorAll(".hour-slot").forEach(slot => {
-        slot.classList.toggle("selected", selectedAvailabilitySlots.has(slot.dataset.slot));
-    });
-
+    if ($("avail-notes")) $("avail-notes").value = savedAvailabilityNotes;
+    $$(".hour-slot").forEach(s => s.classList.toggle("selected", selectedAvailabilitySlots.has(s.dataset.slot)));
     updateAvailabilityDirtyState();
     showToast("Reset availability to saved state.", "info");
 }
 
 async function saveAvailability() {
-    if (!supabaseClient || !currentUser || !currentEvent) {
-        showToast("Please log in to save your availability.", "error");
-        return;
-    }
-
+    if (!supabaseClient || !currentUser || !currentEvent) return showToast("Please log in to save your availability.", "error");
     if (!currentEvent.submissions_open && (!currentProfile || !currentProfile.is_admin)) {
-        showToast("Availability editing is locked because submissions are closed.", "error");
-        return;
+        return showToast("Availability editing is locked because submissions are closed.", "error");
     }
 
-    const notes = document.getElementById("avail-notes") ? document.getElementById("avail-notes").value.trim() : "";
-
+    const notes = $("avail-notes")?.value.trim() || "";
     const startTimestamps = Array.from(selectedAvailabilitySlots)
         .map(slotKey => {
-            const [dayKey, timeStr] = slotKey.split("T");
-            return tzSlotToUtcDate(dayKey, timeStr, selectedTimezone).getTime();
+            const [d, t] = slotKey.split("T");
+            return tzSlotToUtcDate(d, t, selectedTimezone).getTime();
         })
         .sort((a, b) => a - b);
 
     const intervals = [];
     if (startTimestamps.length > 0) {
-        let blockStart = startTimestamps[0];
-        let blockEnd = blockStart + THIRTY_MIN_MS;
-
+        let blockStart = startTimestamps[0], blockEnd = blockStart + THIRTY_MIN_MS;
         for (let i = 1; i < startTimestamps.length; i++) {
             const t = startTimestamps[i];
             if (t === blockEnd) {
                 blockEnd = t + THIRTY_MIN_MS;
             } else {
-                intervals.push({
-                    event_id: currentEvent.id,
-                    user_id: currentUser.id,
-                    start_time: new Date(blockStart).toISOString(),
-                    end_time: new Date(blockEnd).toISOString(),
-                    notes
-                });
+                intervals.push({ event_id: currentEvent.id, user_id: currentUser.id, start_time: new Date(blockStart).toISOString(), end_time: new Date(blockEnd).toISOString(), notes });
                 blockStart = t;
                 blockEnd = t + THIRTY_MIN_MS;
             }
         }
-        intervals.push({
-            event_id: currentEvent.id,
-            user_id: currentUser.id,
-            start_time: new Date(blockStart).toISOString(),
-            end_time: new Date(blockEnd).toISOString(),
-            notes
-        });
+        intervals.push({ event_id: currentEvent.id, user_id: currentUser.id, start_time: new Date(blockStart).toISOString(), end_time: new Date(blockEnd).toISOString(), notes });
     }
 
     try {
-        const saveBtns = document.querySelectorAll(".btn-save-availability");
-        saveBtns.forEach(b => {
-            b.disabled = true;
-            b.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
-        });
-
-        await supabaseClient
-            .from("availabilities")
-            .delete()
-            .eq("event_id", currentEvent.id)
-            .eq("user_id", currentUser.id);
-
+        $$(".btn-save-availability").forEach(b => { b.disabled = true; b.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...'; });
+        await supabaseClient.from("availabilities").delete().eq("event_id", currentEvent.id).eq("user_id", currentUser.id);
         if (intervals.length > 0) {
-            const { error } = await supabaseClient
-                .from("availabilities")
-                .insert(intervals);
-
+            const { error } = await supabaseClient.from("availabilities").insert(intervals);
             if (error) throw error;
         }
 
         savedAvailabilitySlots = new Set(selectedAvailabilitySlots);
         savedAvailabilityNotes = notes;
         updateAvailabilityDirtyState();
-
         showToast(`Availability saved (${intervals.length} continuous ${intervals.length === 1 ? 'block' : 'blocks'}).`, "success");
     } catch (err) {
         console.error("Availability save error:", err);
         showToast("Failed to save availability: " + err.message, "error");
     } finally {
-        const saveBtns = document.querySelectorAll(".btn-save-availability");
-        saveBtns.forEach(b => {
-            b.innerHTML = '<i class="fa fa-save"></i> Save Availability';
-        });
+        $$(".btn-save-availability").forEach(b => b.innerHTML = '<i class="fa fa-save"></i> Save Availability');
         updateAvailabilityDirtyState();
     }
 }
 
 async function loadUserAvailability(force = false) {
     if (!supabaseClient || !currentUser || !currentEvent) return;
-
     if (!force && selectedAvailabilitySlots.size > 0) {
         let isDirty = selectedAvailabilitySlots.size !== savedAvailabilitySlots.size;
         if (!isDirty) {
             for (const s of selectedAvailabilitySlots) {
-                if (!savedAvailabilitySlots.has(s)) {
-                    isDirty = true;
-                    break;
-                }
+                if (!savedAvailabilitySlots.has(s)) { isDirty = true; break; }
             }
         }
         if (isDirty) return;
     }
 
     try {
-        const { data, error } = await supabaseClient
-            .from("availabilities")
-            .select("*")
-            .eq("event_id", currentEvent.id)
-            .eq("user_id", currentUser.id);
-
-        if (error) {
-            if (handleAuthFailure(error)) return;
-            throw error;
-        }
+        const { data, error } = await supabaseClient.from("availabilities").select("*").eq("event_id", currentEvent.id).eq("user_id", currentUser.id);
+        if (error && handleAuthFailure(error)) return;
+        if (error) throw error;
 
         selectedAvailabilitySlots.clear();
         let loadedNotes = "";
 
         if (data && data.length > 0) {
             data.forEach(item => {
-                const startMs = new Date(item.start_time).getTime();
-                const endMs = new Date(item.end_time).getTime();
-
+                const startMs = new Date(item.start_time).getTime(), endMs = new Date(item.end_time).getTime();
                 for (let t = startMs; t < endMs; t += THIRTY_MIN_MS) {
-                    const slotKey = utcDateToTzSlot(new Date(t), selectedTimezone);
-                    selectedAvailabilitySlots.add(slotKey);
+                    selectedAvailabilitySlots.add(utcDateToTzSlot(new Date(t), selectedTimezone));
                 }
             });
-
             if (data[0].notes) {
                 loadedNotes = data[0].notes;
-                if (document.getElementById("avail-notes")) {
-                    document.getElementById("avail-notes").value = loadedNotes;
-                }
+                if ($("avail-notes")) $("avail-notes").value = loadedNotes;
             }
         }
 
         savedAvailabilitySlots = new Set(selectedAvailabilitySlots);
         savedAvailabilityNotes = loadedNotes;
-
         buildAvailabilityCalendar();
     } catch (err) {
         console.error("Error loading availability:", err);
     }
 }
 
-// All Marathon Submissions
-let allSubmissions = [];
-
+// All Submissions Tab
 async function loadAllSubmissions() {
-    const listEl = document.getElementById("all-submissions-list");
+    const listEl = $("all-submissions-list");
     if (!supabaseClient || !currentEvent) return;
 
     try {
         const { data, error } = await supabaseClient
             .from("submissions")
-            .select(`
-                id, game, category, platform, ratio, estimate_seconds, run_type, co_runners, notes, status, created_at,
-                profiles:user_id (display_name, discord_username, twitch_username, avatar_url)
-            `)
+            .select("id, game, category, platform, ratio, estimate_seconds, run_type, co_runners, notes, status, created_at, profiles:user_id (display_name, discord_username, twitch_username, avatar_url)")
             .eq("event_id", currentEvent.id)
             .order("created_at", { ascending: false });
 
         if (error) throw error;
-
         allSubmissions = data || [];
         populateAllSubmissionsGameFilter();
         renderAllSubmissions();
-
     } catch (err) {
         console.error("Error loading all submissions:", err);
-        if (listEl) {
-            listEl.innerHTML = `<div class="empty-state"><p>Failed to load submissions: ${escapeHTML(err.message)}</p></div>`;
-        }
+        if (listEl) listEl.innerHTML = `<div class="empty-state"><p>Failed to load submissions: ${escapeHTML(err.message)}</p></div>`;
     }
 }
 
 function populateAllSubmissionsGameFilter() {
-    const gameSelect = document.getElementById("all-runs-filter-game");
+    const gameSelect = $("all-runs-filter-game");
     if (!gameSelect) return;
-
     const currentVal = gameSelect.value;
     const games = Array.from(new Set(allSubmissions.map(r => r.game).filter(Boolean))).sort();
-
-    gameSelect.innerHTML = '<option value="all">All Games</option>';
-    games.forEach(g => {
-        const opt = document.createElement("option");
-        opt.value = g;
-        opt.textContent = g;
-        if (g === currentVal) opt.selected = true;
-        gameSelect.appendChild(opt);
-    });
+    gameSelect.innerHTML = '<option value="all">All Games</option>' + games.map(g => `<option value="${escapeHTML(g)}">${escapeHTML(g)}</option>`).join("");
+    if (games.includes(currentVal)) gameSelect.value = currentVal;
 }
 
 function filterAllSubmissions() {
@@ -1787,52 +1079,30 @@ function filterAllSubmissions() {
 }
 
 function openRunNote(runId) {
-    const run = (allSubmissions || []).find(r => r.id === runId) || (allAdminSubmissions || []).find(r => r.id === runId);
+    const run = allSubmissions.find(r => r.id === runId) || allAdminSubmissions.find(r => r.id === runId);
     if (!run) return;
-
     const { name: runner } = getRunnerDisplayInfo(run.profiles);
-    const subtitleEl = document.getElementById("note-modal-subtitle");
-    const contentEl = document.getElementById("note-modal-content");
-
-    if (subtitleEl) {
-        subtitleEl.textContent = `${runner} • ${run.game} (${run.category})`;
-    }
-    if (contentEl) {
-        contentEl.textContent = run.notes || "No notes provided.";
-    }
-
+    if ($("note-modal-subtitle")) $("note-modal-subtitle").textContent = `${runner} • ${run.game} (${run.category})`;
+    if ($("note-modal-content")) $("note-modal-content").textContent = run.notes || "No notes provided.";
     openModal("note-modal");
 }
 
 function renderAllSubmissions() {
-    const listEl = document.getElementById("all-submissions-list");
-    const countBadge = document.getElementById("all-runs-count");
-    const statsEl = document.getElementById("all-submissions-stats");
+    const listEl = $("all-submissions-list"), countBadge = $("all-runs-count"), statsEl = $("all-submissions-stats");
     if (!listEl) return;
 
-    const search = document.getElementById("all-runs-search") ? document.getElementById("all-runs-search").value.toLowerCase().trim() : "";
-    const gameFilter = document.getElementById("all-runs-filter-game") ? document.getElementById("all-runs-filter-game").value : "all";
-    const statusFilter = document.getElementById("all-runs-filter-status") ? document.getElementById("all-runs-filter-status").value : "all";
+    const search = $("all-runs-search")?.value.toLowerCase().trim() || "";
+    const gameFilter = $("all-runs-filter-game")?.value || "all";
+    const statusFilter = $("all-runs-filter-status")?.value || "all";
 
     const filtered = allSubmissions.filter(run => {
         const runnerName = (run.profiles?.display_name || "Runner").toLowerCase();
         const discordTag = (run.profiles?.discord_username || "").toLowerCase();
-        const game = (run.game || "").toLowerCase();
-        const category = (run.category || "").toLowerCase();
-        const platform = (run.platform || "").toLowerCase();
-        const coRunners = (run.co_runners || "").toLowerCase();
-
-        const matchesSearch = !search || 
-            runnerName.includes(search) || 
-            discordTag.includes(search) || 
-            game.includes(search) || 
-            category.includes(search) || 
-            platform.includes(search) || 
-            coRunners.includes(search);
-
+        const matchesSearch = !search || runnerName.includes(search) || discordTag.includes(search) ||
+            (run.game || "").toLowerCase().includes(search) || (run.category || "").toLowerCase().includes(search) ||
+            (run.platform || "").toLowerCase().includes(search) || (run.co_runners || "").toLowerCase().includes(search);
         const matchesGame = gameFilter === "all" || run.game === gameFilter;
         const matchesStatus = statusFilter === "all" || run.status === statusFilter;
-
         return matchesSearch && matchesGame && matchesStatus;
     });
 
@@ -1853,7 +1123,7 @@ function renderAllSubmissions() {
         `;
     }
 
-    if (filtered.length === 0) {
+    if (!filtered.length) {
         listEl.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="fa fa-inbox"></i></div>
@@ -1867,22 +1137,13 @@ function renderAllSubmissions() {
             <table class="all-submissions-table">
                 <thead>
                     <tr>
-                        <th>Runner</th>
-                        <th>Game</th>
-                        <th>Category</th>
-                        <th>Platform</th>
-                        <th>Ratio</th>
-                        <th>Estimate</th>
-                        <th>Format</th>
-                        <th class="col-status">Status</th>
-                        <th style="text-align: center;">Notes</th>
+                        <th>Runner</th><th>Game</th><th>Category</th><th>Platform</th><th>Ratio</th><th>Estimate</th><th>Format</th><th class="col-status">Status</th><th style="text-align: center;">Notes</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${filtered.map(run => {
                         const { name: runner, avatar, tooltip: runnerTooltip } = getRunnerDisplayInfo(run.profiles);
-                        const hasNotes = run.notes && run.notes.trim().length > 0;
-
+                        const hasNotes = Boolean(run.notes && run.notes.trim().length > 0);
                         return `
                             <tr>
                                 <td>
@@ -1903,10 +1164,8 @@ function renderAllSubmissions() {
                                 <td class="col-status"><span class="badge badge-${run.status}">${run.status}</span></td>
                                 <td style="text-align: center;">
                                     ${hasNotes 
-                                        ? `<button type="button" class="notes-tooltip-icon" onclick="openRunNote(${run.id})" title="Click to view notes">
-                                            <i class="fa fa-comment-dots"></i>
-                                           </button>` 
-                                        : `<span style="color: rgba(255,255,255,0.2);">&mdash;</span>`
+                                        ? `<button type="button" class="notes-tooltip-icon" onclick="openRunNote(${run.id})" title="Click to view notes"><i class="fa fa-comment-dots"></i></button>`
+                                        : '<span style="color: rgba(255,255,255,0.2);">&mdash;</span>'
                                     }
                                 </td>
                             </tr>
@@ -1921,42 +1180,37 @@ function renderAllSubmissions() {
 // Organizer / Admin Dashboard
 async function loadAdminSubmissions() {
     if (!supabaseClient || !currentProfile?.is_admin || !currentEvent) return;
-
     try {
         const { data, error } = await supabaseClient
             .from("submissions")
-            .select(`
-                *,
-                profiles:user_id (display_name, discord_username, twitch_username, avatar_url)
-            `)
+            .select("*, profiles:user_id (display_name, discord_username, twitch_username, avatar_url)")
             .eq("event_id", currentEvent.id)
             .order("created_at", { ascending: false });
 
         if (error) throw error;
-
         allAdminSubmissions = data || [];
         updateAdminStats();
-        renderAdminSubmissions(allAdminSubmissions);
+        filterAdminSubmissions();
     } catch (err) {
         console.error("Admin submissions load error:", err);
     }
 }
 
 function updateAdminStats() {
-    document.getElementById("stat-total").textContent = allAdminSubmissions.length;
-    document.getElementById("stat-accepted").textContent = allAdminSubmissions.filter(s => s.status === "accepted").length;
-    document.getElementById("stat-backup").textContent = allAdminSubmissions.filter(s => s.status === "backup").length;
-    document.getElementById("stat-rejected").textContent = allAdminSubmissions.filter(s => s.status === "rejected").length;
+    const counts = { total: allAdminSubmissions.length, accepted: 0, backup: 0, rejected: 0 };
+    allAdminSubmissions.forEach(s => { if (counts[s.status] !== undefined) counts[s.status]++; });
+    if ($("stat-total")) $("stat-total").textContent = counts.total;
+    if ($("stat-accepted")) $("stat-accepted").textContent = counts.accepted;
+    if ($("stat-backup")) $("stat-backup").textContent = counts.backup;
+    if ($("stat-rejected")) $("stat-rejected").textContent = counts.rejected;
 }
 
 function filterAdminSubmissions() {
-    const q = document.getElementById("admin-search").value.toLowerCase();
-    const status = document.getElementById("admin-filter-status").value;
+    const q = $("admin-search")?.value.toLowerCase().trim() || "";
+    const status = $("admin-filter-status")?.value || "all";
 
     const filtered = allAdminSubmissions.filter(run => {
-        const matchQuery = run.game.toLowerCase().includes(q) || 
-                           run.category.toLowerCase().includes(q) || 
-                           (run.profiles?.display_name || "").toLowerCase().includes(q);
+        const matchQuery = !q || run.game.toLowerCase().includes(q) || run.category.toLowerCase().includes(q) || (run.profiles?.display_name || "").toLowerCase().includes(q);
         const matchStatus = status === "all" || run.status === status;
         return matchQuery && matchStatus;
     });
@@ -1965,142 +1219,104 @@ function filterAdminSubmissions() {
 }
 
 function renderAdminSubmissions(runs) {
-    const listEl = document.getElementById("admin-submissions-list");
-
-    if (runs.length === 0) {
-        listEl.innerHTML = `<div class="empty-state">No matching submissions found.</div>`;
-        return;
-    }
+    const listEl = $("admin-submissions-list");
+    if (!listEl) return;
+    if (!runs.length) { listEl.innerHTML = '<div class="empty-state">No matching submissions found.</div>'; return; }
 
     listEl.innerHTML = runs.map(run => {
         const { name: runner, discord: runnerDiscord } = getRunnerDisplayInfo(run.profiles);
-
         return `
-        <div class="submission-card">
-            <div class="submission-header">
-                <div>
-                    <div class="submission-game">${escapeHTML(run.game)}</div>
-                    <div class="submission-category">${escapeHTML(run.category)} &bull; ${escapeHTML(run.platform)}</div>
+            <div class="submission-card">
+                <div class="submission-header">
+                    <div>
+                        <div class="submission-game">${escapeHTML(run.game)}</div>
+                        <div class="submission-category">${escapeHTML(run.category)} &bull; ${escapeHTML(run.platform)}</div>
+                    </div>
+                    <span class="badge badge-${run.status}">${run.status}</span>
                 </div>
-                <span class="badge badge-${run.status}">${run.status}</span>
+                <div class="submission-details">
+                    <span><i class="fa fa-user"></i> Runner: <strong>${escapeHTML(runner)}</strong> (${escapeHTML(runnerDiscord || "No Discord")})</span>
+                    <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
+                    <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
+                    <span><i class="fa fa-gamepad"></i> Type: <strong>${escapeHTML(formatRunType(run.run_type))}</strong></span>
+                    ${run.co_runners ? `<span><i class="fa fa-users"></i> Co-runners: <strong>${escapeHTML(run.co_runners)}</strong></span>` : ""}
+                    <span><i class="fa fa-video"></i> <a href="${escapeHTML(run.video_url)}" target="_blank" style="color: var(--accent-blue);">Video Proof <i class="fa fa-external-link-alt"></i></a></span>
+                </div>
+                ${run.notes ? `<div class="submission-notes"><i class="fa fa-sticky-note"></i> <strong>Runner Notes:</strong> ${escapeHTML(run.notes)}</div>` : ""}
+                <div class="submission-actions">
+                    <button class="btn btn-success btn-sm" onclick="setRunStatus(${run.id}, 'accepted')"><i class="fa fa-check"></i> Accept</button>
+                    <button class="btn btn-secondary btn-sm" style="color: #c39bd3;" onclick="setRunStatus(${run.id}, 'backup')"><i class="fa fa-shield-alt"></i> Backup</button>
+                    <button class="btn btn-danger btn-sm" onclick="setRunStatus(${run.id}, 'rejected')"><i class="fa fa-times"></i> Reject</button>
+                    <button class="btn btn-secondary btn-sm" onclick="setRunStatus(${run.id}, 'submitted')"><i class="fa fa-undo"></i> Reset</button>
+                </div>
             </div>
-
-            <div class="submission-details">
-                <span><i class="fa fa-user"></i> Runner: <strong>${escapeHTML(runner)}</strong> (${escapeHTML(runnerDiscord || "No Discord")})</span>
-                <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
-                <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
-                <span><i class="fa fa-gamepad"></i> Type: <strong>${escapeHTML(formatRunType(run.run_type))}</strong></span>
-                ${run.co_runners ? `<span><i class="fa fa-users"></i> Co-runners: <strong>${escapeHTML(run.co_runners)}</strong></span>` : ""}
-                <span><i class="fa fa-video"></i> <a href="${escapeHTML(run.video_url)}" target="_blank" style="color: var(--accent-blue);">Video Proof <i class="fa fa-external-link-alt"></i></a></span>
-            </div>
-
-            ${run.notes ? `<div class="submission-notes"><i class="fa fa-sticky-note"></i> <strong>Runner Notes:</strong> ${escapeHTML(run.notes)}</div>` : ""}
-
-            <div class="submission-actions">
-                <button class="btn btn-success btn-sm" onclick="setRunStatus(${run.id}, 'accepted')"><i class="fa fa-check"></i> Accept</button>
-                <button class="btn btn-secondary btn-sm" style="color: #c39bd3;" onclick="setRunStatus(${run.id}, 'backup')"><i class="fa fa-shield-alt"></i> Backup</button>
-                <button class="btn btn-danger btn-sm" onclick="setRunStatus(${run.id}, 'rejected')"><i class="fa fa-times"></i> Reject</button>
-                <button class="btn btn-secondary btn-sm" onclick="setRunStatus(${run.id}, 'submitted')"><i class="fa fa-undo"></i> Reset</button>
-            </div>
-        </div>
         `;
     }).join("");
 }
 
 async function setRunStatus(runId, newStatus) {
     if (!supabaseClient) return;
-
     try {
-        const { error } = await supabaseClient
-            .from("submissions")
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq("id", runId);
-
+        const { error } = await supabaseClient.from("submissions").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", runId);
         if (error) throw error;
-
         showToast(`Status updated to ${newStatus.toUpperCase()}`, "success");
         await loadAdminSubmissions();
-        await loadAcceptedRuns();
+        await loadAllSubmissions();
     } catch (err) {
         showToast("Failed to update status: " + err.message, "error");
     }
 }
 
-// Export Functions (Horaro, CSV, JSON)
+// Exports
+function downloadFile(filename, text, mimeType) {
+    const blob = new Blob([text], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${filename}`, "success");
+}
+
 function exportHoraro() {
     const accepted = allAdminSubmissions.filter(r => r.status === "accepted");
-    if (accepted.length === 0) {
-        showToast("No accepted runs to export.", "info");
-        return;
-    }
+    if (!accepted.length) return showToast("No accepted runs to export.", "info");
 
     const horaroData = {
-        ticker: currentEvent.title,
+        ticker: currentEvent?.title || "PoPRuns Marathon",
         columns: ["Game", "Category", "Platform", "Runner", "Estimate"],
         items: accepted.map(r => ({
             length: formatSecondsToHoraro(r.estimate_seconds),
-            data: [
-                r.game,
-                r.category,
-                r.platform,
-                r.profiles?.display_name || "Runner",
-                formatSecondsToTime(r.estimate_seconds)
-            ]
+            data: [r.game, r.category, r.platform, r.profiles?.display_name || "Runner", formatSecondsToTime(r.estimate_seconds)]
         }))
     };
-
     downloadFile("horaro-schedule.json", JSON.stringify(horaroData, null, 2), "application/json");
 }
 
 function exportCSV() {
-    if (allAdminSubmissions.length === 0) {
-        showToast("No submissions to export.", "info");
-        return;
-    }
+    if (!allAdminSubmissions.length) return showToast("No submissions to export.", "info");
 
     const headers = ["ID", "Game", "Category", "Platform", "Estimate", "Runner", "Discord", "Status", "Video URL", "Type", "Notes"];
     const rows = allAdminSubmissions.map(r => [
-        r.id,
-        `"${(r.game || "").replace(/"/g, '""')}"`,
-        `"${(r.category || "").replace(/"/g, '""')}"`,
-        `"${(r.platform || "").replace(/"/g, '""')}"`,
-        formatSecondsToTime(r.estimate_seconds),
-        `"${(r.profiles?.display_name || "").replace(/"/g, '""')}"`,
-        `"${(r.profiles?.discord_username || "").replace(/"/g, '""')}"`,
-        r.status,
-        `"${(r.video_url || "").replace(/"/g, '""')}"`,
-        r.run_type,
-        `"${(r.notes || "").replace(/"/g, '""')}"`
+        r.id, `"${(r.game || "").replace(/"/g, '""')}"`, `"${(r.category || "").replace(/"/g, '""')}"`, `"${(r.platform || "").replace(/"/g, '""')}"`,
+        formatSecondsToTime(r.estimate_seconds), `"${(r.profiles?.display_name || "").replace(/"/g, '""')}"`, `"${(r.profiles?.discord_username || "").replace(/"/g, '""')}"`,
+        r.status, `"${(r.video_url || "").replace(/"/g, '""')}"`, r.run_type, `"${(r.notes || "").replace(/"/g, '""')}"`
     ]);
 
-    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    downloadFile("popruns-submissions.csv", csvContent, "text/csv");
+    downloadFile("popruns-submissions.csv", [headers.join(","), ...rows.map(e => e.join(","))].join("\n"), "text/csv");
 }
 
 function exportJSON() {
     downloadFile("popruns-submissions.json", JSON.stringify(allAdminSubmissions, null, 2), "application/json");
 }
 
-function downloadFile(filename, text, mimeType) {
-    const blob = new Blob([text], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast(`Exported ${filename}`, "success");
-}
-
 // Profile Modal
 function openProfileModal() {
     if (!currentProfile) return;
-    document.getElementById("profile-display-name").value = currentProfile.display_name || "";
-    document.getElementById("profile-pronouns").value = currentProfile.pronouns || "";
+    if ($("profile-display-name")) $("profile-display-name").value = currentProfile.display_name || "";
+    if ($("profile-pronouns")) $("profile-pronouns").value = currentProfile.pronouns || "";
 
-    const accountsEl = document.getElementById("profile-connected-accounts");
+    const accountsEl = $("profile-connected-accounts");
     if (accountsEl) {
         let html = "";
         if (currentProfile.discord_username) {
@@ -2111,7 +1327,6 @@ function openProfileModal() {
         }
         accountsEl.innerHTML = html || '<span style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No OAuth username stored yet (log out and log in to sync).</span>';
     }
-
     openModal("profile-modal");
 }
 
@@ -2119,24 +1334,14 @@ async function handleProfileUpdate(e) {
     e.preventDefault();
     if (!supabaseClient || !currentUser) return;
 
-    const displayName = document.getElementById("profile-display-name").value.trim();
-    const pronouns = document.getElementById("profile-pronouns").value.trim();
+    const displayName = $("profile-display-name")?.value.trim() || "";
+    const pronouns = $("profile-pronouns")?.value.trim() || "";
 
     try {
-        const { error } = await supabaseClient
-            .from("profiles")
-            .update({
-                display_name: displayName,
-                pronouns: pronouns,
-                updated_at: new Date().toISOString()
-            })
-            .eq("id", currentUser.id);
-
+        const { error } = await supabaseClient.from("profiles").update({ display_name: displayName, pronouns, updated_at: new Date().toISOString() }).eq("id", currentUser.id);
         if (error) throw error;
-
         currentProfile.display_name = displayName;
         currentProfile.pronouns = pronouns;
-
         updateAuthUI();
         closeModal("profile-modal");
         showToast("Profile updated successfully!", "success");
@@ -2147,141 +1352,48 @@ async function handleProfileUpdate(e) {
 
 // UI Navigation, Modals & Toast
 function switchTab(tabId) {
-    document.querySelectorAll(".tab-button, .tab-btn").forEach(b => {
-        b.classList.remove("active");
-        b.classList.remove("tab-button-selected");
+    $$(".tab-button, .tab-btn").forEach(b => {
+        const matches = Boolean(b.getAttribute("onclick")?.includes(`'${tabId}'`));
+        b.classList.toggle("active", matches);
+        b.classList.toggle("tab-button-selected", matches);
     });
-    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-
-    const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
-    const activePane = document.getElementById(`tab-${tabId}`);
-
-    if (activeBtn) {
-        activeBtn.classList.add("active");
-        activeBtn.classList.add("tab-button-selected");
-    }
-    if (activePane) activePane.classList.add("active");
-
+    $$(".tab-pane").forEach(p => p.classList.toggle("active", p.id === `tab-${tabId}`));
     window.location.hash = tabId;
 
-    if (tabId === "admin") {
-        loadAdminSubmissions();
-    } else if (tabId === "all-runs") {
-        loadAllSubmissions();
-    } else if (tabId === "my-runs") {
-        loadMySubmissions();
-    }
+    if (tabId === "admin") loadAdminSubmissions();
+    else if (tabId === "all-runs") loadAllSubmissions();
+    else if (tabId === "my-runs") loadMySubmissions();
 }
 
-function openModal(id) {
-    const m = document.getElementById(id);
-    if (m) m.classList.add("open");
-}
-
-function closeModal(id) {
-    const m = document.getElementById(id);
-    if (m) m.classList.remove("open");
-}
+function openModal(id) { const m = $(id); if (m) m.classList.add("open"); }
+function closeModal(id) { const m = $(id); if (m) m.classList.remove("open"); }
 
 function showToast(message, type = "info") {
-    const container = document.getElementById("toast-container");
+    const container = $("toast-container");
+    if (!container) return;
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
-    
-    let icon = "info-circle";
-    if (type === "success") icon = "check-circle";
-    if (type === "error") icon = "exclamation-triangle";
-
+    const icon = type === "success" ? "check-circle" : (type === "error" ? "exclamation-triangle" : "info-circle");
     toast.innerHTML = `<i class="fa fa-${icon}"></i> <span>${escapeHTML(message)}</span>`;
     container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = "0";
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 300); }, 4000);
 }
 
-// Utility Formatters
+// Time & Duration Formatting Utilities
 function parseTimeToSeconds(timeStr) {
     if (!timeStr) return 0;
     const parts = timeStr.split(":").map(Number);
     if (parts.some(isNaN)) return 0;
-
-    if (parts.length === 3) {
-        return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts.length === 2) {
-        return parts[0] * 60 + parts[1];
-    } else if (parts.length === 1) {
-        return parts[0] * 60;
-    }
-    return 0;
+    return parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : (parts.length === 2 ? parts[0] * 60 + parts[1] : (parts.length === 1 ? parts[0] * 60 : 0));
 }
 
-function formatSecondsToTime(totalSeconds) {
-    if (!totalSeconds) return "00:00:00";
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+function formatSecondsToTime(sec) {
+    if (!sec) return "00:00:00";
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function formatSecondsToHoraro(totalSeconds) {
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `PT${hrs}H${mins}M${secs}S`;
+function formatSecondsToHoraro(sec) {
+    return `PT${Math.floor(sec / 3600)}H${Math.floor((sec % 3600) / 60)}M${sec % 60}S`;
 }
 
-function escapeHTML(str) {
-    if (!str) return "";
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-// Explicit window bindings for global HTML handlers
-window.loginWithDiscord = loginWithDiscord;
-window.loginWithTwitch = loginWithTwitch;
-window.logout = logout;
-window.switchTab = switchTab;
-window.openProfileModal = openProfileModal;
-window.selectMainlineGame = selectMainlineGame;
-window.handleSpinoffChange = handleSpinoffChange;
-window.clearSelectedGame = clearSelectedGame;
-window.renderGameSelectionUI = renderGameSelectionUI;
-window.applyCategoryChip = applyCategoryChip;
-window.handleCategoryInput = handleCategoryInput;
-window.toggleCategoryPresets = toggleCategoryPresets;
-window.handlePlatformChange = handlePlatformChange;
-window.handleGameChange = handleGameChange;
-window.handleRunTypeChange = handleRunTypeChange;
-window.handleEditRunTypeChange = handleEditRunTypeChange;
-window.formatRunType = formatRunType;
-window.setRatioPreset = setRatioPreset;
-window.populateDynamicOptions = populateDynamicOptions;
-window.handleRunSubmit = handleRunSubmit;
-window.loadMySubmissions = loadMySubmissions;
-window.openEditSubmissionModal = openEditSubmissionModal;
-window.handleRunUpdate = handleRunUpdate;
-window.deleteSubmission = deleteSubmission;
-window.setAvailabilityPreset = setAvailabilityPreset;
-window.toggleWholeDay = toggleWholeDay;
-window.saveAvailability = saveAvailability;
-window.resetAvailability = resetAvailability;
-window.handleTimezoneChange = handleTimezoneChange;
-window.resetToDetectedTimezone = resetToDetectedTimezone;
-window.updateAvailabilityDirtyState = updateAvailabilityDirtyState;
-window.loadAllSubmissions = loadAllSubmissions;
-window.filterAllSubmissions = filterAllSubmissions;
-window.openRunNote = openRunNote;
-window.loadAdminSubmissions = loadAdminSubmissions;
-window.filterAdminSubmissions = filterAdminSubmissions;
-window.setRunStatus = setRunStatus;
-window.exportHoraro = exportHoraro;
-window.exportCSV = exportCSV;
-window.exportJSON = exportJSON;
-window.openModal = openModal;
-window.closeModal = closeModal;
