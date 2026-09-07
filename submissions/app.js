@@ -15,6 +15,7 @@ let selectedAvailabilitySlots = new Set();
 document.addEventListener("DOMContentLoaded", async () => {
     initSupabase();
     initUI();
+    populateDynamicOptions();
     await loadActiveEvent();
     populateGameDropdown();
     setupTimezone();
@@ -710,19 +711,149 @@ function handleGameChange() {
     }
 }
 
-function handleRunTypeChange() {
-    const runType = document.getElementById("run-type").value;
-    const coRunnersGroup = document.getElementById("co-runners-group");
-    if (runType === "race" || runType === "coop") {
-        coRunnersGroup.style.display = "block";
-    } else {
-        coRunnersGroup.style.display = "none";
+// Run Format & Ratio Helpers (DRY)
+function formatRunType(type) {
+    if (!type) return "Solo";
+    const t = String(type).toLowerCase();
+    if (typeof CONFIG !== "undefined" && Array.isArray(CONFIG.RUN_FORMATS)) {
+        const matched = CONFIG.RUN_FORMATS.find(rf => rf.value.toLowerCase() === t);
+        if (matched) return matched.shortLabel || matched.label;
+    }
+    switch (t) {
+        case "solo": return "Solo";
+        case "race": return "Race";
+        case "btr_lta":
+        case "btr":
+        case "lta": return "BTR / LTA";
+        case "coop": return "Co-op";
+        case "showcase": return "Showcase";
+        default: return type.toUpperCase();
     }
 }
 
-function setRatioPreset(w, h) {
-    const wInput = document.getElementById("run-ratio-width");
-    const hInput = document.getElementById("run-ratio-height");
+function isMultiRunnerType(type) {
+    if (!type) return false;
+    const t = String(type).toLowerCase();
+    if (typeof CONFIG !== "undefined" && Array.isArray(CONFIG.RUN_FORMATS)) {
+        const matched = CONFIG.RUN_FORMATS.find(rf => rf.value.toLowerCase() === t);
+        if (matched) return Boolean(matched.multiRunner);
+    }
+    return t === "race" || t === "coop" || t === "btr_lta" || t === "lta" || t === "btr";
+}
+
+function updateCoRunnersVisibility(selectId, groupId) {
+    const selectEl = document.getElementById(selectId);
+    const groupEl = document.getElementById(groupId);
+    if (selectEl && groupEl) {
+        groupEl.style.display = isMultiRunnerType(selectEl.value) ? "block" : "none";
+    }
+}
+
+function handleRunTypeChange() {
+    updateCoRunnersVisibility("run-type", "co-runners-group");
+}
+
+function handleEditRunTypeChange() {
+    updateCoRunnersVisibility("edit-run-type", "edit-co-runners-group");
+}
+
+function formatRatioString(width, height) {
+    const w = String(width || "").trim();
+    const h = String(height || "").trim();
+    if (!w || !h) return "16:9";
+    const isResolution = parseInt(w, 10) > 50 || parseInt(h, 10) > 50;
+    return `${w}${isResolution ? "x" : ":"}${h}`;
+}
+
+function parseRatioString(ratioStr) {
+    const parts = String(ratioStr || "16:9").split(/[:x×/]/);
+    return {
+        width: parts[0]?.trim() || "16",
+        height: parts[1]?.trim() || "9"
+    };
+}
+
+function canModifySubmissions() {
+    return Boolean(currentEvent?.submissions_open || currentProfile?.is_admin);
+}
+
+function checkSubmissionsEditable(action = "modify") {
+    if (!canModifySubmissions()) {
+        showToast(`Submissions are closed. Cannot ${action} submissions.`, "error");
+        return false;
+    }
+    return true;
+}
+
+async function refreshAllSubmissionsViews() {
+    await loadMySubmissions();
+    await loadAllSubmissions();
+    if (currentProfile?.is_admin) await loadAdminSubmissions();
+}
+
+function getRunnerDisplayInfo(profile) {
+    const name = profile?.display_name || "Runner";
+    const avatar = profile?.avatar_url || "../static/images/popruns_logo.png";
+    const discord = profile?.discord_username ? `Discord: @${profile.discord_username}` : "";
+    const twitch = profile?.twitch_username ? `Twitch: ${profile.twitch_username}` : "";
+    const tooltip = [name, discord, twitch].filter(Boolean).join(" | ");
+    return { name, avatar, discord, twitch, tooltip };
+}
+
+function populateDynamicOptions() {
+    if (typeof CONFIG === "undefined") return;
+
+    // 1. Run Format Dropdowns
+    const runTypeSelects = [
+        document.getElementById("run-type"),
+        document.getElementById("edit-run-type")
+    ];
+    if (CONFIG.RUN_FORMATS && Array.isArray(CONFIG.RUN_FORMATS)) {
+        runTypeSelects.forEach(sel => {
+            if (!sel) return;
+            const currentVal = sel.value;
+            sel.innerHTML = CONFIG.RUN_FORMATS.map(rf =>
+                `<option value="${escapeHTML(rf.value)}">${escapeHTML(rf.label)}</option>`
+            ).join("");
+            if (currentVal) sel.value = currentVal;
+        });
+    }
+
+    // 2. Ratio Presets
+    const ratioPresetContainers = [
+        { containerId: "ratio-presets-container", prefix: "run" },
+        { containerId: "edit-ratio-presets-container", prefix: "edit-run" }
+    ];
+    if (CONFIG.RATIO_PRESETS && Array.isArray(CONFIG.RATIO_PRESETS)) {
+        ratioPresetContainers.forEach(({ containerId, prefix }) => {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = CONFIG.RATIO_PRESETS.map(preset =>
+                `<button type="button" class="ratio-chip" onclick="setRatioPreset('${preset.width}', '${preset.height}', '${prefix}')">${escapeHTML(preset.label)}</button>`
+            ).join("");
+        });
+    }
+
+    // 3. Status Filter Dropdowns
+    const statusSelects = [
+        document.getElementById("all-runs-filter-status"),
+        document.getElementById("admin-filter-status")
+    ];
+    if (CONFIG.STATUS_OPTIONS && Array.isArray(CONFIG.STATUS_OPTIONS)) {
+        statusSelects.forEach(sel => {
+            if (!sel) return;
+            const currentVal = sel.value || "all";
+            sel.innerHTML = CONFIG.STATUS_OPTIONS.map(st =>
+                `<option value="${escapeHTML(st.value)}">${escapeHTML(st.label)}</option>`
+            ).join("");
+            if (currentVal) sel.value = currentVal;
+        });
+    }
+}
+
+function setRatioPreset(w, h, targetPrefix = "run") {
+    const wInput = document.getElementById(`${targetPrefix}-ratio-width`);
+    const hInput = document.getElementById(`${targetPrefix}-ratio-height`);
     if (wInput) wInput.value = w;
     if (hInput) hInput.value = h;
 }
@@ -735,10 +866,7 @@ async function handleRunSubmit(e) {
         return;
     }
 
-    if (!currentEvent.submissions_open) {
-        showToast("Submissions are currently closed for this marathon.", "error");
-        return;
-    }
+    if (!checkSubmissionsEditable("submit")) return;
 
     let game = document.getElementById("run-game") ? document.getElementById("run-game").value.trim() : "";
     if (game.startsWith("Other")) {
@@ -756,32 +884,29 @@ async function handleRunSubmit(e) {
         platform = document.getElementById("run-platform-custom")?.value.trim() || "Other";
     }
 
-    const ratioWidth = document.getElementById("run-ratio-width") ? document.getElementById("run-ratio-width").value.trim() : "";
-    const ratioHeight = document.getElementById("run-ratio-height") ? document.getElementById("run-ratio-height").value.trim() : "";
-    let formattedRatio = "16:9";
-    if (ratioWidth && ratioHeight) {
-        const isResolution = parseInt(ratioWidth) > 50 || parseInt(ratioHeight) > 50;
-        formattedRatio = `${ratioWidth}${isResolution ? 'x' : ':'}${ratioHeight}`;
-    }
+    const formattedRatio = formatRatioString(
+        document.getElementById("run-ratio-width")?.value,
+        document.getElementById("run-ratio-height")?.value
+    );
 
     const estimateStr = document.getElementById("run-estimate").value.trim();
     const estimateSeconds = parseTimeToSeconds(estimateStr);
-    const videoUrl = document.getElementById("run-video").value.trim();
-    const runType = document.getElementById("run-type").value;
-    const coRunners = document.getElementById("run-co-runners")?.value.trim() || "";
-    const notes = document.getElementById("run-notes").value.trim();
-
     if (!estimateSeconds || estimateSeconds <= 0) {
         showToast("Please enter a valid estimate in HH:MM:SS format (e.g. 01:25:00)", "error");
         return;
     }
+
+    const runType = document.getElementById("run-type").value;
+    const coRunners = isMultiRunnerType(runType) ? (document.getElementById("run-co-runners")?.value.trim() || "") : "";
+    const videoUrl = document.getElementById("run-video").value.trim();
+    const notes = document.getElementById("run-notes").value.trim();
 
     const submitBtn = document.getElementById("btn-submit-run");
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
 
     try {
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
             .from("submissions")
             .insert([{
                 event_id: currentEvent.id,
@@ -796,8 +921,7 @@ async function handleRunSubmit(e) {
                 co_runners: coRunners,
                 notes,
                 status: "submitted"
-            }])
-            .select();
+            }]);
 
         if (error) throw error;
 
@@ -805,7 +929,7 @@ async function handleRunSubmit(e) {
         document.getElementById("submission-form").reset();
         clearSelectedGame();
         handleRunTypeChange();
-        await loadMySubmissions();
+        await refreshAllSubmissionsViews();
         switchTab("my-runs");
 
     } catch (err) {
@@ -861,7 +985,7 @@ function renderMySubmissions() {
         return;
     }
 
-    const isLocked = Boolean(currentEvent && !currentEvent.submissions_open && (!currentProfile || !currentProfile.is_admin));
+    const isLocked = !canModifySubmissions();
 
     listEl.innerHTML = userSubmissions.map(run => `
         <div class="submission-card">
@@ -878,7 +1002,7 @@ function renderMySubmissions() {
             <div class="submission-details">
                 <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
                 <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
-                <span><i class="fa fa-gamepad"></i> Format: <strong>${run.run_type.toUpperCase()}</strong></span>
+                <span><i class="fa fa-gamepad"></i> Format: <strong>${escapeHTML(formatRunType(run.run_type))}</strong></span>
                 ${run.co_runners ? `<span><i class="fa fa-users"></i> Co-runners: <strong>${escapeHTML(run.co_runners)}</strong></span>` : ""}
                 <span><i class="fa fa-video"></i> <a href="${escapeHTML(run.video_url)}" target="_blank" style="color: var(--accent-blue);">Video Proof <i class="fa fa-external-link-alt"></i></a></span>
             </div>
@@ -897,10 +1021,7 @@ function renderMySubmissions() {
 }
 
 function openEditSubmissionModal(runId) {
-    if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) {
-        showToast("Submissions are closed. Submissions cannot be edited.", "error");
-        return;
-    }
+    if (!checkSubmissionsEditable("edit")) return;
 
     const run = userSubmissions.find(r => r.id === runId) || allAdminSubmissions.find(r => r.id === runId);
     if (!run) return;
@@ -910,13 +1031,24 @@ function openEditSubmissionModal(runId) {
     document.getElementById("edit-run-category").value = run.category;
     document.getElementById("edit-run-platform").value = run.platform;
 
-    const ratioParts = (run.ratio || "16:9").split(/[:x×/]/);
+    const { width, height } = parseRatioString(run.ratio);
     const editW = document.getElementById("edit-run-ratio-width");
     const editH = document.getElementById("edit-run-ratio-height");
-    if (editW) editW.value = ratioParts[0] || "16";
-    if (editH) editH.value = ratioParts[1] || "9";
+    if (editW) editW.value = width;
+    if (editH) editH.value = height;
 
     document.getElementById("edit-run-estimate").value = formatSecondsToTime(run.estimate_seconds);
+
+    const editRunTypeEl = document.getElementById("edit-run-type");
+    if (editRunTypeEl) {
+        editRunTypeEl.value = run.run_type || "solo";
+        handleEditRunTypeChange();
+    }
+    const editCoRunnersEl = document.getElementById("edit-run-co-runners");
+    if (editCoRunnersEl) {
+        editCoRunnersEl.value = run.co_runners || "";
+    }
+
     document.getElementById("edit-run-video").value = run.video_url;
     document.getElementById("edit-run-notes").value = run.notes || "";
 
@@ -927,26 +1059,29 @@ async function handleRunUpdate(e) {
     e.preventDefault();
     if (!supabaseClient) return;
 
-    if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) {
-        showToast("Submissions are closed. Modifications are locked.", "error");
-        return;
-    }
+    if (!checkSubmissionsEditable("modify")) return;
 
-    const id = parseInt(document.getElementById("edit-run-id").value);
+    const id = parseInt(document.getElementById("edit-run-id").value, 10);
     const game = document.getElementById("edit-run-game").value.trim();
     const category = document.getElementById("edit-run-category").value.trim();
     const platform = document.getElementById("edit-run-platform").value.trim();
 
-    const editW = document.getElementById("edit-run-ratio-width") ? document.getElementById("edit-run-ratio-width").value.trim() : "";
-    const editH = document.getElementById("edit-run-ratio-height") ? document.getElementById("edit-run-ratio-height").value.trim() : "";
-    let editRatio = "16:9";
-    if (editW && editH) {
-        const isResolution = parseInt(editW) > 50 || parseInt(editH) > 50;
-        editRatio = `${editW}${isResolution ? 'x' : ':'}${editH}`;
-    }
+    const editRatio = formatRatioString(
+        document.getElementById("edit-run-ratio-width")?.value,
+        document.getElementById("edit-run-ratio-height")?.value
+    );
 
     const estimateStr = document.getElementById("edit-run-estimate").value.trim();
     const estimateSeconds = parseTimeToSeconds(estimateStr);
+    if (!estimateSeconds || estimateSeconds <= 0) {
+        showToast("Please enter a valid estimate in HH:MM:SS format (e.g. 01:25:00)", "error");
+        return;
+    }
+
+    const runType = document.getElementById("edit-run-type") ? document.getElementById("edit-run-type").value : "solo";
+    const coRunners = isMultiRunnerType(runType)
+        ? (document.getElementById("edit-run-co-runners") ? document.getElementById("edit-run-co-runners").value.trim() : "")
+        : null;
     const videoUrl = document.getElementById("edit-run-video").value.trim();
     const notes = document.getElementById("edit-run-notes").value.trim();
 
@@ -959,6 +1094,8 @@ async function handleRunUpdate(e) {
                 platform,
                 ratio: editRatio,
                 estimate_seconds: estimateSeconds,
+                run_type: runType,
+                co_runners: coRunners,
                 video_url: videoUrl,
                 notes,
                 updated_at: new Date().toISOString()
@@ -969,9 +1106,7 @@ async function handleRunUpdate(e) {
 
         showToast("Run updated successfully!", "success");
         closeModal("edit-submission-modal");
-        await loadMySubmissions();
-        await loadAllSubmissions();
-        if (currentProfile?.is_admin) await loadAdminSubmissions();
+        await refreshAllSubmissionsViews();
 
     } catch (err) {
         showToast("Failed to update run: " + err.message, "error");
@@ -979,10 +1114,7 @@ async function handleRunUpdate(e) {
 }
 
 async function deleteSubmission(runId) {
-    if (!currentEvent?.submissions_open && (!currentProfile || !currentProfile.is_admin)) {
-        showToast("Submissions are closed. Deletions are locked.", "error");
-        return;
-    }
+    if (!checkSubmissionsEditable("delete")) return;
 
     if (!confirm("Are you sure you want to delete this submission?")) return;
     if (!supabaseClient) return;
@@ -996,9 +1128,7 @@ async function deleteSubmission(runId) {
         if (error) throw error;
 
         showToast("Submission deleted.", "success");
-        await loadMySubmissions();
-        await loadAllSubmissions();
-        if (currentProfile?.is_admin) await loadAdminSubmissions();
+        await refreshAllSubmissionsViews();
     } catch (err) {
         showToast("Failed to delete: " + err.message, "error");
     }
@@ -1660,7 +1790,7 @@ function openRunNote(runId) {
     const run = (allSubmissions || []).find(r => r.id === runId) || (allAdminSubmissions || []).find(r => r.id === runId);
     if (!run) return;
 
-    const runner = run.profiles?.display_name || "Runner";
+    const { name: runner } = getRunnerDisplayInfo(run.profiles);
     const subtitleEl = document.getElementById("note-modal-subtitle");
     const contentEl = document.getElementById("note-modal-content");
 
@@ -1750,11 +1880,7 @@ function renderAllSubmissions() {
                 </thead>
                 <tbody>
                     ${filtered.map(run => {
-                        const runner = run.profiles?.display_name || "Runner";
-                        const avatar = run.profiles?.avatar_url || "../static/images/popruns_logo.png";
-                        const discord = run.profiles?.discord_username ? `Discord: @${escapeHTML(run.profiles.discord_username)}` : "";
-                        const twitch = run.profiles?.twitch_username ? `Twitch: ${escapeHTML(run.profiles.twitch_username)}` : "";
-                        const runnerTooltip = [runner, discord, twitch].filter(Boolean).join(" | ");
+                        const { name: runner, avatar, tooltip: runnerTooltip } = getRunnerDisplayInfo(run.profiles);
                         const hasNotes = run.notes && run.notes.trim().length > 0;
 
                         return `
@@ -1771,7 +1897,7 @@ function renderAllSubmissions() {
                                 <td><span style="font-family: monospace; font-size: 0.84rem; color: var(--gold-bright);">${escapeHTML(run.ratio || "16:9")}</span></td>
                                 <td style="font-family: monospace; font-size: 0.9rem; white-space: nowrap;">${formatSecondsToTime(run.estimate_seconds)}</td>
                                 <td style="white-space: nowrap;">
-                                    <span style="font-size: 0.85rem; text-transform: uppercase;">${run.run_type}</span>
+                                    <span style="font-size: 0.85rem; font-weight: 600;">${escapeHTML(formatRunType(run.run_type))}</span>
                                     ${run.co_runners ? `<div style="font-size: 0.78rem; color: var(--text-muted);"><i class="fa fa-users"></i> ${escapeHTML(run.co_runners)}</div>` : ""}
                                 </td>
                                 <td class="col-status"><span class="badge badge-${run.status}">${run.status}</span></td>
@@ -1846,7 +1972,10 @@ function renderAdminSubmissions(runs) {
         return;
     }
 
-    listEl.innerHTML = runs.map(run => `
+    listEl.innerHTML = runs.map(run => {
+        const { name: runner, discord: runnerDiscord } = getRunnerDisplayInfo(run.profiles);
+
+        return `
         <div class="submission-card">
             <div class="submission-header">
                 <div>
@@ -1857,10 +1986,11 @@ function renderAdminSubmissions(runs) {
             </div>
 
             <div class="submission-details">
-                <span><i class="fa fa-user"></i> Runner: <strong>${escapeHTML(run.profiles?.display_name || "Runner")}</strong> (${escapeHTML(run.profiles?.discord_username || "No Discord")})</span>
+                <span><i class="fa fa-user"></i> Runner: <strong>${escapeHTML(runner)}</strong> (${escapeHTML(runnerDiscord || "No Discord")})</span>
                 <span><i class="fa fa-tv"></i> Ratio: <strong>${escapeHTML(run.ratio || "16:9")}</strong></span>
                 <span><i class="fa fa-stopwatch"></i> Estimate: <strong>${formatSecondsToTime(run.estimate_seconds)}</strong></span>
-                <span><i class="fa fa-gamepad"></i> Type: <strong>${run.run_type}</strong></span>
+                <span><i class="fa fa-gamepad"></i> Type: <strong>${escapeHTML(formatRunType(run.run_type))}</strong></span>
+                ${run.co_runners ? `<span><i class="fa fa-users"></i> Co-runners: <strong>${escapeHTML(run.co_runners)}</strong></span>` : ""}
                 <span><i class="fa fa-video"></i> <a href="${escapeHTML(run.video_url)}" target="_blank" style="color: var(--accent-blue);">Video Proof <i class="fa fa-external-link-alt"></i></a></span>
             </div>
 
@@ -1873,7 +2003,8 @@ function renderAdminSubmissions(runs) {
                 <button class="btn btn-secondary btn-sm" onclick="setRunStatus(${run.id}, 'submitted')"><i class="fa fa-undo"></i> Reset</button>
             </div>
         </div>
-    `).join("");
+        `;
+    }).join("");
 }
 
 async function setRunStatus(runId, newStatus) {
@@ -2127,7 +2258,10 @@ window.toggleCategoryPresets = toggleCategoryPresets;
 window.handlePlatformChange = handlePlatformChange;
 window.handleGameChange = handleGameChange;
 window.handleRunTypeChange = handleRunTypeChange;
+window.handleEditRunTypeChange = handleEditRunTypeChange;
+window.formatRunType = formatRunType;
 window.setRatioPreset = setRatioPreset;
+window.populateDynamicOptions = populateDynamicOptions;
 window.handleRunSubmit = handleRunSubmit;
 window.loadMySubmissions = loadMySubmissions;
 window.openEditSubmissionModal = openEditSubmissionModal;

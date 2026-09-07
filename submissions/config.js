@@ -164,6 +164,30 @@ const CONFIG = {
         }
     ],
 
+    RUN_FORMATS: [
+        { value: "solo", label: "Solo Run", shortLabel: "Solo" },
+        { value: "race", label: "Race (2 Runners)", shortLabel: "Race", multiRunner: true },
+        { value: "lta", label: "LTA / Break The Record (2 Runners)", shortLabel: "BTR / LTA", multiRunner: true },
+        { value: "coop", label: "Co-op / Relay (2+ Runners)", shortLabel: "Co-op", multiRunner: true },
+        { value: "showcase", label: "Glitch Showcase / Exhibition", shortLabel: "Showcase" }
+    ],
+
+    RATIO_PRESETS: [
+        { label: "4:3", width: "4", height: "3" },
+        { label: "16:9", width: "16", height: "9" },
+        { label: "16:10", width: "16", height: "10" },
+        { label: "1080p", width: "1920", height: "1080" },
+        { label: "720p", width: "1280", height: "720" }
+    ],
+
+    STATUS_OPTIONS: [
+        { value: "all", label: "All Statuses" },
+        { value: "submitted", label: "Submitted" },
+        { value: "accepted", label: "Accepted" },
+        { value: "backup", label: "Backup" },
+        { value: "rejected", label: "Rejected" }
+    ],
+
     get GAMES() {
         return [...this.MAINLINE_GAMES, ...this.SPINOFF_GAMES];
     }

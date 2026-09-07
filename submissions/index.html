@@ -191,13 +191,7 @@
                                 <span class="ratio-divider">:</span>
                                 <input type="text" id="run-ratio-height" class="form-input ratio-input" placeholder="9" required maxlength="6" value="9">
                             </div>
-                            <div class="ratio-presets">
-                                <button type="button" class="ratio-chip" onclick="setRatioPreset('4', '3')">4:3</button>
-                                <button type="button" class="ratio-chip" onclick="setRatioPreset('16', '9')">16:9</button>
-                                <button type="button" class="ratio-chip" onclick="setRatioPreset('16', '10')">16:10</button>
-                                <button type="button" class="ratio-chip" onclick="setRatioPreset('1920', '1080')">1080p</button>
-                                <button type="button" class="ratio-chip" onclick="setRatioPreset('1280', '720')">720p</button>
-                            </div>
+                            <div id="ratio-presets-container" class="ratio-presets"></div>
                         </div>
 
                         <div class="form-group">
@@ -220,17 +214,12 @@
                             <div class="form-label-row">
                                 <label class="form-label" for="run-type">Run Format <span class="required">*</span></label>
                             </div>
-                            <select id="run-type" class="form-select" onchange="handleRunTypeChange()" required>
-                                <option value="solo" selected>Solo Run</option>
-                                <option value="race">Race (2+ Runners)</option>
-                                <option value="coop">Co-op / Relay</option>
-                                <option value="showcase">Glitch Showcase / Exhibition</option>
-                            </select>
+                            <select id="run-type" class="form-select" onchange="handleRunTypeChange()" required></select>
                         </div>
 
                         <div id="co-runners-group" class="form-group" style="display: none;">
                             <div class="form-label-row">
-                                <label class="form-label" for="run-co-runners">Co-runners</label>
+                                <label class="form-label" for="run-co-runners">Co-runners / Competitors</label>
                             </div>
                             <input type="text" id="run-co-runners" class="form-input" placeholder="e.g. RunnerA, RunnerB">
                             <span class="form-hint">Separate multiple runner names with commas.</span>
@@ -344,11 +333,6 @@
                             <option value="all">All Games</option>
                         </select>
                         <select id="all-runs-filter-status" class="form-select" onchange="filterAllSubmissions()">
-                            <option value="all">All Statuses</option>
-                            <option value="submitted">Submitted</option>
-                            <option value="accepted">Accepted</option>
-                            <option value="backup">Backup</option>
-                            <option value="rejected">Rejected</option>
                         </select>
                         <button class="btn btn-secondary btn-sm" onclick="loadAllSubmissions()"><i class="fa fa-sync-alt"></i> Refresh</button>
                     </div>
@@ -399,11 +383,6 @@
                 <div class="filter-toolbar" style="margin-bottom: 1.5rem;">
                     <input type="text" id="admin-search" class="form-input" style="flex: 2 1 200px;" placeholder="Search runner, game, category..." oninput="filterAdminSubmissions()">
                     <select id="admin-filter-status" class="form-select" onchange="filterAdminSubmissions()">
-                        <option value="all">All Statuses</option>
-                        <option value="submitted">Submitted (Pending)</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="backup">Backup</option>
-                        <option value="rejected">Rejected</option>
                     </select>
                 </div>
 
@@ -483,11 +462,23 @@
                             <span class="ratio-divider">:</span>
                             <input type="text" id="edit-run-ratio-height" class="form-input ratio-input" placeholder="9" required maxlength="6">
                         </div>
+                        <div id="edit-ratio-presets-container" class="ratio-presets"></div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label class="form-label" for="edit-run-estimate">Estimate (HH:MM:SS)</label>
                         <input type="text" id="edit-run-estimate" class="form-input" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="edit-run-type">Run Format</label>
+                        <select id="edit-run-type" class="form-select" onchange="handleEditRunTypeChange()">
+                        </select>
+                    </div>
+
+                    <div id="edit-co-runners-group" class="form-group" style="margin-bottom: 1rem; display: none;">
+                        <label class="form-label" for="edit-run-co-runners">Co-runners / Competitors</label>
+                        <input type="text" id="edit-run-co-runners" class="form-input" placeholder="e.g. RunnerA, RunnerB">
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1rem;">
