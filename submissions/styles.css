@@ -1053,6 +1053,7 @@ body {
 
 .all-submissions-table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
     font-size: 0.87rem;
     text-align: left;
@@ -1070,12 +1071,60 @@ body {
 }
 
 .all-submissions-table td {
-    padding: 0.7rem 0.85rem;
+    padding: 0.75rem 0.85rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     vertical-align: middle;
 }
 
+.all-submissions-table .col-runner {
+    white-space: nowrap;
+    min-width: 130px;
+}
+
+.all-submissions-table .col-game {
+    min-width: 220px;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1.35;
+}
+
+.all-submissions-table .col-category {
+    min-width: 120px;
+    color: var(--text-main);
+}
+
+.all-submissions-table .col-platform {
+    white-space: nowrap;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.all-submissions-table .col-ratio {
+    white-space: nowrap;
+    text-align: center;
+    font-family: monospace;
+    font-size: 0.84rem;
+    color: var(--gold-bright);
+}
+
+.all-submissions-table .col-estimate {
+    white-space: nowrap;
+    text-align: center;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.all-submissions-table .col-format {
+    white-space: nowrap;
+}
+
 .all-submissions-table .col-status {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.all-submissions-table .col-notes {
     width: 1%;
     white-space: nowrap;
     text-align: center;

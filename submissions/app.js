@@ -1137,7 +1137,15 @@ function renderAllSubmissions() {
             <table class="all-submissions-table">
                 <thead>
                     <tr>
-                        <th>Runner</th><th>Game</th><th>Category</th><th>Platform</th><th>Ratio</th><th>Estimate</th><th>Format</th><th class="col-status">Status</th><th style="text-align: center;">Notes</th>
+                        <th class="col-runner">Runner</th>
+                        <th class="col-game">Game</th>
+                        <th class="col-category">Category</th>
+                        <th class="col-platform">Platform</th>
+                        <th class="col-ratio">Ratio</th>
+                        <th class="col-estimate">Estimate</th>
+                        <th class="col-format">Format</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-notes">Notes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1146,23 +1154,23 @@ function renderAllSubmissions() {
                         const hasNotes = Boolean(run.notes && run.notes.trim().length > 0);
                         return `
                             <tr>
-                                <td>
+                                <td class="col-runner">
                                     <div class="runner-cell" title="${escapeHTML(runnerTooltip)}">
                                         <img src="${escapeHTML(avatar)}" alt="${escapeHTML(runner)}" class="runner-avatar" onerror="this.src='../static/images/popruns_logo.png'">
                                         <span>${escapeHTML(runner)}</span>
                                     </div>
                                 </td>
-                                <td style="font-weight: 600; color: var(--gold);">${escapeHTML(run.game)}</td>
-                                <td style="color: var(--text-main);">${escapeHTML(run.category)}</td>
-                                <td><span style="color: var(--text-muted);">${escapeHTML(run.platform)}</span></td>
-                                <td><span style="font-family: monospace; font-size: 0.84rem; color: var(--gold-bright);">${escapeHTML(run.ratio || "16:9")}</span></td>
-                                <td style="font-family: monospace; font-size: 0.9rem; white-space: nowrap;">${formatSecondsToTime(run.estimate_seconds)}</td>
-                                <td style="white-space: nowrap;">
+                                <td class="col-game">${escapeHTML(run.game)}</td>
+                                <td class="col-category">${escapeHTML(run.category)}</td>
+                                <td class="col-platform">${escapeHTML(run.platform)}</td>
+                                <td class="col-ratio">${escapeHTML(run.ratio || "16:9")}</td>
+                                <td class="col-estimate">${formatSecondsToTime(run.estimate_seconds)}</td>
+                                <td class="col-format">
                                     <span style="font-size: 0.85rem; font-weight: 600;">${escapeHTML(formatRunType(run.run_type))}</span>
                                     ${run.co_runners ? `<div style="font-size: 0.78rem; color: var(--text-muted);"><i class="fa fa-users"></i> ${escapeHTML(run.co_runners)}</div>` : ""}
                                 </td>
                                 <td class="col-status"><span class="badge badge-${run.status}">${run.status}</span></td>
-                                <td style="text-align: center;">
+                                <td class="col-notes">
                                     ${hasNotes 
                                         ? `<button type="button" class="notes-tooltip-icon" onclick="openRunNote(${run.id})" title="Click to view notes"><i class="fa fa-comment-dots"></i></button>`
                                         : '<span style="color: rgba(255,255,255,0.2);">&mdash;</span>'
