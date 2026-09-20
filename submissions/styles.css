@@ -1494,6 +1494,208 @@ body {
     display: block;
 }
 
+/* Marathon Schedule */
+.schedule-day-card {
+    margin-bottom: 1.5rem;
+    background: rgba(7, 18, 26, 0.85);
+    border: 1px solid rgba(211, 156, 10, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.schedule-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+    background: rgba(4, 12, 18, 0.95);
+    border-bottom: 1px solid rgba(211, 156, 10, 0.35);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.schedule-day-title {
+    color: var(--gold-bright);
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: 'Trajan Pro Regular', serif;
+    letter-spacing: 0.5px;
+}
+
+.schedule-day-meta {
+    display: none;
+    gap: 1.1rem;
+    font-size: 0.85rem;
+    color: var(--gold);
+}
+
+.schedule-table-wrap {
+    margin-top: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.schedule-table th.col-schedule-time {
+    min-width: 95px;
+    width: 95px;
+    text-align: center;
+}
+
+.schedule-table th.col-schedule-runners {
+    min-width: 150px;
+}
+
+.schedule-table td.col-schedule-time {
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.schedule-time-primary {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--gold-bright);
+    font-family: monospace;
+}
+
+.schedule-time-secondary {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+.schedule-game-title {
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1.35;
+}
+
+.schedule-category-text {
+    color: var(--text-main);
+}
+
+.schedule-runners-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.schedule-runner-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+    padding: 0.18rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    width: fit-content;
+}
+
+.schedule-table th.col-estimate {
+    min-width: 100px;
+    width: 115px;
+    text-align: center;
+}
+
+.schedule-table td.col-estimate {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.estimate-cell-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    position: relative;
+}
+
+.setup-buffer-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px dashed rgba(211, 156, 10, 0.4);
+    border-radius: 12px;
+    padding: 0.12rem 0.55rem;
+    line-height: 1.25;
+    user-select: none;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.setup-buffer-badge:hover {
+    border: 1px solid var(--gold-bright);
+    color: var(--gold-bright);
+    background: rgba(211, 156, 10, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.platform-badge {
+    display: inline-block;
+    padding: 0.18rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(25, 200, 195, 0.12);
+    color: var(--accent-blue);
+    border: 1px solid rgba(25, 200, 195, 0.3);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.estimate-tag {
+    font-family: monospace;
+    font-size: 0.88rem;
+    color: var(--gold-bright);
+    font-weight: 600;
+}
+
+.schedule-special-row td {
+    padding: 0;
+}
+
+.schedule-special-cell {
+    padding: 0.75rem 1rem !important;
+}
+
+.schedule-special-cell.break {
+    background: rgba(230, 126, 34, 0.15);
+    color: #f39c12;
+    border-left: 4px solid #e67e22;
+}
+
+.schedule-special-cell.end {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    border-left: 4px solid #2ecc71;
+}
+
+.schedule-special-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.92rem;
+}
+
+.active-time-format {
+    background: var(--gold-dim) !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    border-color: var(--gold-bright) !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .header-nav {
@@ -1567,9 +1769,14 @@ body {
     .tz-banner > div {
         width: 100%;
     }
-    #tz-select {
+    #tz-select,
+    #schedule-tz-select {
         width: 100% !important;
         min-width: 0 !important;
+    }
+    .schedule-day-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
     .hours-grid {
         grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
