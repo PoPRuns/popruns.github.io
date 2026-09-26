@@ -6,7 +6,6 @@
 let supabaseClient = null, currentUser = null, currentProfile = null, currentEvent = null;
 let userSubmissions = [], allSubmissions = [], allAdminSubmissions = [];
 let selectedAvailabilitySlots = new Set(), savedAvailabilitySlots = new Set(), savedAvailabilityNotes = "";
-let scheduleData = null, scheduleTimeFormat = localStorage.getItem("popruns_schedule_time_format") || "24h";
 
 // Timezone & Availability State
 const THIRTY_MIN_MS = 30 * 60 * 1000;
@@ -28,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadActiveEvent();
     populateGameDropdown();
     setupTimezone();
-    await loadSchedule();
 });
 
 window.addEventListener("mouseup", () => {
@@ -98,11 +96,11 @@ function initUI() {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
     const hash = window.location.hash.replace("#", "");
-    const validTabs = ["schedule", "submit", "my-runs", "availability", "all-runs", "admin"];
+    const validTabs = ["submit", "my-runs", "availability", "all-runs", "admin"];
     if (validTabs.includes(hash)) {
         switchTab(hash);
     } else {
-        switchTab("schedule");
+        switchTab("submit");
     }
 }
 
@@ -196,7 +194,7 @@ async function loadActiveEvent() {
     currentEvent = {
         id: 1, slug: CONFIG.DEFAULT_EVENT_SLUG, title: "Prince of Persia Marathon 2026", description: "Also known as PoPRuns 11",
         submissions_open: true, start_date: "2026-10-16T12:00:00Z", end_date: "2026-10-18T23:59:59Z",
-        discord_url: "https://discord.gg/0uN0p5UvU3lXmFkW", twitch_url: "https://twitch.tv/PoPRuns", youtube_url: "https://youtube.com/@PoPRuns"
+        discord_url: "https://discord.com/invite/0Ss0agDWPoiSvr3E", youtube_url: "https://youtube.com/@PoPRuns", twitch_url: "https://twitch.tv/PoPRuns"
     };
 
     if (supabaseClient) {
@@ -287,6 +285,17 @@ function renderHeroMeta() {
     const opts = { month: "short", day: "numeric", year: "numeric" };
     if ($("meta-dates")) $("meta-dates").innerHTML = `<i class="fa fa-calendar-alt"></i> ${startDate.toLocaleDateString(undefined, opts)} - ${endDate.toLocaleDateString(undefined, opts)}`;
     if ($("meta-countdown")) $("meta-countdown").innerHTML = `<i class="fa fa-clock"></i> Starts in ${Math.max(0, Math.ceil((startDate - new Date()) / (1000 * 60 * 60 * 24)))} days`;
+}
+
+function toggleHeroSection() {
+    const hero = $("marathon-hero");
+    const toggleBtn = $("hero-toggle-btn");
+    if (!hero) return;
+
+    const isCollapsed = hero.classList.toggle("collapsed");
+    if (toggleBtn) {
+        toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+    }
 }
 
 // Game Selection UI
@@ -743,7 +752,6 @@ function setupTimezone() {
 
     const optionsHtml = tzObjects.map(item => `<option value="${item.tz}" ${item.tz === selectedTimezone ? "selected" : ""}>${item.label}</option>`).join("");
     if ($("tz-select")) $("tz-select").innerHTML = optionsHtml;
-    if ($("schedule-tz-select")) $("schedule-tz-select").innerHTML = optionsHtml;
 }
 
 function applyTimezoneChange(newTz) {
@@ -763,10 +771,8 @@ function applyTimezoneChange(newTz) {
     selectedTimezone = newTz;
 
     if ($("tz-select")) $("tz-select").value = selectedTimezone;
-    if ($("schedule-tz-select")) $("schedule-tz-select").value = selectedTimezone;
 
     buildAvailabilityCalendar();
-    renderSchedule();
     showToast(`Timezone set to ${selectedTimezone.replace(/_/g, " ")}`, "info");
 }
 
@@ -774,16 +780,7 @@ function handleTimezoneChange(e) {
     applyTimezoneChange(e.target.value);
 }
 
-function handleScheduleTimezoneChange(e) {
-    applyTimezoneChange(e.target.value);
-}
-
 function resetToDetectedTimezone() {
-    if (selectedTimezone === detectedTimezone) return;
-    applyTimezoneChange(detectedTimezone);
-}
-
-function resetScheduleToDetectedTimezone() {
     if (selectedTimezone === detectedTimezone) return;
     applyTimezoneChange(detectedTimezone);
 }
@@ -1380,254 +1377,7 @@ async function handleProfileUpdate(e) {
     }
 }
 
-// Marathon Schedule Logic
-function setScheduleTimeFormat(fmt) {
-    scheduleTimeFormat = fmt;
-    localStorage.setItem("popruns_schedule_time_format", fmt);
-    if ($("btn-format-24h")) $("btn-format-24h").classList.toggle("active-time-format", fmt === "24h");
-    if ($("btn-format-12h")) $("btn-format-12h").classList.toggle("active-time-format", fmt === "12h");
-    renderSchedule();
-}
-
-async function loadSchedule(force = false) {
-    const container = $("schedule-container");
-    if (!container) return;
-
-    if (!scheduleData || force) {
-        try {
-            const path = CONFIG.SCHEDULE_PATH || "schedule.json";
-            const res = await fetch(path + (force ? `?t=${Date.now()}` : ""));
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            scheduleData = await res.json();
-        } catch (err) {
-            console.error("Error loading schedule:", err);
-            if (force) showToast("Failed to reload schedule: " + err.message, "error");
-        }
-    }
-
-    if (scheduleData) {
-        populateScheduleGameFilter();
-        renderSchedule();
-        if (force) showToast("Schedule refreshed.", "success");
-    } else {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon"><i class="fa fa-exclamation-triangle"></i></div>
-                <p>Unable to load schedule data. Please check connection and try again.</p>
-                <button class="btn btn-secondary btn-sm" onclick="loadSchedule(true)" style="margin-top: 0.75rem;"><i class="fa fa-sync-alt"></i> Retry</button>
-            </div>
-        `;
-    }
-}
-
-function populateScheduleGameFilter() {
-    const select = $("schedule-filter-game");
-    if (!select || !scheduleData?.items) return;
-    const currentVal = select.value;
-    const games = Array.from(new Set(
-        scheduleData.items
-            .filter(i => i.type === "run" && i.game)
-            .map(i => i.game)
-    )).sort();
-
-    select.innerHTML = '<option value="all">All Games</option>' + games.map(g => `<option value="${escapeHTML(g)}">${escapeHTML(g)}</option>`).join("");
-    if (games.includes(currentVal)) select.value = currentVal;
-}
-
-function filterSchedule() {
-    renderSchedule();
-}
-
-function renderSchedule() {
-    const container = $("schedule-container");
-    const statsEl = $("schedule-stats");
-    if (!container || !scheduleData?.items) return;
-
-    if ($("btn-format-24h")) $("btn-format-24h").classList.toggle("active-time-format", scheduleTimeFormat === "24h");
-    if ($("btn-format-12h")) $("btn-format-12h").classList.toggle("active-time-format", scheduleTimeFormat === "12h");
-
-    const search = $("schedule-search")?.value.toLowerCase().trim() || "";
-    const gameFilter = $("schedule-filter-game")?.value || "all";
-
-    const allRuns = scheduleData.items.filter(i => i.type === "run");
-    const uniqueRunners = new Set();
-    allRuns.forEach(r => (r.players || []).forEach(p => uniqueRunners.add(p)));
-
-    let totalRunSeconds = 0;
-    allRuns.forEach(r => {
-        totalRunSeconds += parseTimeToSeconds(r.estimate);
-    });
-    const totalHours = Math.floor(totalRunSeconds / 3600);
-    const totalMins = Math.floor((totalRunSeconds % 3600) / 60);
-
-    if (statsEl) {
-        statsEl.innerHTML = `
-            <span><i class="fa fa-gamepad"></i> <strong>${allRuns.length}</strong> Runs</span>
-            <span><i class="fa fa-users"></i> <strong>${uniqueRunners.size}</strong> Runners</span>
-            <span><i class="fa fa-globe"></i> Timezone: <strong>${escapeHTML(selectedTimezone.replace(/_/g, " "))}</strong></span>
-        `;
-    }
-
-    const filteredItems = scheduleData.items.filter(item => {
-        if (item.type === "break" || item.type === "end") {
-            return !search && gameFilter === "all";
-        }
-        if (gameFilter !== "all" && item.game !== gameFilter) return false;
-        if (!search) return true;
-
-        const g = (item.game || "").toLowerCase();
-        const cat = (item.category || "").toLowerCase();
-        const plat = (item.platform || "").toLowerCase();
-        const players = (item.players || []).join(" ").toLowerCase();
-
-        return g.includes(search) || cat.includes(search) || plat.includes(search) || players.includes(search);
-    });
-
-    if (!filteredItems.length) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon"><i class="fa fa-filter"></i></div>
-                <p>No scheduled runs match your filter criteria.</p>
-                <button class="btn btn-secondary btn-sm" onclick="$('schedule-search').value=''; $('schedule-filter-game').value='all'; filterSchedule();" style="margin-top: 0.75rem;">Clear Filters</button>
-            </div>
-        `;
-        return;
-    }
-
-    const dayGroups = new Map();
-    filteredItems.forEach(item => {
-        const itemDate = new Date(item.scheduled_time);
-        const dayKey = utcDateToTzSlot(itemDate, selectedTimezone).split("T")[0];
-        if (!dayGroups.has(dayKey)) dayGroups.set(dayKey, []);
-        dayGroups.get(dayKey).push({ ...item, dateObj: itemDate });
-    });
-
-    let html = "";
-    dayGroups.forEach((items, dayKey) => {
-        const [y, m, d] = dayKey.split("-").map(Number);
-        const dayDate = new Date(y, m - 1, d);
-        const dayTitle = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(dayDate);
-
-        const dayRuns = items.filter(i => i.type === "run");
-        let dayRunSeconds = 0;
-        dayRuns.forEach(r => { dayRunSeconds += parseTimeToSeconds(r.estimate); });
-        const dayHours = Math.floor(dayRunSeconds / 3600), dayMins = Math.floor((dayRunSeconds % 3600) / 60);
-
-        html += `
-            <div class="schedule-day-card">
-                <div class="schedule-day-header">
-                    <div class="schedule-day-title">
-                        <i class="fa fa-calendar-day"></i> <span>${escapeHTML(dayTitle)}</span>
-                    </div>
-                    <div class="schedule-day-meta">
-                        <span><i class="fa fa-gamepad"></i> ${dayRuns.length} Runs</span>
-                        <span><i class="fa fa-clock"></i> ${dayHours}h ${dayMins}m</span>
-                    </div>
-                </div>
-
-                <div class="all-submissions-table-wrap schedule-table-wrap">
-                    <table class="all-submissions-table schedule-table">
-                        <thead>
-                            <tr>
-                                <th class="col-schedule-time">Time</th>
-                                <th class="col-game">Game</th>
-                                <th class="col-schedule-runners">Player(s)</th>
-                                <th class="col-category">Category</th>
-                                <th class="col-estimate">Estimate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-        `;
-
-        items.forEach(item => {
-            const time24 = new Intl.DateTimeFormat("en-GB", { timeZone: selectedTimezone, hour: "2-digit", minute: "2-digit", hour12: false }).format(item.dateObj);
-            const time12 = new Intl.DateTimeFormat("en-US", { timeZone: selectedTimezone, hour: "numeric", minute: "2-digit", hour12: true }).format(item.dateObj);
-
-            const primaryTime = scheduleTimeFormat === "12h" ? time12 : time24;
-            const secondaryTime = scheduleTimeFormat === "12h" ? time24 : time12;
-
-            if (item.type === "break") {
-                html += `
-                    <tr class="schedule-special-row schedule-break-row">
-                        <td class="col-schedule-time">
-                            <div class="schedule-time-primary">${primaryTime}</div>
-                            <div class="schedule-time-secondary">${secondaryTime}</div>
-                        </td>
-                        <td colspan="5" class="schedule-special-cell break">
-                            <div class="schedule-special-inner">
-                                <i class="fa fa-bed"></i>
-                                <span><strong>Intermission / Break</strong> - End of Broadcast</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            if (item.type === "end") {
-                html += `
-                    <tr class="schedule-special-row schedule-end-row">
-                        <td class="col-schedule-time">
-                            <div class="schedule-time-primary">${primaryTime}</div>
-                            <div class="schedule-time-secondary">${secondaryTime}</div>
-                        </td>
-                        <td colspan="5" class="schedule-special-cell end">
-                            <div class="schedule-special-inner">
-                                <i class="fa fa-flag-checkered"></i>
-                                <span><strong>Marathon Finale</strong> - Wrap-up &amp; Closing Ceremony</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            const playersHtml = (item.players || []).map(p => `
-                <span class="schedule-runner-pill"><i class="fa fa-user"></i> ${escapeHTML(p)}</span>
-            `).join("");
-
-            html += `
-                <tr class="schedule-run-row">
-                    <td class="col-schedule-time">
-                        <div class="schedule-time-primary">${primaryTime}</div>
-                        <div class="schedule-time-secondary">${secondaryTime}</div>
-                    </td>
-                    <td class="col-game">
-                        <span class="schedule-game-title">${escapeHTML(item.game)}</span>
-                        <span class="platform-badge">${escapeHTML(item.platform || "-")}</span>
-                    </td>
-                    <td class="col-schedule-runners">
-                        <div class="schedule-runners-list">${playersHtml}</div>
-                    </td>
-                    <td class="col-category">
-                        <span class="schedule-category-text">${escapeHTML(item.category || "Any%")}</span>
-                    </td>
-                    <td class="col-estimate">
-                        <div class="estimate-cell-wrap">
-                            <span class="estimate-tag">${escapeHTML(item.estimate || "-")}</span>
-                            ${item.setup_time ? `
-                                <div class="setup-buffer-badge" title="Setup time before next run: ${escapeHTML(item.setup_time)}">
-                                    <i class="fa fa-wrench"></i> +${escapeHTML(item.setup_time)}
-                                </div>
-                            ` : ""}
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-
-        html += `
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-}
-
-// UI Navigation, Modals & Toast
+/// UI Navigation, Modals & Toast
 function switchTab(tabId) {
     $$(".tab-button, .tab-btn").forEach(b => {
         const matches = Boolean(b.getAttribute("onclick")?.includes(`'${tabId}'`));
@@ -1637,8 +1387,7 @@ function switchTab(tabId) {
     $$(".tab-pane").forEach(p => p.classList.toggle("active", p.id === `tab-${tabId}`));
     window.location.hash = tabId;
 
-    if (tabId === "schedule") loadSchedule();
-    else if (tabId === "admin") loadAdminSubmissions();
+    if (tabId === "admin") loadAdminSubmissions();
     else if (tabId === "all-runs") loadAllSubmissions();
     else if (tabId === "my-runs") loadMySubmissions();
 }

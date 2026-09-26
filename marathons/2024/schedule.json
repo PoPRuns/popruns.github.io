@@ -1,0 +1,236 @@
+{
+  "title": "PoPRuns 9: \"Not a Setup but a Placebo\"",
+  "start_date": "2024-10-18T16:00:00Z",
+  "end_date": "2024-10-20T20:41:00Z",
+  "timezone": "UTC",
+  "items": [
+    {
+      "day": 1,
+      "scheduled_time": "2024-10-18T16:00:00Z",
+      "game": "PoP: The Lost Crown",
+      "platform": "PC",
+      "players": [
+        "buanjautista"
+      ],
+      "category": "All Bosses (No Restrictions, Old Patch)",
+      "estimate": "1:25:00",
+      "setup_time": "0:00:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2024-10-18T17:25:00Z",
+      "game": "PoP: Arabian Nights",
+      "platform": "Dreamcast",
+      "players": [
+        "topardex"
+      ],
+      "category": "Any%",
+      "estimate": "0:50:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2024-10-18T18:20:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "SMS",
+      "players": [
+        "petaQ"
+      ],
+      "category": "Any%",
+      "estimate": "0:35:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2024-10-18T19:00:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "SylvieNukie"
+      ],
+      "category": "Any% (No Major Glitches)",
+      "estimate": "3:50:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2024-10-18T22:55:00Z",
+      "type": "break"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T09:30:00Z",
+      "game": "PoP: The Lost Crown",
+      "platform": "PC",
+      "players": [
+        "KarimFauzy"
+      ],
+      "category": "Mask of Darkness (Restricted, Rookie)",
+      "estimate": "0:25:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T10:00:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "PC",
+      "players": [
+        "GMP",
+        "DevilSnake74"
+      ],
+      "category": "Any% (No Major Glitches)",
+      "estimate": "2:00:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T12:05:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Smathlax",
+        "Jaka"
+      ],
+      "category": "100% (No Major Glitches)",
+      "estimate": "2:05:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T14:15:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "7eraser7",
+        "higlak"
+      ],
+      "category": "The Prince of Prince",
+      "estimate": "1:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T15:50:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "makapoh",
+        "rl_evader"
+      ],
+      "category": "All Collectibles (Zipless)",
+      "estimate": "2:15:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T18:10:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "Smathlax"
+      ],
+      "category": "Any% (New Game +)",
+      "estimate": "1:20:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T19:35:00Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "PC",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "Any% (No Energy Glitches)",
+      "estimate": "1:35:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2024-10-19T21:15:00Z",
+      "type": "break"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2024-10-20T10:00:00Z",
+      "game": "PoP: The Fallen King",
+      "platform": "NDS",
+      "players": [
+        "Smathlax",
+        "GMP"
+      ],
+      "category": "Any%",
+      "estimate": "3:25:00",
+      "setup_time": "0:00:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2024-10-20T13:25:00Z",
+      "game": "PoP: Sands Trilogy",
+      "platform": "PC",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "Completionist (Standard)",
+      "estimate": "3:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2024-10-20T17:00:00Z",
+      "game": "PoP 3D",
+      "platform": "PC",
+      "players": [
+        "topardex"
+      ],
+      "category": "Any%",
+      "estimate": "1:50:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2024-10-20T18:55:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "J2ME",
+      "players": [
+        "funkyelephant"
+      ],
+      "category": "Any%",
+      "estimate": "0:20:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2024-10-20T19:20:00Z",
+      "game": "PoP: The Lost Crown",
+      "platform": "PC",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "Any% (Restricted)",
+      "estimate": "1:11:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2024-10-20T20:41:00Z",
+      "type": "end"
+    }
+  ]
+}

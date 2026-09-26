@@ -5,7 +5,6 @@ const CONFIG = {
     SUPABASE_URL: window.__SUPABASE_URL__ || "https://czvxroylxentxgqqmogk.supabase.co",
     SUPABASE_ANON_KEY: window.__SUPABASE_ANON_KEY__ || "sb_publishable_OkA_87q03LC-HHPtWAoOHA_bSViMkwC",
     DEFAULT_EVENT_SLUG: "popruns-2026",
-    SCHEDULE_PATH: "schedule.json",
 
     // Mainline Prince of Persia Games (Rendered as interactive visual grid)
     MAINLINE_GAMES: [

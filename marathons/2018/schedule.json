@@ -1,0 +1,251 @@
+{
+  "title": "PoPRuns 3: \"The Year of Segmented\"",
+  "start_date": "2018-11-09T18:00:00Z",
+  "end_date": "2018-11-11T18:40:00Z",
+  "timezone": "UTC",
+  "items": [
+    {
+      "day": 1,
+      "scheduled_time": "2018-11-09T18:00:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "Any% (segmented)",
+      "estimate": "0:37:00",
+      "setup_time": "0:08:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2018-11-09T18:45:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "PC",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "All Powers NMG",
+      "estimate": "2:10:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2018-11-09T21:00:00Z",
+      "game": "Arabian Nights",
+      "platform": "PC",
+      "players": [
+        "Goost"
+      ],
+      "category": "Any% with dialogue",
+      "estimate": "0:40:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2018-11-09T21:45:00Z",
+      "game": "PoP 3D",
+      "platform": "PC",
+      "players": [
+        "epicdudeguy"
+      ],
+      "category": "Any%",
+      "estimate": "1:45:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2018-11-09T23:35:00Z",
+      "game": "Intermission / Break",
+      "platform": "",
+      "players": [],
+      "category": "End of Day 1 Broadcast",
+      "estimate": "11:25:00",
+      "setup_time": "0:00:00",
+      "type": "break"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T11:00:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "tocaloni1"
+      ],
+      "category": "True Ending NMG",
+      "estimate": "3:00:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T14:05:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "epicdudeguy"
+      ],
+      "category": "Epilogue Any%",
+      "estimate": "0:45:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T14:55:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Asco",
+        "GrizzzzBear",
+        "7eraser7",
+        "tocaloni1",
+        "epicdudeguy",
+        "Vynneve"
+      ],
+      "category": "Any% Zipless (segmented)",
+      "estimate": "1:00:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T16:00:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "PC",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "Any%",
+      "estimate": "1:10:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T17:15:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Samabam",
+        "tocaloni1",
+        "7eraser7",
+        "epicdudeguy"
+      ],
+      "category": "Any% Hard Mode (Race)",
+      "estimate": "2:15:00",
+      "setup_time": "0:00:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T19:30:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "Mattmatt",
+        "Vynneve",
+        "catalyst"
+      ],
+      "category": "Any% (Race)",
+      "estimate": "0:25:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-10T20:00:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "X360",
+      "players": [
+        "vpop"
+      ],
+      "category": "Any% Glitchless",
+      "estimate": "4:15:54",
+      "setup_time": "0:04:06",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2018-11-11T00:20:00Z",
+      "game": "Intermission / Break",
+      "platform": "",
+      "players": [],
+      "category": "End of Day 2 Broadcast",
+      "estimate": "11:40:00",
+      "setup_time": "0:00:00",
+      "type": "break"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2018-11-11T12:00:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "GBA",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "Any%",
+      "estimate": "1:13:00",
+      "setup_time": "0:07:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2018-11-11T13:20:00Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "PC",
+      "players": [
+        "Samabam"
+      ],
+      "category": "Any% (segmented)",
+      "estimate": "1:10:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2018-11-11T14:35:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "Elipsis"
+      ],
+      "category": "Any% (MS-DOS)",
+      "estimate": "0:23:00",
+      "setup_time": "0:07:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2018-11-11T15:05:00Z",
+      "game": "Multi-PoP Runs",
+      "platform": "PC",
+      "players": [
+        "7eraser7 (T2T)",
+        "Samabam (WW)",
+        "Vynneve (T2T)",
+        "Grizzzzbear (WW)",
+        "tocaloni1 (SoT)",
+        "epicdudeguy (SoT)"
+      ],
+      "category": "Sands Trilogy - Any% Zipless (Relay Race)",
+      "estimate": "3:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2018-11-11T18:40:00Z",
+      "game": "Marathon Finale",
+      "platform": "",
+      "players": [],
+      "category": "Wrap-up & Closing Ceremony",
+      "estimate": "0:01:00",
+      "setup_time": "0:00:00",
+      "type": "end"
+    }
+  ]
+}

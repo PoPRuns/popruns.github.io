@@ -1,0 +1,113 @@
+{
+  "title": "PoPRuns 7: \"PonPRus\"",
+  "start_date": "2022-11-19T09:00:00Z",
+  "end_date": "2022-11-20T04:55:00Z",
+  "timezone": "UTC",
+  "items": [
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-19T09:00:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "GMP"
+      ],
+      "category": "All Artwork (Standard)",
+      "estimate": "1:05:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-19T10:15:00Z",
+      "game": "Multi-PoP Runs",
+      "platform": "PC",
+      "players": [
+        "Cadarev",
+        "Smathlax",
+        "Samabam",
+        "Vynneve",
+        "GMP",
+        "velcheran"
+      ],
+      "category": "Anthology",
+      "estimate": "8:55:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-19T19:20:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Curly_Jefferson"
+      ],
+      "category": "No Major Glitches x2 SPEED",
+      "estimate": "1:20:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-19T20:50:00Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "PSP",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "Any%",
+      "estimate": "2:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-19T23:25:00Z",
+      "game": "The Princes of Persia (Tabletop)",
+      "platform": "Tabletop",
+      "players": [
+        "Samabam",
+        "Curly_Jefferson",
+        "GrizzzzBear",
+        "Karlgamer",
+        "velcheran"
+      ],
+      "category": "Pathfinder 1st edition Roleplaying game",
+      "estimate": "4:00:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-20T03:30:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "SNES",
+      "players": [
+        "shauingofficial"
+      ],
+      "category": "Any% (No Warp)",
+      "estimate": "0:50:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-20T04:25:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "uvq3tsa"
+      ],
+      "category": "Any% Pacifist",
+      "estimate": "0:25:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2022-11-20T04:55:00Z",
+      "type": "end"
+    }
+  ]
+}

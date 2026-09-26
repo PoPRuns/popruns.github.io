@@ -1,0 +1,312 @@
+{
+  "title": "PoPRuns 6: \"Faster Than the Remaster\"",
+  "start_date": "2021-11-19T18:00:00Z",
+  "end_date": "2021-11-21T19:45:00Z",
+  "timezone": "UTC",
+  "items": [
+    {
+      "day": 1,
+      "scheduled_time": "2021-11-19T18:00:00Z",
+      "game": "PoP 3D",
+      "platform": "PC",
+      "players": [
+        "Cadarev"
+      ],
+      "category": "All LEPs",
+      "estimate": "2:15:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2021-11-19T20:20:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "GrizzzzBear"
+      ],
+      "category": "Any% Zipless",
+      "estimate": "0:35:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2021-11-19T21:00:00Z",
+      "game": "PoP 2: The Shadow and the Flame",
+      "platform": "PC",
+      "players": [
+        "eien86"
+      ],
+      "category": "Any% (TAS)",
+      "estimate": "0:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2021-11-19T21:35:00Z",
+      "game": "Multi-PoP Runs",
+      "platform": "PC",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "Sands Trilogy - Any% Standard",
+      "estimate": "2:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2021-11-20T00:10:00Z",
+      "type": "break"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T09:00:00Z",
+      "game": "PoP: The Fallen King",
+      "platform": "NDS",
+      "players": [
+        "Smathlax"
+      ],
+      "category": "Any% - Emulator",
+      "estimate": "4:28:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T13:33:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "GMP",
+        "Heyieiro"
+      ],
+      "category": "Any% NMG (Segmented)",
+      "estimate": "1:40:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T15:18:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PS3",
+      "players": [
+        "DevilSnake74"
+      ],
+      "category": "Epilogue - Any%",
+      "estimate": "0:50:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T16:13:00Z",
+      "game": "PoP: Arabian Nights",
+      "platform": "Dreamcast",
+      "players": [
+        "toca"
+      ],
+      "category": "Any%",
+      "estimate": "0:55:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T17:13:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "velcheran"
+      ],
+      "category": "Any% (Guitar Hero)",
+      "estimate": "0:35:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T17:53:00Z",
+      "game": "PoP: Classic",
+      "platform": "XOne",
+      "players": [
+        "oatts"
+      ],
+      "category": "Any%",
+      "estimate": "0:25:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T18:23:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Curly_Jefferson",
+        "DevilSnake74"
+      ],
+      "category": "Last Sword / No Dagger NMG",
+      "estimate": "1:50:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T20:18:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "PC",
+      "players": [
+        "eien86"
+      ],
+      "category": "Any% (TAS)",
+      "estimate": "0:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T20:53:00Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "PC",
+      "players": [
+        "Samabam"
+      ],
+      "category": "Any% (monkaSTEER)",
+      "estimate": "1:45:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-20T22:43:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "GrizzzzBear"
+      ],
+      "category": "Any % Zipless",
+      "estimate": "1:45:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2021-11-21T00:33:00Z",
+      "type": "break"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T10:00:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Jaka"
+      ],
+      "category": "All Collectibles NMG",
+      "estimate": "1:55:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T12:00:00Z",
+      "game": "PoP: Shadow and the Flame Remake",
+      "platform": "Android",
+      "players": [
+        "GMP"
+      ],
+      "category": "Any% - NG+ (Segmented)",
+      "estimate": "0:25:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T12:30:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "epicdudeguy"
+      ],
+      "category": "Any% RBO",
+      "estimate": "1:45:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T14:20:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "Smathlax"
+      ],
+      "category": "Hacked%",
+      "estimate": "1:40:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T16:05:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "PC",
+      "players": [
+        "DevilSnake74"
+      ],
+      "category": "Any% NMG",
+      "estimate": "2:10:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T18:20:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "J2ME",
+      "players": [
+        "funkyelephant"
+      ],
+      "category": "Any%",
+      "estimate": "0:20:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T18:45:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "Smathlax"
+      ],
+      "category": "Windmills IL (Blindfolded)",
+      "estimate": "0:20:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T19:10:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "velcheran",
+        "uvq3tsa"
+      ],
+      "category": "Bingo",
+      "estimate": "0:30:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2021-11-21T19:45:00Z",
+      "type": "end"
+    }
+  ]
+}

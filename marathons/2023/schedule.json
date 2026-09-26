@@ -1,0 +1,239 @@
+{
+  "title": "PoPRuns 8: \"Neutral Edition\"",
+  "start_date": "2023-11-10T17:00:00Z",
+  "end_date": "2023-11-12T18:40:00Z",
+  "timezone": "UTC",
+  "items": [
+    {
+      "day": 1,
+      "scheduled_time": "2023-11-10T17:00:00Z",
+      "game": "PoP 2: The Shadow and the Flame",
+      "platform": "MS-DOS",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "Any% (Standard)",
+      "estimate": "0:20:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2023-11-10T17:30:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "GMP"
+      ],
+      "category": "True Ending (No Major Glitches)",
+      "estimate": "2:15:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2023-11-10T19:50:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Jaka"
+      ],
+      "category": "Any% (Zipless)",
+      "estimate": "1:15:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2023-11-10T21:15:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "velcheran"
+      ],
+      "category": "100% (Standard)",
+      "estimate": "0:40:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2023-11-10T22:00:00Z",
+      "type": "break"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T11:00:00Z",
+      "game": "The Princes of Persia (Tabletop)",
+      "platform": "Tabletop",
+      "players": [
+        "velcheran",
+        "Smathlax",
+        "toca",
+        "Samabam",
+        "higlak",
+        "Karlgamer"
+      ],
+      "category": "Pathfinder 2",
+      "estimate": "4:00:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T15:05:00Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "GMP"
+      ],
+      "category": "Any% (Hacked)",
+      "estimate": "1:35:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T16:45:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "GBA",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "Any% (No Zombie Glitch)",
+      "estimate": "0:50:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T17:45:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "True Ending (Standard)",
+      "estimate": "0:55:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T18:45:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "J2ME",
+      "players": [
+        "funkyelephant"
+      ],
+      "category": "Any%",
+      "estimate": "0:20:00",
+      "setup_time": "0:05:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T19:10:00Z",
+      "game": "PoP: Arabian Nights",
+      "platform": "Dreamcast",
+      "players": [
+        "Samabam",
+        "toca"
+      ],
+      "category": "Any% - 2 Player 1 Controller",
+      "estimate": "1:15:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2023-11-11T20:35:00Z",
+      "type": "break"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T11:30:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "catalystz"
+      ],
+      "category": "Any% (Standard)",
+      "estimate": "0:25:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T12:05:00Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "PC",
+      "players": [
+        "Samabam"
+      ],
+      "category": "Any% - Segmented",
+      "estimate": "0:55:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T13:10:00Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "eien86"
+      ],
+      "category": "Any% (Standard) - TAS",
+      "estimate": "0:30:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T13:50:00Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "PC",
+      "players": [
+        "Vynneve",
+        "7eraser7"
+      ],
+      "category": "All Powers (No Major Glitches)",
+      "estimate": "2:10:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T16:10:00Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "epicdudeguy"
+      ],
+      "category": "Any% (Zipless)",
+      "estimate": "0:30:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T16:50:00Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Curly_Jefferson",
+        "Jaka"
+      ],
+      "category": "Any% (No Major Glitches)",
+      "estimate": "1:40:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2023-11-12T18:40:00Z",
+      "type": "end"
+    }
+  ]
+}

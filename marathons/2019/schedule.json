@@ -1,0 +1,260 @@
+{
+  "title": "PoPRuns 4: \"Cheers, mate!\"",
+  "start_date": "2019-11-15T18:00:28Z",
+  "end_date": "2019-11-17T20:41:28Z",
+  "timezone": "UTC",
+  "items": [
+    {
+      "day": 1,
+      "scheduled_time": "2019-11-15T18:00:28Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "GCN",
+      "players": [
+        "Vynneve"
+      ],
+      "category": "Any% NMG (TAS)",
+      "estimate": "1:50:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2019-11-15T20:00:28Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PS3",
+      "players": [
+        "Emeraldaly"
+      ],
+      "category": "Epilogue Any%",
+      "estimate": "0:48:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2019-11-15T20:58:28Z",
+      "game": "PoP: The Fallen King",
+      "platform": "NDS",
+      "players": [
+        "Smathlax"
+      ],
+      "category": "Any%",
+      "estimate": "3:45:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2019-11-16T00:53:28Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "PC",
+      "players": [
+        "Samabam",
+        "Vynneve"
+      ],
+      "category": "any% NEG race",
+      "estimate": "1:40:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2019-11-16T02:43:28Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "GBA",
+      "players": [
+        "7eraser7"
+      ],
+      "category": "Any%",
+      "estimate": "1:03:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 1,
+      "scheduled_time": "2019-11-16T03:56:28Z",
+      "type": "break"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-16T13:30:28Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "epicdudeguy"
+      ],
+      "category": "True Ending Zipless",
+      "estimate": "1:30:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-16T15:10:28Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "Smathlax",
+        "Samabam",
+        "Curly_Jefferson",
+        "Jaka"
+      ],
+      "category": "Any% Hard Mode (NMG Race)",
+      "estimate": "2:20:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-16T17:40:28Z",
+      "game": "Dungeons & Dragons 5e",
+      "platform": "Tabletop",
+      "players": [
+        "Smathlax",
+        "Samabam",
+        "Curly_Jefferson",
+        "GrizzzzBear",
+        "hinafu",
+        "epicdudeguy",
+        "Karlgamer"
+      ],
+      "category": "Any%",
+      "estimate": "4:00:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-16T21:50:28Z",
+      "game": "PoP: The Two Thrones",
+      "platform": "PC",
+      "players": [
+        "Vynneve",
+        "catalystz",
+        "Criban"
+      ],
+      "category": "Any% Normal (Race)",
+      "estimate": "1:10:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-16T23:10:28Z",
+      "game": "Battles of PoP",
+      "platform": "NDS",
+      "players": [
+        "GrizzzzBear"
+      ],
+      "category": "Skirmish",
+      "estimate": "0:40:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-17T00:00:28Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "Samabam"
+      ],
+      "category": "Story Journey",
+      "estimate": "3:30:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 2,
+      "scheduled_time": "2019-11-17T03:40:28Z",
+      "type": "break"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T09:30:28Z",
+      "game": "PoP: The Forgotten Sands",
+      "platform": "Wii",
+      "players": [
+        "toca"
+      ],
+      "category": "Any%",
+      "estimate": "3:30:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T13:10:28Z",
+      "game": "Prince of Persia (1989)",
+      "platform": "MS-DOS",
+      "players": [
+        "Karlgamer"
+      ],
+      "category": "any%",
+      "estimate": "0:21:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T13:41:28Z",
+      "game": "PoP 3D / Arabian Nights",
+      "platform": "PC / Dreamcast",
+      "players": [
+        "Cadarev",
+        "Samabam"
+      ],
+      "category": "Any%",
+      "estimate": "2:00:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T15:51:28Z",
+      "game": "Prince of Persia (2008)",
+      "platform": "PC",
+      "players": [
+        "Smathlax"
+      ],
+      "category": "Any%",
+      "estimate": "2:35:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T18:36:28Z",
+      "game": "PoP: The Sands of Time",
+      "platform": "PC",
+      "players": [
+        "toca",
+        "epicdudeguy"
+      ],
+      "category": "Any% Zipless (Relay)",
+      "estimate": "1:20:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T20:06:28Z",
+      "game": "PoP: Warrior Within",
+      "platform": "PC",
+      "players": [
+        "Vynneve",
+        "catalystz",
+        "Mattmatt"
+      ],
+      "category": "Any% Normal",
+      "estimate": "0:25:00",
+      "setup_time": "0:10:00",
+      "type": "run"
+    },
+    {
+      "day": 3,
+      "scheduled_time": "2019-11-17T20:41:28Z",
+      "type": "end"
+    }
+  ]
+}

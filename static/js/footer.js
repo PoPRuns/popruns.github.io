@@ -157,9 +157,9 @@
                         <i class="fa fa-home"></i>
                         PoPRuns Home
                     </a>
-                    <a href="${siteRoot}submissions/">
-                        <i class="fa fa-flag-checkered"></i>
-                        Marathon Submissions
+                    <a href="${siteRoot}marathons/">
+                        <i class="fa fa-calendar-alt"></i>
+                        Marathons
                     </a>
                     <a href="${siteRoot}tool-assisted-runs/">
                         <i class="fa fa-bolt"></i>

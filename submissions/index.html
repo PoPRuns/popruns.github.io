@@ -33,6 +33,9 @@
 
     <!-- Header Navigation -->
     <popruns-navbar tagline="Marathon Submissions">
+        <!-- Marathons Dropdown -->
+        <div class="nav-dropdown" slot="left"></div>
+
         <!-- Auth Container (Populated by app.js) -->
         <div id="auth-section">
             <button id="btn-login-discord" class="btn btn-discord btn-sm" onclick="loginWithDiscord()">
@@ -63,23 +66,32 @@
         </div>
 
         <!-- Marathon Hero Banner -->
-        <section class="marathon-hero">
-            <h1 id="hero-title" class="hero-title">Prince of Persia Marathon 2026</h1>
-            <p id="hero-desc" class="hero-desc">Also known as PoPRuns 11</p>
-            <div class="hero-meta">
-                <span id="meta-status" class="meta-pill open"><i class="fa fa-clock"></i> Submissions Open</span>
-                <span id="meta-dates" class="meta-pill"><i class="fa fa-calendar-alt"></i> Dates Loading...</span>
-                <span id="meta-countdown" class="meta-pill"><i class="fa fa-hourglass-half"></i> Loading deadline...</span>
-                <div id="hero-social-links" class="hero-social-pills" style="display: none;"></div>
+        <section class="marathon-hero collapsed" id="marathon-hero">
+            <div class="hero-header-row" onclick="toggleHeroSection()">
+                <div class="hero-header-main">
+                    <h1 id="hero-title" class="hero-title">Prince of Persia Marathon 2026</h1>
+                    <div class="hero-meta">
+                        <span id="meta-status" class="meta-pill open"><i class="fa fa-clock"></i> Submissions Open</span>
+                        <span id="meta-dates" class="meta-pill"><i class="fa fa-calendar-alt"></i> Dates Loading...</span>
+                        <span id="meta-countdown" class="meta-pill"><i class="fa fa-hourglass-half"></i> Loading deadline...</span>
+                        <div id="hero-social-links" class="hero-social-pills" style="display: none;"></div>
+                    </div>
+                </div>
+                <button type="button" id="hero-toggle-btn" class="hero-toggle-btn" onclick="event.stopPropagation(); toggleHeroSection();" title="Expand / Collapse event description" aria-expanded="false">
+                    <span class="hero-toggle-text">Description</span>
+                    <i class="fa fa-chevron-down hero-toggle-icon"></i>
+                </button>
+            </div>
+            <div id="hero-collapse-body" class="hero-collapse-body">
+                <div class="hero-body-inner">
+                    <p id="hero-desc" class="hero-desc">Also known as PoPRuns 11</p>
+                </div>
             </div>
         </section>
 
         <!-- Tab Navigation (Styled matching pop-tlc/save-analyzer) -->
         <div id="tab-buttons-container">
-            <button class="tab-button tab-button-selected active" onclick="switchTab('schedule')">
-                <span><i class="fa fa-calendar-days"></i> Schedule</span>
-            </button>
-            <button class="tab-button" onclick="switchTab('submit')">
+            <button class="tab-button tab-button-selected active" onclick="switchTab('submit')">
                 <span><i class="fa fa-paper-plane"></i> Submit a Run</span>
             </button>
             <button class="tab-button" onclick="switchTab('my-runs')">
@@ -96,52 +108,8 @@
             </button>
         </div>
 
-        <!-- Marathon Schedule -->
-        <section id="tab-schedule" class="tab-pane active">
-            <div class="content-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
-                    <h2 class="section-title" style="margin-bottom: 0;">
-                        <span><i class="fa fa-calendar-days" style="color: var(--gold-bright);"></i> Marathon Schedule</span>
-                    </h2>
-                    <div class="filter-toolbar">
-                        <input type="text" id="schedule-search" class="form-input" placeholder="Search runner, game, category..." oninput="filterSchedule()">
-                        <select id="schedule-filter-game" class="form-select" onchange="filterSchedule()">
-                            <option value="all">All Games</option>
-                        </select>
-                        <button class="btn btn-secondary btn-sm" onclick="loadSchedule(true)"><i class="fa fa-sync-alt"></i> Refresh</button>
-                    </div>
-                </div>
-
-                <div class="tz-banner" style="margin-bottom: 1.25rem;">
-                    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-                        <label for="schedule-tz-select" style="font-weight: 700; color: var(--gold-bright); display: flex; align-items: center; gap: 0.4rem;">
-                            <i class="fa fa-globe"></i> Timezone:
-                        </label>
-                        <select id="schedule-tz-select" class="form-select" style="padding: 0.45rem 2.4rem 0.45rem 0.85rem; font-size: 0.88rem; width: auto; min-width: 260px;" onchange="handleScheduleTimezoneChange(event)">
-                        </select>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="resetScheduleToDetectedTimezone()" title="Reset to browser auto-detected timezone" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
-                            <i class="fa fa-crosshairs"></i> Auto-Detect
-                        </button>
-                        <div class="time-format-toggle" style="display: flex; gap: 0.25rem; margin-left: 0.5rem;">
-                            <button type="button" id="btn-format-24h" class="btn btn-sm btn-secondary active-time-format" onclick="setScheduleTimeFormat('24h')">24h</button>
-                            <button type="button" id="btn-format-12h" class="btn btn-sm btn-secondary" onclick="setScheduleTimeFormat('12h')">12h</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="schedule-stats" style="display: flex; gap: 1.25rem; margin-bottom: 1.25rem; font-size: 0.92rem; color: var(--gold-bright); flex-wrap: wrap;"></div>
-
-                <div id="schedule-container">
-                    <div class="empty-state">
-                        <div class="empty-state-icon"><i class="fa fa-spinner fa-spin"></i></div>
-                        <p>Loading marathon schedule...</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Submit Run -->
-        <section id="tab-submit" class="tab-pane">
+        <section id="tab-submit" class="tab-pane active">
             <div class="content-card">
                 <h2 class="section-title">Submit a Speedrun</h2>
                 
