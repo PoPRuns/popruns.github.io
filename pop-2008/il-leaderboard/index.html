@@ -98,13 +98,53 @@
         #leaderboard-table a:hover {
             filter: drop-shadow(0px 0px 5px aqua);
         }
+
+        /* Custom Scrollbars matching PoPRuns / PoP 2008 theme */
+        html, * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(3, 10, 16, 0.35);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(211, 156, 10, 0.4);
+            border-radius: 4px;
+            border: 1px solid rgba(211, 156, 10, 0.2);
+            transition: background 0.2s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(252, 208, 120, 0.7);
+            border-color: rgba(252, 208, 120, 0.4);
+            box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+        }
+
+        ::-webkit-scrollbar-thumb:active {
+            background: #fcd078;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
     </style>
     <script src="../../static/js/navbar.js" defer></script>
 </head>
 
 <body>
     <popruns-navbar tagline="PoP 2008 IL Leaderboard">
-        <a href="../" class="nav-link" title="PoP 2008 Hub">PoP 2008</a>
+        <a href="../" class="nav-link" title="PoP 2008 Hub">
+            <i class="fa fa-arrow-left"></i>
+            <span class="nav-link-text">PoP 2008</span>
+        </a>
     </popruns-navbar>
     <div id="loader">Loading...</div>
     <div class="main-container">

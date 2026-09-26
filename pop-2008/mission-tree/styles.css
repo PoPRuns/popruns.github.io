@@ -1,4 +1,5 @@
 :root {
+    --navbar-height: 65px;
     --bg-base: #090d16;
     --bg-panel: #11182755;
     --bg-node: #1e293baa;
@@ -21,18 +22,25 @@
     padding: 0;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+html {
+    min-height: 100%;
     background: #000000 url('../../static/images/pop_2008_map_bg.png') no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--text-main);
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    background: transparent;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 header {
@@ -98,7 +106,9 @@ input[type="text"]:focus {
 .app-container {
     display: grid;
     grid-template-columns: 1fr 440px;
-    flex: 1;
+    height: calc(100vh - var(--navbar-height));
+    height: calc(100dvh - var(--navbar-height));
+    flex: 0 0 auto;
     overflow: hidden;
 }
 
@@ -336,4 +346,41 @@ aside {
     overflow-x: auto;
     color: var(--text-muted);
     border: 1px solid var(--border-color);
+}
+
+/* Custom Scrollbars matching PoPRuns / PoP 2008 theme */
+html, * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(3, 10, 16, 0.35);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(211, 156, 10, 0.4);
+    border-radius: 4px;
+    border: 1px solid rgba(211, 156, 10, 0.2);
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(252, 208, 120, 0.7);
+    border-color: rgba(252, 208, 120, 0.4);
+    box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: #fcd078;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }

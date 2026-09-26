@@ -73,7 +73,7 @@
             </popruns-navbar>
 
             <main class="container">
-                <!-- Marathon Hero Section -->
+                <!-- Compact Marathon Hero Section -->
                 <header id="marathon-hero" class="marathon-hero">
                     <div class="hero-header-row">
                         <div class="hero-header-main">
@@ -81,71 +81,65 @@
                             <div class="hero-meta">
                                 <span class="meta-pill" id="meta-dates"><i class="fa fa-calendar-alt"></i> Loading dates...</span>
                                 <span class="meta-pill" id="meta-countdown"><i class="fa fa-clock"></i> Loading countdown...</span>
-                                <div class="hero-social-pills">
-                                    <a href="https://discord.com/invite/0Ss0agDWPoiSvr3E" target="_blank" rel="noopener noreferrer" class="social-pill discord" title="PoPRuns Discord Server">
-                                        <i class="fa-brands fa-discord"></i> Discord
-                                    </a>
-                                    <a href="https://youtube.com/@PoPRuns" target="_blank" rel="noopener noreferrer" class="social-pill youtube" title="PoPRuns YouTube Channel">
-                                        <i class="fa-brands fa-youtube"></i> YouTube
-                                    </a>
-                                    <a href="https://twitch.tv/PoPRuns" target="_blank" rel="noopener noreferrer" class="social-pill twitch" title="PoPRuns Twitch Channel">
-                                        <i class="fa-brands fa-twitch"></i> Twitch
-                                    </a>
-                                </div>
+                                <span class="meta-pill meta-stat-pill" id="stat-pill-runs" title="Total Scheduled Runs"><i class="fa fa-gamepad"></i> <strong id="stat-runs">0</strong> Runs</span>
+                                <span class="meta-pill meta-stat-pill" id="stat-pill-runners" title="Total Unique Runners"><i class="fa fa-users"></i> <strong id="stat-runners">0</strong> Runners</span>
                             </div>
                         </div>
-                        <div id="hero-cta-slot" class="hero-cta-slot"></div>
+                        <div class="hero-header-actions">
+                            <div class="hero-social-pills">
+                                <a href="https://discord.com/invite/0Ss0agDWPoiSvr3E" target="_blank" rel="noopener noreferrer" class="social-pill discord" title="PoPRuns Discord Server">
+                                    <i class="fa-brands fa-discord"></i> <span>Discord</span>
+                                </a>
+                                <a href="https://youtube.com/@PoPRuns" target="_blank" rel="noopener noreferrer" class="social-pill youtube" title="PoPRuns YouTube Channel">
+                                    <i class="fa-brands fa-youtube"></i> <span>YouTube</span>
+                                </a>
+                                <a href="https://twitch.tv/PoPRuns" target="_blank" rel="noopener noreferrer" class="social-pill twitch" title="PoPRuns Twitch Channel">
+                                    <i class="fa-brands fa-twitch"></i> <span>Twitch</span>
+                                </a>
+                            </div>
+                            <div id="hero-cta-slot" class="hero-cta-slot"></div>
+                        </div>
                     </div>
                 </header>
 
-                <!-- Tab Navigation -->
-                <div id="tab-buttons-container">
-                    <button class="tab-button tab-button-selected active" onclick="switchTab('schedule')">
-                        <span><i class="fa fa-calendar-days"></i> Schedule</span>
-                    </button>
-                </div>
-
-                <!-- Schedule Tab -->
+                <!-- Schedule Section with Streamlined Unified Controls Bar -->
                 <section id="tab-schedule" class="tab-pane active">
-                    <div class="content-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
-                            <h2 class="section-title" style="margin-bottom: 0;">
-                                <span><i class="fa fa-calendar-days" style="color: var(--gold-bright);"></i> Broadcast Schedule</span>
-                            </h2>
-                            <div class="filter-toolbar">
-                                <input type="text" id="schedule-search" class="form-input" placeholder="Search runner, game, category..." oninput="filterSchedule()">
-                                <select id="schedule-filter-game" class="form-select" onchange="filterSchedule()">
+                    <div class="schedule-controls-bar">
+                        <div class="controls-left">
+                            <div class="search-input-wrap">
+                                <i class="fa fa-search search-icon"></i>
+                                <input type="text" id="schedule-search" class="form-input search-input" placeholder="Search run, runner, category..." oninput="filterSchedule()">
+                            </div>
+                            <div class="select-input-wrap">
+                                <select id="schedule-filter-game" class="form-select filter-game-select" onchange="filterSchedule()">
                                     <option value="all">All Games</option>
                                 </select>
-                                <button class="btn btn-secondary btn-sm" onclick="loadSchedule(true)"><i class="fa fa-sync-alt"></i> Refresh</button>
                             </div>
                         </div>
 
-                        <!-- Timezone Banner -->
-                        <div class="tz-banner" style="margin-bottom: 1.25rem;">
-                            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-                                <label for="schedule-tz-select" style="font-weight: 700; color: var(--gold-bright); display: flex; align-items: center; gap: 0.4rem;">
-                                    <i class="fa fa-globe"></i> Timezone:
-                                </label>
-                                <select id="schedule-tz-select" class="form-select" style="padding: 0.45rem 2.4rem 0.45rem 0.85rem; font-size: 0.88rem; width: auto; min-width: 280px; max-width: 380px;" onchange="handleScheduleTimezoneChange(event)">
+                        <div class="controls-right">
+                            <div class="tz-control-group">
+                                <i class="fa fa-globe tz-icon" title="Timezone"></i>
+                                <select id="schedule-tz-select" class="form-select tz-select" onchange="handleScheduleTimezoneChange(event)">
                                 </select>
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="resetScheduleToDetectedTimezone()" title="Reset to browser auto-detected timezone" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
-                                    <i class="fa fa-crosshairs"></i> Auto-Detect
+                                <button type="button" class="btn btn-secondary btn-icon-sm" onclick="resetScheduleToDetectedTimezone()" title="Reset to browser auto-detected timezone">
+                                    <i class="fa fa-crosshairs"></i>
                                 </button>
-                                <div class="time-format-toggle" style="display: flex; gap: 0.25rem; margin-left: 0.5rem;">
-                                    <button type="button" id="btn-format-24h" class="btn btn-sm btn-secondary active-time-format" onclick="setScheduleTimeFormat('24h')">24h</button>
-                                    <button type="button" id="btn-format-12h" class="btn btn-sm btn-secondary" onclick="setScheduleTimeFormat('12h')">12h</button>
-                                </div>
                             </div>
+                            <div class="time-format-toggle">
+                                <button type="button" id="btn-format-24h" class="btn-toggle-format active-time-format" onclick="setScheduleTimeFormat('24h')">24h</button>
+                                <button type="button" id="btn-format-12h" class="btn-toggle-format" onclick="setScheduleTimeFormat('12h')">12h</button>
+                            </div>
+                            <button class="btn btn-secondary btn-icon-sm" onclick="loadSchedule(true)" title="Refresh schedule">
+                                <i class="fa fa-sync-alt"></i>
+                            </button>
                         </div>
+                    </div>
 
-                        <div id="schedule-stats" style="display: flex; gap: 1.25rem; margin-bottom: 1.25rem; font-size: 0.92rem; color: var(--gold-bright); flex-wrap: wrap;"></div>
-
-                        <div id="schedule-container">
-                            <div class="empty-state">
-                                <div class="empty-state-icon"><i class="fa fa-spinner fa-spin"></i></div>
-                                <p>Loading marathon schedule...</p>
-                            </div>
+                    <div id="schedule-container">
+                        <div class="empty-state">
+                            <div class="empty-state-icon"><i class="fa fa-spinner fa-spin"></i></div>
+                            <p>Loading marathon schedule...</p>
                         </div>
                     </div>
                 </section>
@@ -362,6 +356,9 @@
         const allRuns = scheduleData.items.filter(i => i.type === "run");
         const uniqueRunners = new Set();
         allRuns.forEach(r => (r.players || []).forEach(p => uniqueRunners.add(p)));
+
+        if ($("stat-runs")) $("stat-runs").textContent = allRuns.length;
+        if ($("stat-runners")) $("stat-runners").textContent = uniqueRunners.size;
 
         if (statsEl) {
             statsEl.innerHTML = `

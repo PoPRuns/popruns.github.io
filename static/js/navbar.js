@@ -187,14 +187,13 @@
             .header-nav .nav-start, popruns-navbar .nav-start {
                 display: flex !important;
                 align-items: center !important;
-                gap: 1.5rem !important;
+                gap: 1.2rem !important;
                 flex-wrap: wrap !important;
             }
 
             .header-nav .nav-brand, popruns-navbar .nav-brand {
                 display: inline-flex !important;
                 align-items: center !important;
-                gap: 1.2rem !important;
                 text-decoration: none !important;
                 flex-shrink: 0 !important;
             }
@@ -212,6 +211,7 @@
                 font-size: 1.1rem !important;
                 letter-spacing: 1px !important;
                 white-space: nowrap !important;
+                cursor: default !important;
             }
 
             .header-nav .nav-left-actions, popruns-navbar .nav-left-actions {
@@ -513,19 +513,21 @@
         const brandLink = document.createElement('a');
         brandLink.href = siteRoot;
         brandLink.className = 'nav-brand';
+        brandLink.title = 'PoPRuns';
+        brandLink.setAttribute('aria-label', 'PoPRuns Home');
 
         const logoImg = document.createElement('img');
         logoImg.src = `${staticDir}images/popruns_logo.png`;
         logoImg.alt = 'PoPRuns Logo';
         brandLink.appendChild(logoImg);
+        navStart.appendChild(brandLink);
 
         if (tagline) {
             const taglineSpan = document.createElement('span');
             taglineSpan.className = 'nav-tagline';
             taglineSpan.textContent = tagline;
-            brandLink.appendChild(taglineSpan);
+            navStart.appendChild(taglineSpan);
         }
-        navStart.appendChild(brandLink);
 
         const navLeftActions = document.createElement('div');
         navLeftActions.className = 'nav-left-actions';

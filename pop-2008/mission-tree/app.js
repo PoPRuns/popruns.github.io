@@ -262,3 +262,17 @@ document.getElementById('collapseBtn').addEventListener('click', () => {
 
 // Initial load
 if (missionItems.length) selectNode(missionItems[0].name);
+
+// Keep --navbar-height synced with actual rendered navbar dimensions
+function updateNavbarHeight() {
+    const nav = document.querySelector('popruns-navbar, .header-nav');
+    if (nav && nav.offsetHeight) {
+        document.documentElement.style.setProperty('--navbar-height', `${nav.offsetHeight}px`);
+    }
+}
+window.addEventListener('resize', updateNavbarHeight);
+if (window.ResizeObserver) {
+    const nav = document.querySelector('popruns-navbar, .header-nav');
+    if (nav) new ResizeObserver(updateNavbarHeight).observe(nav);
+}
+updateNavbarHeight();

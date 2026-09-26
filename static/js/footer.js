@@ -149,7 +149,7 @@
                     <a href="${siteRoot}">
                         <img src="${staticDir}images/popruns_logo.png" alt="PoPRuns Logo" height="32">
                     </a>
-                    <p>PoPRuns &mdash; Home of Prince of Persia speedruns, challenge runs, and tool-assisted exploration.</p>
+                    <p>PoPRuns - Home of Prince of Persia speedruns, challenge runs, and tool-assisted exploration.</p>
                 </div>
 
                 <div class="footer-links">

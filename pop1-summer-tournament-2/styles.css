@@ -5,6 +5,44 @@
     src: local('PortLligat Sans'), url('../static/fonts/PortLligatSans-Regular.woff') format('woff');
 }
 
+html {
+    color-scheme: dark;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+}
+
+/* Custom Scrollbars matching PoPRuns theme */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(3, 10, 16, 0.35);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(211, 156, 10, 0.4);
+    border-radius: 4px;
+    border: 1px solid rgba(211, 156, 10, 0.2);
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(252, 208, 120, 0.7);
+    border-color: rgba(252, 208, 120, 0.4);
+    box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: #fcd078;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 body {
     font-family: 'Istok Web', sans-serif;
     background: #000000 url('https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4aYyFLkVPIx2XdHuFecdxp/b7c267a2f15d2cd9f2e38fdcb8507f35/Memory_textured_background.png') no-repeat center center fixed;

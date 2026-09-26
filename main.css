@@ -18,10 +18,45 @@ html {
 	margin: 0;
 	padding: 0;
 	line-height: 1.4em;
+	color-scheme: dark;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
 	background-size: cover;
+}
+
+/* Custom Scrollbars matching PoPRuns theme */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(3, 10, 16, 0.35);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(211, 156, 10, 0.4);
+	border-radius: 4px;
+	border: 1px solid rgba(211, 156, 10, 0.2);
+	transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(252, 208, 120, 0.7);
+	border-color: rgba(252, 208, 120, 0.4);
+	box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+}
+
+::-webkit-scrollbar-thumb:active {
+	background: #fcd078;
+}
+
+::-webkit-scrollbar-corner {
+	background: transparent;
 }
 
 body {
