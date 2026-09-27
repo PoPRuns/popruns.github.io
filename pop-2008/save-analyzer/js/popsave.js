@@ -19,7 +19,7 @@ export const ENUM_NAMES = {
     BondState: { 0: 'STRANGERS', 1: 'ALLIES', 2: 'COMPANIONS', 3: 'BONDSTATE_MAXIMUM' },
     SpecialGamePlayContext: { 0: 'SpecialGamePlayContext_None', 1: 'SpecialGamePlayContext_Puzzle', 2: 'SpecialGamePlayContext_Challenge' },
     TrapType: { 0: 'Tremor', 1: 'Geyser', 2: 'Swarm', 3: 'GooGaz', 4: 'Poison', 5: 'InvalidTrap' },
-    MagicPlateComponentType: { 0: 'MagicType_Invalid', 1: 'MagicType_Rebound', 2: 'MagicType_Target', 3: 'MagicType_Grapple', 4: 'MagicType_Dash', 5: 'MagicType_FlyOnBeam' },
+    MagicPlateComponentType: { 0: 'MagicType_Invalid', 1: 'MagicType_Rebound', 2: 'MagicType_Target', 3: 'MagicType_Grapple', 4: 'MagicType_Dash', 5: 'MagicType_FlyOnBeam', 6: 'MagicType_Energize' },
 };
 export function enumName(fieldName, value) {
     const table = ENUM_NAMES[fieldName];
