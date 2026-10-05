@@ -71,6 +71,18 @@ function criticalPathChildren(node) {
             const target = nodeMap.get(r.source);
             if (target) out.push({ target, tag: 'required', label: 'Prerequisite' });
         });
+        const c = node.completion;
+        if (c && c.rule === 'internal-signal') {
+            const multi = c.triggers.length > 1;
+            c.triggers.forEach(name => {
+                const target = nodeMap.get(name);
+                if (target) out.push({
+                    target,
+                    tag: 'completes',
+                    label: multi ? `Completes this (1 of ${c.triggers.length})` : 'Completes this'
+                });
+            });
+        }
     } else if (node.kind === 'gate') {
         const multi = node.requirements.length > 1;
         const isOr = node.gateType === 'Or';
@@ -193,6 +205,24 @@ function getGraphElements(mode, scope) {
                         classes: 'edge-required'
                     });
                 });
+
+                // Completed by internal signals (e.g. ACT3 to POP0_ROOT) -> connected by a purple line
+                const c = node.completion;
+                if (c && c.rule === 'internal-signal') {
+                    c.triggers.forEach((triggerId, idx) => {
+                        if (!visibleIds.has(triggerId)) return;
+                        elements.push({
+                            group: 'edges',
+                            data: {
+                                id: `cp_comp_${triggerId}_${targetId}_${idx}`,
+                                source: triggerId,
+                                target: targetId,
+                                edgeType: 'completes'
+                            },
+                            classes: 'edge-completes'
+                        });
+                    });
+                }
             } else if (node.kind === 'gate') {
                 const isOr = node.gateType === 'Or';
                 const multi = node.requirements.length > 1;
@@ -330,6 +360,23 @@ const cyStyle = [
             'line-color': '#fbbf24',
             'target-arrow-color': '#fbbf24',
             'line-style': 'dashed'
+        }
+    },
+    {
+        selector: 'edge.edge-completes',
+        style: {
+            'line-color': '#c084fc',
+            'target-arrow-color': '#c084fc',
+            'width': 2.5
+        }
+    },
+    {
+        selector: 'edge.edge-completes.highlight-incoming, edge.edge-completes.highlight-outgoing',
+        style: {
+            'line-color': '#c084fc',
+            'target-arrow-color': '#c084fc',
+            'width': 4,
+            'z-index': 999
         }
     },
     {
@@ -609,8 +656,11 @@ function buildCriticalPathTree(node, visitedInBranch = new Set(), pathEdge = nul
 
     let conditionHtml = '';
     if (pathEdge !== null) {
+        const tagClass = pathEdge.tag === 'completes'
+            ? 'cond-completes'
+            : (pathEdge.tag === 'alternative' ? 'cond-alternative' : 'cond-required');
         conditionHtml = `
-          <span class="req-condition-tag ${pathEdge.tag === 'alternative' ? 'cond-alternative' : 'cond-required'}">
+          <span class="req-condition-tag ${tagClass}">
             ${pathEdge.label}
           </span>
         `;
@@ -626,7 +676,7 @@ function buildCriticalPathTree(node, visitedInBranch = new Set(), pathEdge = nul
     nodeItem.innerHTML = `
         ${canExpand ? '<span class="toggle-btn">▶</span>' : '<span style="width:16px;"></span>'}
         ${conditionHtml}
-        <span class="node-label">${node.displayName || nodeId}</span>
+        <span class="node-label" ${pathEdge?.tag === 'completes' ? 'style="color: var(--accent-purple);"' : ''}>${node.displayName || nodeId}</span>
         <span class="badge-pill ${typeBadgeFor(node)}">${typeLabelFor(node)}</span>
         ${unconfirmedBadge(node)}
         ${refHtml}
@@ -675,10 +725,10 @@ function renderTree(mode) {
 // ---------------------------------------------------------------------------
 const LEGENDS = {
     graph_critical: `
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite (Connects In)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite (Green Line)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Completes Target (Purple Line)</span>
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (1 of N)</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Unlocks (Connects Out)</span>
-      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight all connects</span>
+      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight connections</span>
     `,
     graph_unlock: `
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Unlock Requirement (Connects In)</span>
@@ -687,7 +737,8 @@ const LEGENDS = {
       <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight all connects</span>
     `,
     tree_critical: `
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Required</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Completes This</span>
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (1 of N)</span>
       <span class="legend-item"><span class="legend-swatch" style="background: transparent; border: 1px dashed var(--border-color);"></span>Unconfirmed rule</span>
     `,
