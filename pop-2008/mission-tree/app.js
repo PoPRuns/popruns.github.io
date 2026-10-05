@@ -1,74 +1,525 @@
-import missionItems from "./data.js";
+import missionNodes from "./data.js";
 
+// Ensure cytoscape-dagre layout extension is registered
+if (window.cytoscape && window.cytoscapeDagre) {
+    try {
+        window.cytoscape.use(window.cytoscapeDagre);
+    } catch (e) {
+        // already registered
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Data Lookups
+// ---------------------------------------------------------------------------
 const nodeMap = new Map();
 const reverseDepsMap = new Map();
 
-missionItems.forEach(item => {
-    nodeMap.set(item.name, item);
-    reverseDepsMap.set(item.name, []);
+missionNodes.forEach(node => {
+    const id = node.id || node.name;
+    nodeMap.set(id, node);
+    if (node.name && node.name !== id) nodeMap.set(node.name, node);
+    reverseDepsMap.set(id, []);
 });
 
-missionItems.forEach(item => {
-    item.requirements.forEach(req => {
-        if (reverseDepsMap.has(req.source_resource)) {
-            reverseDepsMap.get(req.source_resource).push({
-                dependentName: item.name,
+missionNodes.forEach(node => {
+    const nodeId = node.id || node.name;
+    (node.requirements || []).forEach(req => {
+        if (reverseDepsMap.has(req.source)) {
+            reverseDepsMap.get(req.source).push({
+                dependentId: nodeId,
+                dependentName: nodeId,
                 inverted: req.inverted
             });
         }
     });
 });
 
-missionItems.forEach(item => {
-    const sources = new Set(
-        item.requirements
-            .filter(req => req.inverted === true && req.source_port_type_name === 'Completed')
-            .filter(req => nodeMap.get(req.source_resource)?.parents.includes(item.name))
-            .map(req => req.source_resource)
-    );
-    item.completion_triggered_by = Array.from(sources);
+const referencedAsSource = new Set();
+missionNodes.forEach(node => {
+    (node.requirements || []).forEach(req => referencedAsSource.add(req.source));
 });
-
-missionItems.forEach(item => {
-    const targets = new Set();
-    (item.ports_out || [])
-        .filter(port => port.type_name === 'Completed')
-        .forEach(port => {
-            (port.consumers || [])
-                .filter(consumer => consumer.inverted === true)
-                .filter(consumer => item.parents.includes(consumer.resource))
-                .forEach(consumer => targets.add(consumer.resource));
-        });
-    item.triggers_completion_of = Array.from(targets);
-});
-
-// Identify Root items
-const referencedAsChild = new Set();
-missionItems.forEach(item => {
-    item.requirements.forEach(req => {
-        referencedAsChild.add(req.source_resource);
-    });
-});
-const roots = missionItems.filter(item => !referencedAsChild.has(item.name));
+const roots = missionNodes.filter(node => node.kind === 'item' && !referencedAsSource.has(node.id || node.name));
 
 const treeRootUl = document.getElementById('treeRoot');
+const cyContainer = document.getElementById('cy');
+const treeViewport = document.getElementById('treeViewport');
 
-// Recursive Tree Builder where Requirements are Children
+function typeBadgeFor(node) {
+    if (node.kind === 'gate') {
+        return node.gateType === 'Or' ? 'badge-gate-or' : 'badge-gate-and';
+    }
+    if (node.type === 'MissionItemList') return 'badge-list';
+    if (node.type === 'MissionItemFertileGround') return 'badge-fertile';
+    if (node.type === 'DLCMissionAddon') return 'badge-dlc';
+    return 'badge-sequencer';
+}
+
+function typeLabelFor(node) {
+    if (node.kind === 'gate') return node.gateType === 'Or' ? 'OR Gate' : 'AND Gate';
+    return (node.type || '').replace('MissionItem', '');
+}
+
+// ---------------------------------------------------------------------------
+// Critical Path Graph & Unlock Logic Graph Edges
+// ---------------------------------------------------------------------------
+function criticalPathChildren(node) {
+    const out = [];
+    if (node.kind === 'item') {
+        (node.requirements || []).forEach(r => {
+            if (r.inverted) return; // stay-active / inverted condition, NOT a prerequisite
+            const target = nodeMap.get(r.source);
+            if (target) out.push({ target, tag: 'required', label: 'Prerequisite' });
+        });
+    } else if (node.kind === 'gate') {
+        const multi = node.requirements.length > 1;
+        const isOr = node.gateType === 'Or';
+        node.requirements.forEach(r => {
+            if (r.inverted) return; // ignore inverted condition
+            const target = nodeMap.get(r.source);
+            if (target) out.push({
+                target,
+                tag: (isOr && multi) ? 'alternative' : 'required',
+                label: (isOr && multi) ? `Or input (1 of ${node.requirements.length})` : 'And input'
+            });
+        });
+    }
+    return out;
+}
+
+function unconfirmedBadge(node) {
+    if (node.kind !== 'item' || !node.completion) return '';
+    const rule = node.completion.rule;
+    if (rule === 'default-unknown') {
+        return '<span class="req-condition-tag cond-unconfirmed" title="No internal completion signal wired -- presumably all children">unconfirmed</span>';
+    }
+    if (rule === 'not-decoded') {
+        return '<span class="req-condition-tag cond-unconfirmed">not decoded</span>';
+    }
+    return '';
+}
+
+// ---------------------------------------------------------------------------
+// Graph View (Cytoscape + Dagre - Zero Repetition, Multi In & Out)
+// ---------------------------------------------------------------------------
+let cy = null;
+let currentMode = 'critical'; // 'critical' | 'unlock'
+let currentView = 'graph';    // 'graph' | 'tree'
+let currentScope = 'all';
+
+function filterNodesByScope(scope) {
+    return missionNodes.filter(node => {
+        const id = node.id || node.name;
+        const parents = node.parents || [];
+        const owner = node.owner || '';
+
+        if (scope === 'all') return true;
+        if (scope === 'connected') {
+            const hasIn = (node.requirements || []).some(r => nodeMap.has(r.source));
+            const hasOut = (reverseDepsMap.get(id) || []).length > 0;
+            return hasIn || hasOut;
+        }
+        if (scope === 'dlc') {
+            return node.bundle === 'dlc' || id.startsWith('DLC') || (id.startsWith('0') && /^\d\d_/.test(id)) || id.startsWith('Ach_') || id === '0xd71a8526' || owner.startsWith('DLC');
+        }
+        if (scope === 'main') {
+            return !(node.bundle === 'dlc' || id.startsWith('DLC') || (id.startsWith('0') && /^\d\d_/.test(id)) || id.startsWith('Ach_') || id === '0xd71a8526' || owner.startsWith('DLC'));
+        }
+        if (scope === 'act1') {
+            return id.startsWith('ACT1') || parents.includes('ACT1') || owner.startsWith('ACT1');
+        }
+        if (scope === 'act2') {
+            return id.startsWith('ACT2') || ['HighCastle', 'LavaRift', 'Observatory', 'RuinedCity', 'Desert'].some(r => id.startsWith(r) || parents.includes(r) || owner.startsWith(r));
+        }
+        if (scope === 'rc') {
+            return id.startsWith('RC') || id.startsWith('R2') || id === 'RuinedCity' || parents.includes('RuinedCity') || owner.startsWith('RC');
+        }
+        if (scope === 'ob') {
+            return id.startsWith('OB') || id === 'Observatory' || parents.includes('Observatory') || owner.startsWith('OB');
+        }
+        if (scope === 'hc') {
+            return id.startsWith('HC') || id === 'HighCastle' || parents.includes('HighCastle') || owner.startsWith('HC');
+        }
+        if (scope === 'lr') {
+            return id.startsWith('LR') || id === 'LavaRift' || parents.includes('LavaRift') || owner.startsWith('LR');
+        }
+        if (scope === 'act3') {
+            return id.startsWith('ACT3') || parents.includes('ACT3') || id.includes('Ahriman') || owner.startsWith('ACT3');
+        }
+        return true;
+    });
+}
+
+function getGraphElements(mode, scope) {
+    const nodes = filterNodesByScope(scope);
+    const visibleIds = new Set(nodes.map(n => n.id || n.name));
+    const elements = [];
+
+    // Add unique nodes (each node exists EXACTLY once)
+    nodes.forEach(node => {
+        const id = node.id || node.name;
+        elements.push({
+            group: 'nodes',
+            data: {
+                id: id,
+                label: node.displayName || id,
+                subLabel: id,
+                kind: node.kind,
+                type: node.type,
+                gateType: node.gateType,
+                owner: node.owner
+            }
+        });
+    });
+
+    // Add connecting edges based on mode
+    if (mode === 'critical') {
+        nodes.forEach(node => {
+            const targetId = node.id || node.name;
+
+            if (node.kind === 'item') {
+                // Direct prerequisites only (inverted conditions are excluded)
+                (node.requirements || []).forEach((r, idx) => {
+                    if (r.inverted) return; // stay-active condition, not a prerequisite
+                    if (!visibleIds.has(r.source)) return;
+                    elements.push({
+                        group: 'edges',
+                        data: {
+                            id: `cp_req_${r.source}_${targetId}_${idx}`,
+                            source: r.source,
+                            target: targetId,
+                            edgeType: 'required'
+                        },
+                        classes: 'edge-required'
+                    });
+                });
+            } else if (node.kind === 'gate') {
+                const isOr = node.gateType === 'Or';
+                const multi = node.requirements.length > 1;
+                node.requirements.forEach((r, idx) => {
+                    if (r.inverted) return; // stay-active condition, not a prerequisite
+                    if (!visibleIds.has(r.source)) return;
+                    elements.push({
+                        group: 'edges',
+                        data: {
+                            id: `cp_gate_${r.source}_${targetId}_${idx}`,
+                            source: r.source,
+                            target: targetId,
+                            edgeType: (isOr && multi) ? 'alternative' : 'required'
+                        },
+                        classes: (isOr && multi) ? 'edge-alternative' : 'edge-required'
+                    });
+                });
+            }
+        });
+    } else {
+        // Unlock Logic mode: all requirements
+        nodes.forEach(node => {
+            const targetId = node.id || node.name;
+            (node.requirements || []).forEach((r, idx) => {
+                if (!visibleIds.has(r.source)) return;
+                elements.push({
+                    group: 'edges',
+                    data: {
+                        id: `ul_${r.source}_${targetId}_${idx}`,
+                        source: r.source,
+                        target: targetId,
+                        edgeType: r.inverted ? 'inverted' : 'direct'
+                    },
+                    classes: r.inverted ? 'edge-inverted' : 'edge-direct'
+                });
+            });
+        });
+    }
+
+    return elements;
+}
+
+const cyStyle = [
+    {
+        selector: 'node',
+        style: {
+            'shape': 'round-rectangle',
+            'width': 'label',
+            'height': '44px',
+            'padding': '14px',
+            'background-color': '#182234',
+            'border-width': 2,
+            'border-color': '#475569',
+            'label': 'data(label)',
+            'color': '#f8fafc',
+            'font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            'font-size': '13px',
+            'font-weight': 600,
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'text-max-width': '260px',
+            'text-wrap': 'ellipsis',
+            'cursor': 'pointer',
+            'transition-property': 'background-color, border-color, opacity, border-width',
+            'transition-duration': '0.15s'
+        }
+    },
+    {
+        selector: 'node[type = "MissionItemList"]',
+        style: {
+            'border-color': '#c084fc',
+            'border-width': 2.5,
+            'background-color': '#281745'
+        }
+    },
+    {
+        selector: 'node[type = "MissionItemSequencer"]',
+        style: {
+            'border-color': '#38bdf8',
+            'border-width': 2.5,
+            'background-color': '#0d2847'
+        }
+    },
+    {
+        selector: 'node[type = "MissionItemFertileGround"]',
+        style: {
+            'border-color': '#34d399',
+            'border-width': 2.5,
+            'background-color': '#092e20'
+        }
+    },
+    {
+        selector: 'node[type = "DLCMissionAddon"]',
+        style: {
+            'border-color': '#fb7185',
+            'border-width': 2.5,
+            'background-color': '#3b121e'
+        }
+    },
+    {
+        selector: 'node[kind = "gate"]',
+        style: {
+            'border-style': 'dashed',
+            'border-color': '#94a3b8',
+            'border-width': 2,
+            'background-color': '#1e293b',
+            'shape': 'round-diamond',
+            'height': '38px',
+            'padding': '12px'
+        }
+    },
+    {
+        selector: 'edge',
+        style: {
+            'width': 2.5,
+            'curve-style': 'bezier',
+            'target-arrow-shape': 'triangle',
+            'arrow-scale': 1.1,
+            'line-color': '#475569',
+            'target-arrow-color': '#475569',
+            'transition-property': 'line-color, target-arrow-color, width, opacity',
+            'transition-duration': '0.15s'
+        }
+    },
+    {
+        selector: 'edge.edge-required, edge.edge-direct',
+        style: {
+            'line-color': '#34d399',
+            'target-arrow-color': '#34d399'
+        }
+    },
+    {
+        selector: 'edge.edge-alternative',
+        style: {
+            'line-color': '#fbbf24',
+            'target-arrow-color': '#fbbf24',
+            'line-style': 'dashed'
+        }
+    },
+    {
+        selector: 'edge.edge-inverted',
+        style: {
+            'line-color': '#ef4444',
+            'target-arrow-color': '#ef4444',
+            'line-style': 'dashed',
+            'width': 2.5
+        }
+    },
+    {
+        selector: 'edge.edge-inverted.highlight-incoming, edge.edge-inverted.highlight-outgoing',
+        style: {
+            'line-color': '#ef4444',
+            'target-arrow-color': '#ef4444',
+            'width': 4
+        }
+    },
+    {
+        selector: 'node.highlight-focus',
+        style: {
+            'border-color': '#38bdf8',
+            'border-width': 3.5,
+            'background-color': '#1a3c66',
+            'shadow-blur': 16,
+            'shadow-color': '#38bdf8',
+            'shadow-opacity': 0.85
+        }
+    },
+    {
+        selector: 'node.highlight-incoming',
+        style: {
+            'border-color': '#34d399',
+            'border-width': 3,
+            'shadow-blur': 12,
+            'shadow-color': '#34d399',
+            'shadow-opacity': 0.75
+        }
+    },
+    {
+        selector: 'node.highlight-outgoing',
+        style: {
+            'border-color': '#c084fc',
+            'border-width': 3,
+            'shadow-blur': 12,
+            'shadow-color': '#c084fc',
+            'shadow-opacity': 0.75
+        }
+    },
+    {
+        selector: 'edge.highlight-incoming',
+        style: {
+            'width': 4,
+            'line-color': '#34d399',
+            'target-arrow-color': '#34d399',
+            'z-index': 999
+        }
+    },
+    {
+        selector: 'edge.highlight-outgoing',
+        style: {
+            'width': 4,
+            'line-color': '#c084fc',
+            'target-arrow-color': '#c084fc',
+            'z-index': 999
+        }
+    },
+    {
+        selector: '.dimmed',
+        style: {
+            'opacity': 0.55
+        }
+    }
+];
+
+function highlightNodeNeighborhood(cyNode) {
+    if (!cy) return;
+    cy.batch(() => {
+        cy.elements().removeClass('highlight-focus highlight-incoming highlight-outgoing dimmed');
+
+        const inEdges = cyNode.incomers('edge');
+        const inNodes = cyNode.incomers('node');
+        const outEdges = cyNode.outgoers('edge');
+        const outNodes = cyNode.outgoers('node');
+
+        const connected = cyNode.union(inEdges).union(inNodes).union(outEdges).union(outNodes);
+        const other = cy.elements().difference(connected);
+
+        other.addClass('dimmed');
+        cyNode.addClass('highlight-focus');
+        inEdges.addClass('highlight-incoming');
+        inNodes.addClass('highlight-incoming');
+        outEdges.addClass('highlight-outgoing');
+        outNodes.addClass('highlight-outgoing');
+    });
+}
+
+function clearHighlighting() {
+    if (!cy) return;
+    cy.batch(() => {
+        cy.elements().removeClass('highlight-focus highlight-incoming highlight-outgoing dimmed');
+    });
+}
+
+function renderGraph() {
+    const elements = getGraphElements(currentMode, currentScope);
+
+    if (cy) {
+        cy.destroy();
+        cy = null;
+    }
+
+    // Determine layout: dagre if available, otherwise breadthfirst
+    const hasDagre = cytoscape('layout', 'dagre') !== undefined;
+    const layoutConfig = hasDagre ? {
+        name: 'dagre',
+        rankDir: 'LR',
+        nodeSep: 45,
+        rankSep: 85,
+        padding: 40,
+        spacingFactor: 1.1
+    } : {
+        name: 'breadthfirst',
+        directed: true,
+        padding: 40,
+        spacingFactor: 1.3
+    };
+
+    cy = cytoscape({
+        container: cyContainer,
+        elements: elements,
+        style: cyStyle,
+        layout: layoutConfig,
+        wheelSensitivity: 0.25,
+        minZoom: 0.02,
+        maxZoom: 3.5
+    });
+
+    cy.on('tap', 'node', (evt) => {
+        const node = evt.target;
+        selectNode(node.id(), false, true);
+    });
+
+    cy.on('tap', (evt) => {
+        if (evt.target === cy) {
+            clearHighlighting();
+        }
+    });
+
+    // On ready: center on POP0_ROOT (or first node) at readable scale without dimming other nodes
+    cy.ready(() => {
+        let rootNode = cy.getElementById('POP0_ROOT');
+        if (!rootNode || rootNode.length === 0) {
+            if (elements.length > 0) {
+                rootNode = cy.getElementById(elements[0].data.id);
+            }
+        }
+
+        if (rootNode && rootNode.length > 0) {
+            cy.zoom(0.85);
+            cy.center(rootNode);
+            selectNode(rootNode.id(), false, false);
+        } else if (elements.length > 0) {
+            cy.fit(undefined, 40);
+        }
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Deduplicated Tree View Builder (No Subtree Repetition)
+// ---------------------------------------------------------------------------
+let renderedInTree = new Set();
+
 function buildRequirementTree(node, visitedInBranch = new Set(), reqCondition = null) {
     const li = document.createElement('li');
-    const hasRequirements = node.requirements && node.requirements.length > 0;
-    const isCycle = visitedInBranch.has(node.name);
+    const nodeId = node.id || node.name;
+    const isCycle = visitedInBranch.has(nodeId);
+    const isAlreadyRendered = renderedInTree.has(nodeId);
+    renderedInTree.add(nodeId);
 
-    let typeBadge = 'badge-sequencer';
-    if (node.type === 'MissionItemList') typeBadge = 'badge-list';
-    if (node.type === 'MissionItemFertileGround') typeBadge = 'badge-fertile';
+    const hasRequirements = node.requirements && node.requirements.length > 0;
+    const canExpand = hasRequirements && !isCycle && !isAlreadyRendered;
 
     const nodeItem = document.createElement('div');
     nodeItem.className = 'tree-node-item';
-    nodeItem.dataset.name = node.name;
+    nodeItem.dataset.id = nodeId;
+    nodeItem.dataset.name = nodeId;
+    nodeItem.title = `ID: ${nodeId}`;
 
-    // Condition Tag
     let conditionHtml = '';
     if (reqCondition !== null) {
         conditionHtml = `
@@ -78,20 +529,27 @@ function buildRequirementTree(node, visitedInBranch = new Set(), reqCondition = 
         `;
     }
 
+    let refHtml = '';
+    if (isCycle) {
+        refHtml = '<span class="node-ref-tag">(cycle)</span>';
+    } else if (isAlreadyRendered) {
+        refHtml = '<span class="node-ref-tag" title="Connections already shown earlier in tree">(ref)</span>';
+    }
+
     nodeItem.innerHTML = `
-        ${(hasRequirements && !isCycle) ? '<span class="toggle-btn">▶</span>' : '<span style="width:16px;"></span>'}
+        ${canExpand ? '<span class="toggle-btn">▶</span>' : '<span style="width:16px;"></span>'}
         ${conditionHtml}
-        <span class="node-label">${node.name}</span>
-        <span class="badge-pill ${typeBadge}">${node.type.replace('MissionItem', '')}</span>
-        ${isCycle ? '<span style="font-size: 0.65rem; color: var(--accent-amber); font-style: italic;">(ref)</span>' : ''}
+        <span class="node-label" ${reqCondition?.inverted ? 'style="color: var(--accent-red, #ef4444);"' : ''}>${node.displayName || nodeId}</span>
+        <span class="badge-pill ${typeBadgeFor(node)}">${typeLabelFor(node)}</span>
+        ${refHtml}
       `;
 
     nodeItem.addEventListener('click', (e) => {
         if (e.target.classList.contains('toggle-btn')) return;
-        selectNode(node.name);
+        selectNode(nodeId);
     });
 
-    if (hasRequirements && !isCycle) {
+    if (canExpand) {
         const toggle = nodeItem.querySelector('.toggle-btn');
         toggle.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -102,13 +560,12 @@ function buildRequirementTree(node, visitedInBranch = new Set(), reqCondition = 
 
     li.appendChild(nodeItem);
 
-    // Render Requirement Children
-    if (hasRequirements && !isCycle) {
+    if (canExpand) {
         const childUl = document.createElement('ul');
-        const nextVisited = new Set(visitedInBranch).add(node.name);
+        const nextVisited = new Set(visitedInBranch).add(nodeId);
 
         node.requirements.forEach(req => {
-            const reqTargetNode = nodeMap.get(req.source_resource);
+            const reqTargetNode = nodeMap.get(req.source);
             if (reqTargetNode) {
                 childUl.appendChild(buildRequirementTree(reqTargetNode, nextVisited, req));
             } else {
@@ -119,7 +576,7 @@ function buildRequirementTree(node, visitedInBranch = new Set(), reqCondition = 
                     <span class="req-condition-tag ${req.inverted ? 'cond-inverted' : 'cond-direct'}">
                       ${req.inverted ? '[! NOT COMPLETED]' : '[COMPLETED]'}
                     </span>
-                    <span class="node-label">${req.source_resource}</span>
+                    <span class="node-label" ${req.inverted ? 'style="color: var(--accent-red, #ef4444);"' : ''}>${req.source}</span>
                     <span class="badge-pill" style="background: rgba(255,255,255,0.1);">External</span>
                   </div>
                 `;
@@ -133,115 +590,222 @@ function buildRequirementTree(node, visitedInBranch = new Set(), reqCondition = 
     return li;
 }
 
-// Render tree from top root elements
-roots.forEach(rootNode => {
-    treeRootUl.appendChild(buildRequirementTree(rootNode));
-});
+function buildCriticalPathTree(node, visitedInBranch = new Set(), pathEdge = null) {
+    const li = document.createElement('li');
+    const nodeId = node.id || node.name;
+    const isCycle = visitedInBranch.has(nodeId);
+    const isAlreadyRendered = renderedInTree.has(nodeId);
+    renderedInTree.add(nodeId);
 
-// Inspector & Selection Handler
-function selectNode(nodeName) {
-    const node = nodeMap.get(nodeName);
-    if (!node) return;
+    const children = criticalPathChildren(node);
+    const hasChildren = children.length > 0;
+    const canExpand = hasChildren && !isCycle && !isAlreadyRendered;
 
-    // 1. Update selection highlight in the tree
-    document.querySelectorAll('.tree-node-item').forEach(el => el.classList.remove('selected'));
-    const matchedNodeElements = document.querySelectorAll(`.tree-node-item[data-name="${node.name}"]`);
+    const nodeItem = document.createElement('div');
+    nodeItem.className = 'tree-node-item';
+    nodeItem.dataset.id = nodeId;
+    nodeItem.dataset.name = nodeId;
+    nodeItem.title = `ID: ${nodeId}`;
 
-    matchedNodeElements.forEach(el => {
-        el.classList.add('selected');
+    let conditionHtml = '';
+    if (pathEdge !== null) {
+        conditionHtml = `
+          <span class="req-condition-tag ${pathEdge.tag === 'alternative' ? 'cond-alternative' : 'cond-required'}">
+            ${pathEdge.label}
+          </span>
+        `;
+    }
 
-        // 2. Expand all parent <li> elements up the tree hierarchy
-        let parentLi = el.closest('li').parentElement?.closest('li');
-        while (parentLi) {
-            parentLi.classList.remove('collapsed');
-            const toggle = parentLi.querySelector(':scope > .tree-node-item > .toggle-btn');
-            if (toggle) toggle.innerText = '▼';
-            parentLi = parentLi.parentElement?.closest('li');
-        }
+    let refHtml = '';
+    if (isCycle) {
+        refHtml = '<span class="node-ref-tag">(cycle)</span>';
+    } else if (isAlreadyRendered) {
+        refHtml = '<span class="node-ref-tag" title="Connections already shown earlier in tree">(ref)</span>';
+    }
+
+    nodeItem.innerHTML = `
+        ${canExpand ? '<span class="toggle-btn">▶</span>' : '<span style="width:16px;"></span>'}
+        ${conditionHtml}
+        <span class="node-label">${node.displayName || nodeId}</span>
+        <span class="badge-pill ${typeBadgeFor(node)}">${typeLabelFor(node)}</span>
+        ${unconfirmedBadge(node)}
+        ${refHtml}
+      `;
+
+    nodeItem.addEventListener('click', (e) => {
+        if (e.target.classList.contains('toggle-btn')) return;
+        selectNode(nodeId);
     });
 
-    // 3. Scroll the first occurrence into view smoothly
-    if (matchedNodeElements.length > 0) {
-        matchedNodeElements[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (canExpand) {
+        const toggle = nodeItem.querySelector('.toggle-btn');
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            li.classList.toggle('collapsed');
+            toggle.innerText = li.classList.contains('collapsed') ? '▶' : '▼';
+        });
     }
 
-    // 4. Update Inspector Header and Metadata
-    document.getElementById('inspectName').innerText = node.name;
-    document.getElementById('inspectHash').innerText = node.hash;
-    document.getElementById('metaType').innerText = node.type;
-    document.getElementById('metaSeqMode').innerText = node.seqmode_name || 'None';
-    document.getElementById('metaParents').innerText = node.parents.join(', ') || 'Root Scope';
-    document.getElementById('metaPorts').innerText = node.n_ports_in;
+    li.appendChild(nodeItem);
 
-    // Requirements (Clickable)
-    const reqListEl = document.getElementById('inspectReqList');
-    if (!node.requirements.length) {
-        reqListEl.innerHTML = '<li class="empty-state">No requirement prerequisites.</li>';
-    } else {
-        reqListEl.innerHTML = node.requirements.map(req => `
-          <li class="conn-item" onclick="selectNode('${req.source_resource}')" style="cursor: pointer;">
-            <div style="display: flex; justify-content: space-between;">
-              <strong style="color: var(--accent-blue);">${req.source_resource}</strong>
-              <span class="req-condition-tag ${req.inverted ? 'cond-inverted' : 'cond-direct'}">
-                ${req.inverted ? 'NOT COMPLETED (!)' : 'COMPLETED'}
-              </span>
-            </div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">
-              Port Type: ${req.source_port_type_name} (${req.source_port_type})
-            </div>
-          </li>
-        `).join('');
+    if (canExpand) {
+        const childUl = document.createElement('ul');
+        const nextVisited = new Set(visitedInBranch).add(nodeId);
+        children.forEach(edge => {
+            childUl.appendChild(buildCriticalPathTree(edge.target, nextVisited, edge));
+        });
+        li.appendChild(childUl);
+        li.classList.add('collapsed');
     }
 
-    // Dependents (Clickable)
-    const depListEl = document.getElementById('inspectDepList');
-    const dependents = reverseDepsMap.get(node.name) || [];
-    if (!dependents.length) {
-        depListEl.innerHTML = '<li class="empty-state">No downstream nodes require this.</li>';
-    } else {
-        depListEl.innerHTML = dependents.map(dep => `
-          <li class="conn-item" onclick="selectNode('${dep.dependentName}')" style="cursor: pointer;">
-            <div style="display: flex; justify-content: space-between;">
-              <strong style="color: var(--accent-purple);">${dep.dependentName}</strong>
-              <span class="req-condition-tag ${dep.inverted ? 'cond-inverted' : 'cond-direct'}">
-                ${dep.inverted ? 'Requires Incomplete' : 'Requires Complete'}
-              </span>
-            </div>
-          </li>
-        `).join('');
-    }
-
-    // Completion Triggered By (Clickable)
-    const completionTriggeredByEl = document.getElementById('inspectCompletionTriggeredByList');
-    if (!node.completion_triggered_by.length) {
-        completionTriggeredByEl.innerHTML = '<li class="empty-state">No child completion signal found for this node.</li>';
-    } else {
-        completionTriggeredByEl.innerHTML = node.completion_triggered_by.map(name => `
-          <li class="conn-item" onclick="selectNode('${name}')" style="cursor: pointer;">
-            <strong style="color: var(--accent-emerald);">${name}</strong>
-          </li>
-        `).join('');
-    }
-
-    // Triggers Completion Of (Clickable)
-    const triggersCompletionOfEl = document.getElementById('inspectTriggersCompletionOfList');
-    if (!node.triggers_completion_of.length) {
-        triggersCompletionOfEl.innerHTML = '<li class="empty-state">This node\'s completion does not close out a parent list.</li>';
-    } else {
-        triggersCompletionOfEl.innerHTML = node.triggers_completion_of.map(name => `
-          <li class="conn-item" onclick="selectNode('${name}')" style="cursor: pointer;">
-            <strong style="color: var(--accent-amber);">${name}</strong>
-          </li>
-        `).join('');
-    }
-
-    document.getElementById('inspectRaw').innerText = JSON.stringify(node, null, 2);
+    return li;
 }
 
-// Expose selectNode to window for inline onclick handlers in ES Modules
-window.selectNode = selectNode;
+function renderTree(mode) {
+    renderedInTree.clear();
+    treeRootUl.innerHTML = '';
+    const builder = mode === 'critical' ? buildCriticalPathTree : buildRequirementTree;
+    roots.forEach(rootNode => {
+        treeRootUl.appendChild(builder(rootNode));
+    });
+}
 
-// Expand / Collapse controls
+// ---------------------------------------------------------------------------
+// Legends & UI Controls
+// ---------------------------------------------------------------------------
+const LEGENDS = {
+    graph_critical: `
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite (Connects In)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (1 of N)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Unlocks (Connects Out)</span>
+      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight all connects</span>
+    `,
+    graph_unlock: `
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Unlock Requirement (Connects In)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-red); border: 1px dashed var(--accent-red);"></span>Inverted Requirement (Requires Incomplete)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Unlocks (Connects Out)</span>
+      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight all connects</span>
+    `,
+    tree_critical: `
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Required</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (1 of N)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: transparent; border: 1px dashed var(--border-color);"></span>Unconfirmed rule</span>
+    `,
+    tree_unlock: `
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Requires Completed</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-red);"></span>Inverted (Requires NOT Completed)</span>
+    `
+};
+
+function updateLegend() {
+    const key = `${currentView}_${currentMode}`;
+    document.getElementById('treeLegend').innerHTML = LEGENDS[key] || '';
+}
+
+function updateViewDisplay() {
+    const isGraph = currentView === 'graph';
+    cyContainer.style.display = isGraph ? 'block' : 'none';
+    treeRootUl.style.display = isGraph ? 'none' : 'block';
+    treeViewport.classList.toggle('tree-mode-active', !isGraph);
+
+    document.getElementById('expandBtn').style.display = isGraph ? 'none' : 'inline-block';
+    document.getElementById('collapseBtn').style.display = isGraph ? 'none' : 'inline-block';
+    document.getElementById('fitBtn').style.display = isGraph ? 'inline-block' : 'none';
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    if (zoomInBtn) zoomInBtn.style.display = isGraph ? 'inline-block' : 'none';
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    if (zoomOutBtn) zoomOutBtn.style.display = isGraph ? 'inline-block' : 'none';
+
+    document.getElementById('viewGraphBtn').classList.toggle('btn-active', isGraph);
+    document.getElementById('viewTreeBtn').classList.toggle('btn-active', !isGraph);
+
+    updateLegend();
+
+    if (isGraph) {
+        renderGraph();
+    } else {
+        renderTree(currentMode);
+    }
+}
+
+// Mode Buttons
+document.getElementById('modeCriticalBtn').addEventListener('click', () => {
+    currentMode = 'critical';
+    document.getElementById('modeCriticalBtn').classList.add('btn-active');
+    document.getElementById('modeUnlockBtn').classList.remove('btn-active');
+    updateLegend();
+    if (currentView === 'graph') {
+        renderGraph();
+    } else {
+        renderTree('critical');
+    }
+});
+
+document.getElementById('modeUnlockBtn').addEventListener('click', () => {
+    currentMode = 'unlock';
+    document.getElementById('modeUnlockBtn').classList.add('btn-active');
+    document.getElementById('modeCriticalBtn').classList.remove('btn-active');
+    updateLegend();
+    if (currentView === 'graph') {
+        renderGraph();
+    } else {
+        renderTree('unlock');
+    }
+});
+
+// View Switcher Buttons
+document.getElementById('viewGraphBtn').addEventListener('click', () => {
+    if (currentView === 'graph') return;
+    currentView = 'graph';
+    updateViewDisplay();
+});
+
+document.getElementById('viewTreeBtn').addEventListener('click', () => {
+    if (currentView === 'tree') return;
+    currentView = 'tree';
+    updateViewDisplay();
+});
+
+// Scope Filter
+document.getElementById('scopeFilter').addEventListener('change', (e) => {
+    currentScope = e.target.value;
+    if (currentView === 'graph') {
+        renderGraph();
+    }
+});
+
+// Fit to screen
+document.getElementById('fitBtn').addEventListener('click', () => {
+    if (cy) {
+        cy.fit(undefined, 40);
+    }
+});
+
+const zoomInBtn = document.getElementById('zoomInBtn');
+if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => {
+        if (cy) {
+            cy.zoom({
+                level: cy.zoom() * 1.3,
+                renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+            });
+        }
+    });
+}
+
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => {
+        if (cy) {
+            cy.zoom({
+                level: cy.zoom() / 1.3,
+                renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+            });
+        }
+    });
+}
+
+// Tree Expand / Collapse controls
 document.getElementById('expandBtn').addEventListener('click', () => {
     document.querySelectorAll('.tree li').forEach(li => {
         li.classList.remove('collapsed');
@@ -260,10 +824,306 @@ document.getElementById('collapseBtn').addEventListener('click', () => {
     });
 });
 
-// Initial load
-if (missionItems.length) selectNode(missionItems[0].name);
+// ---------------------------------------------------------------------------
+// Inspector & Selection Handler
+// ---------------------------------------------------------------------------
+function renderList(el, items, { emptyText, render }) {
+    if (!items.length) {
+        el.innerHTML = `<li class="empty-state">${emptyText}</li>`;
+        return;
+    }
+    el.innerHTML = items.map(render).join('');
+}
 
-// Keep --navbar-height synced with actual rendered navbar dimensions
+function clickableNode(targetId, colorVar, extraHtml = '') {
+    const targetNode = nodeMap.get(targetId);
+    const displayName = targetNode ? (targetNode.displayName || targetNode.id) : targetId;
+    const showSubId = targetNode && targetNode.displayName && targetNode.displayName !== targetId;
+    return `
+      <li class="conn-item" onclick="selectNode('${targetId}')" style="cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+          <strong style="color: var(${colorVar});">${displayName}</strong>
+          ${extraHtml}
+        </div>
+        ${showSubId ? `<div style="font-size: 0.72rem; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, monospace;">${targetId}</div>` : ''}
+      </li>
+    `;
+}
+
+function describeCompletion(node) {
+    const c = node.completion;
+    if (!c) return null;
+    switch (c.rule) {
+        case 'scene-termination':
+            return {
+                text: (node.seqModeName === 'Serial'
+                    ? 'Completes once every scene below has fired its termination output, in order (Serial):'
+                    : 'Completes once every scene below has fired its termination output, together (Concurrent):'),
+                items: c.scenes.map(s => ({ label: s, clickable: false }))
+            };
+        case 'internal-signal':
+            return {
+                text: 'Completes the instant any ONE of these internal signals fires (first one wins, not an AND of all of them):',
+                items: c.triggers.map(t => ({ label: t, clickable: nodeMap.has(t) }))
+            };
+        case 'default-unknown':
+            return {
+                text: 'No internal completion signal is wired on this item. It presumably falls back to a basic engine default.',
+                items: []
+            };
+        case 'gate-combine':
+            return {
+                text: `Drives its own Completed output once its ${node.gateType === 'Or' ? 'OR' : 'AND'} of the inputs below is satisfied.`,
+                items: []
+            };
+        case 'not-decoded':
+            return { text: 'This item could not be fully decoded from the dump, so its completion rule is unknown.', items: [] };
+        default:
+            return null;
+    }
+}
+
+function selectNode(nodeIdentifier, centerGraph = true, highlight = true) {
+    const node = nodeMap.get(nodeIdentifier);
+    if (!node) return;
+    const nodeId = node.id || node.name;
+
+    // 1. In Graph View: select and highlight connections
+    if (cy) {
+        const cyNode = cy.getElementById(nodeId);
+        if (cyNode && cyNode.length > 0) {
+            if (highlight) {
+                highlightNodeNeighborhood(cyNode);
+            }
+            if (centerGraph) {
+                cy.animate({
+                    center: { eles: cyNode },
+                    zoom: Math.max(cy.zoom(), 0.75)
+                }, { duration: 250 });
+            }
+        }
+    }
+
+    // 2. In Tree View: highlight and expand parent list
+    document.querySelectorAll('.tree-node-item').forEach(el => el.classList.remove('selected'));
+    const matchedNodeElements = document.querySelectorAll(`.tree-node-item[data-id="${nodeId}"], .tree-node-item[data-name="${nodeId}"]`);
+
+    matchedNodeElements.forEach(el => {
+        el.classList.add('selected');
+        let parentLi = el.closest('li').parentElement?.closest('li');
+        while (parentLi) {
+            parentLi.classList.remove('collapsed');
+            const toggle = parentLi.querySelector(':scope > .tree-node-item > .toggle-btn');
+            if (toggle) toggle.innerText = '▼';
+            parentLi = parentLi.parentElement?.closest('li');
+        }
+    });
+
+    if (currentView === 'tree' && matchedNodeElements.length > 0) {
+        matchedNodeElements[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // 3. Update Inspector Header and Metadata
+    const inspectNameEl = document.getElementById('inspectName');
+    if (inspectNameEl) inspectNameEl.innerText = node.displayName || nodeId;
+    const inspectIdEl = document.getElementById('inspectId');
+    if (inspectIdEl) inspectIdEl.innerText = nodeId;
+
+    document.getElementById('inspectHash').innerText = node.kind === 'gate'
+        ? `${typeLabelFor(node)} owned by ${nodeMap.get(node.owner)?.displayName || node.owner}`
+        : node.hash;
+    document.getElementById('metaType').innerText = node.kind === 'gate' ? typeLabelFor(node) : node.type;
+    document.getElementById('metaSeqMode').innerText = node.seqModeName || 'None';
+    document.getElementById('metaParents').innerText = node.kind === 'gate'
+        ? (nodeMap.get(node.owner)?.displayName || node.owner || '-')
+        : (node.parents.map(p => nodeMap.get(p)?.displayName || p).join(', ') || 'Root Scope');
+    document.getElementById('metaPorts').innerText = (node.requirements || []).length;
+
+    const childrenEl = document.getElementById('metaChildren');
+    if (childrenEl) {
+        childrenEl.innerText = node.kind === 'item' ? (node.children.map(c => nodeMap.get(c)?.displayName || c).join(', ') || 'None') : '—';
+    }
+
+    const flagsEl = document.getElementById('metaFlags');
+    if (flagsEl) {
+        if (node.kind === 'item') {
+            const flags = [];
+            if (node.milestone) flags.push('Milestone');
+            if (node.persistent) flags.push('Persistent');
+            if (node.alwaysLoaded) flags.push('Always Loaded');
+            if (node.resetWhenCompleted) flags.push('Resets On Complete');
+            if (node.missionActType && node.missionActType !== 'Invalid') flags.push(node.missionActType);
+            flagsEl.innerText = flags.join(', ') || 'None';
+        } else {
+            flagsEl.innerText = '—';
+        }
+    }
+
+    // Requirements (Clickable)
+    const reqListEl = document.getElementById('inspectReqList');
+    renderList(reqListEl, node.requirements || [], {
+        emptyText: 'No unlock requirements.',
+        render: req => {
+            const target = nodeMap.get(req.source);
+            const targetDisplay = target?.displayName || req.source;
+            const showSubId = target && target.displayName && target.displayName !== req.source;
+            const nameColor = req.inverted ? 'var(--accent-red, #ef4444)' : 'var(--accent-blue)';
+            return `
+              <li class="conn-item" onclick="selectNode('${req.source}')" style="cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+                  <strong style="color: ${nameColor};">${targetDisplay}</strong>
+                  <span class="req-condition-tag ${req.inverted ? 'cond-inverted' : 'cond-direct'}">
+                    ${req.inverted ? 'NOT COMPLETED (!)' : 'COMPLETED'}
+                  </span>
+                </div>
+                ${showSubId ? `<div style="font-size: 0.72rem; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, monospace;">${req.source}</div>` : ''}
+                <div style="font-size: 0.72rem; color: var(--text-muted);">
+                  Port: ${req.port}${target?.kind === 'gate' ? ` · ${typeLabelFor(target)}` : ''}
+                </div>
+              </li>
+            `;
+        }
+    });
+
+    // Dependents (Clickable)
+    const depListEl = document.getElementById('inspectDepList');
+    const dependents = reverseDepsMap.get(nodeId) || [];
+    renderList(depListEl, dependents, {
+        emptyText: 'No downstream nodes require this.',
+        render: dep => {
+            const depId = dep.dependentId || dep.dependentName;
+            const target = nodeMap.get(depId);
+            const targetDisplay = target?.displayName || depId;
+            const showSubId = target && target.displayName && target.displayName !== depId;
+            const nameColor = dep.inverted ? 'var(--accent-red, #ef4444)' : 'var(--accent-purple)';
+            return `
+              <li class="conn-item" onclick="selectNode('${depId}')" style="cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+                  <strong style="color: ${nameColor};">${targetDisplay}</strong>
+                  <span class="req-condition-tag ${dep.inverted ? 'cond-inverted' : 'cond-direct'}">
+                    ${dep.inverted ? 'Requires Incomplete' : 'Requires Complete'}
+                  </span>
+                </div>
+                ${showSubId ? `<div style="font-size: 0.72rem; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, monospace;">${depId}</div>` : ''}
+              </li>
+            `;
+        }
+    });
+
+    // Contains
+    const containsEl = document.getElementById('inspectContainsList');
+    renderList(containsEl, node.kind === 'item' ? node.children.map(cid => ({ id: cid })) : [], {
+        emptyText: node.kind === 'gate' ? 'Gates do not contain items.' : 'This item contains no child mission items.',
+        render: ({ id }) => clickableNode(id, '--accent-emerald')
+    });
+
+    // Actions
+    const actionsEl = document.getElementById('inspectActionsList');
+    const actionEntries = node.kind === 'item' ? (node.actions || []) : [];
+    renderList(actionsEl, actionEntries, {
+        emptyText: 'This item fires no mission actions on completion.',
+        render: action => `
+          <li class="conn-item">
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="color: var(--accent-amber);">${action.kind}</strong>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">timing ${action.timing}${action.revert ? ' · revert' : ''}</span>
+            </div>
+            ${action.effects.map(fx => {
+                if (fx.op === 'navzone') {
+                    return `<div style="font-size: 0.78rem;">NavZone action ${fx.action}${fx.targets.length ? ' → ' + fx.targets.join(', ') : ''}</div>`;
+                }
+                return `<div style="font-size: 0.78rem;">${fx.op}${fx.target ? ' → ' + fx.target : ' (no target)'}</div>`;
+            }).join('')}
+          </li>
+        `
+    });
+
+    // Scenes
+    const scenesEl = document.getElementById('inspectScenesList');
+    const scenes = node.kind === 'item' ? (node.scenes || []) : [];
+    renderList(scenesEl, scenes, {
+        emptyText: 'No scene content on this item.',
+        render: scene => `
+          <li class="conn-item">
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="color: var(--accent-blue);">${scene.sceneName || 'Unknown Scene'}</strong>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">${scene.slot}</span>
+            </div>
+          </li>
+        `
+    });
+
+    // Completes When
+    const completionEl = document.getElementById('inspectCompletionList');
+    const completionInfo = describeCompletion(node);
+    if (!completionInfo) {
+        renderList(completionEl, [], { emptyText: 'Unknown.', render: () => '' });
+    } else {
+        const introLi = `<li class="completion-note">${completionInfo.text}</li>`;
+        const itemLis = completionInfo.items.map(it => {
+            const itNode = nodeMap.get(it.label);
+            const itDisplay = itNode?.displayName || it.label;
+            const showSub = itNode && itNode.displayName && itNode.displayName !== it.label;
+            return `
+              <li class="conn-item" ${it.clickable ? `onclick="selectNode('${it.label}')" style="cursor: pointer;"` : ''}>
+                <strong style="color: var(--accent-amber);">${itDisplay}</strong>
+                ${showSub ? `<div style="font-size: 0.72rem; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, monospace;">${it.label}</div>` : ''}
+              </li>
+            `;
+        }).join('');
+        completionEl.innerHTML = introLi + itemLis;
+    }
+
+    // Implicit parent list
+    const implicitEl = document.getElementById('inspectImplicitParentList');
+    const parentNames = node.kind === 'item' ? node.parents : (node.owner ? [node.owner] : []);
+    renderList(implicitEl, parentNames, {
+        emptyText: 'No parent list — nothing implicit to satisfy.',
+        render: pname => clickableNode(pname, '--accent-rose', '<span style="font-size:0.72rem; color: var(--text-muted);">must be active</span>')
+    });
+
+    document.getElementById('inspectRaw').innerText = JSON.stringify(node, null, 2);
+}
+
+// Expose selectNode to window for inline onclick handlers
+window.selectNode = selectNode;
+
+// ---------------------------------------------------------------------------
+// Search / Autocomplete Setup
+// ---------------------------------------------------------------------------
+const searchInput = document.getElementById('nodeSearchInput');
+const searchDatalist = document.getElementById('nodeSearchList');
+if (searchInput && searchDatalist) {
+    searchDatalist.innerHTML = missionNodes
+        .map(n => `<option value="${n.displayName || n.id}">${n.id}</option>`)
+        .join('');
+
+    function handleSearchJump() {
+        const val = searchInput.value.trim().toLowerCase();
+        if (!val) return;
+        const target = missionNodes.find(n =>
+            (n.displayName && n.displayName.toLowerCase() === val) ||
+            (n.id && n.id.toLowerCase() === val) ||
+            (n.name && n.name.toLowerCase() === val)
+        ) || missionNodes.find(n =>
+            (n.displayName && n.displayName.toLowerCase().includes(val)) ||
+            (n.id && n.id.toLowerCase().includes(val))
+        );
+        if (target) {
+            selectNode(target.id || target.name, true);
+        }
+    }
+
+    searchInput.addEventListener('change', handleSearchJump);
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSearchJump();
+    });
+}
+
+// Initial render
+updateViewDisplay();
+
+// Keep --navbar-height synced with rendered navbar dimensions
 function updateNavbarHeight() {
     const nav = document.querySelector('popruns-navbar, .header-nav');
     if (nav && nav.offsetHeight) {

@@ -16,19 +16,46 @@
             <i class="fa fa-arrow-left"></i>
             <span class="nav-link-text">PoP 2008</span>
         </a>
-        <button class="btn" id="expandBtn">Expand All</button>
-        <button class="btn" id="collapseBtn">Collapse All</button>
+        <button class="btn btn-active" id="modeCriticalBtn">Critical Path</button>
+        <button class="btn" id="modeUnlockBtn">Unlock Logic</button>
+        <button class="btn btn-active" id="viewGraphBtn">Graph View</button>
+        <button class="btn" id="viewTreeBtn">Tree View</button>
+        <select id="scopeFilter" class="btn" style="padding: 7px 10px; cursor: pointer;">
+            <option value="all">All Missions (816)</option>
+            <option value="connected">Connected Only (737)</option>
+            <option value="main">Main Game</option>
+            <option value="act1">Act 1: Temple Corruption</option>
+            <option value="act2">Act 2: The Fertile Grounds</option>
+            <option value="rc">Hunter: Citadel</option>
+            <option value="ob">Alchemist: Vale</option>
+            <option value="hc">Concubine: Palace</option>
+            <option value="lr">Warrior: City</option>
+            <option value="act3">Act 3: Epilogue & Final</option>
+            <option value="dlc">Epilogue DLC</option>
+        </select>
+        <button class="btn" id="fitBtn" title="Fit graph to view">Fit</button>
+        <button class="btn" id="zoomInBtn" title="Zoom in" style="font-weight: bold; padding: 7px 11px;">+</button>
+        <button class="btn" id="zoomOutBtn" title="Zoom out" style="font-weight: bold; padding: 7px 11px;">-</button>
+        <button class="btn" id="expandBtn" style="display: none;">Expand All</button>
+        <button class="btn" id="collapseBtn" style="display: none;">Collapse All</button>
+        <input type="text" id="nodeSearchInput" list="nodeSearchList" placeholder="Search name or ID..." autocomplete="off" />
+        <datalist id="nodeSearchList"></datalist>
     </popruns-navbar>
 
     <div class="app-container">
-        <div class="tree-viewport">
-            <ul class="tree" id="treeRoot"></ul>
+        <div class="tree-viewport" id="treeViewport">
+            <div id="treeLegend" class="tree-legend"></div>
+            <div id="cy"></div>
+            <ul class="tree" id="treeRoot" style="display: none;"></ul>
         </div>
 
         <aside>
             <div class="inspector-header">
-                <h2 id="inspectName" style="font-size: 1.1rem; word-break: break-all;">Select a Node</h2>
-                <div id="inspectHash" class="meta-value" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">0x00000000</div>
+                <h2 id="inspectName" style="font-size: 1.15rem; word-break: break-word;">Select a Node</h2>
+                <div style="display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; font-size: 0.78rem; align-items: baseline;">
+                    <div><span style="color: var(--text-muted);">ID:</span> <code id="inspectId" class="meta-value" style="color: var(--accent-blue); word-break: break-all;">-</code></div>
+                    <div><span style="color: var(--text-muted);">Hash:</span> <span id="inspectHash" class="meta-value" style="color: var(--text-muted);">-</span></div>
+                </div>
             </div>
 
             <div class="inspector-body">
@@ -48,6 +75,14 @@
                             <span class="meta-value" id="metaParents">-</span>
                         </div>
                         <div class="meta-row">
+                            <span class="meta-label">Children</span>
+                            <span class="meta-value" id="metaChildren">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Flags</span>
+                            <span class="meta-value" id="metaFlags">-</span>
+                        </div>
+                        <div class="meta-row">
                             <span class="meta-label">Total In-Ports</span>
                             <span class="meta-value" id="metaPorts">-</span>
                         </div>
@@ -60,18 +95,33 @@
                 </div>
 
                 <div>
+                    <div class="section-title">Implicit: Parent Must Be Active</div>
+                    <ul id="inspectImplicitParentList" class="conn-list"></ul>
+                </div>
+
+                <div>
+                    <div class="section-title">Completes When</div>
+                    <ul id="inspectCompletionList" class="conn-list"></ul>
+                </div>
+
+                <div>
                     <div class="section-title">Nodes Dependent On This</div>
                     <ul id="inspectDepList" class="conn-list"></ul>
                 </div>
 
                 <div>
-                    <div class="section-title">Completion Triggered By</div>
-                    <ul id="inspectCompletionTriggeredByList" class="conn-list"></ul>
+                    <div class="section-title">Contains</div>
+                    <ul id="inspectContainsList" class="conn-list"></ul>
                 </div>
 
                 <div>
-                    <div class="section-title">Triggers Completion Of</div>
-                    <ul id="inspectTriggersCompletionOfList" class="conn-list"></ul>
+                    <div class="section-title">Scenes</div>
+                    <ul id="inspectScenesList" class="conn-list"></ul>
+                </div>
+
+                <div>
+                    <div class="section-title">Completion Actions</div>
+                    <ul id="inspectActionsList" class="conn-list"></ul>
                 </div>
 
                 <div>
@@ -82,6 +132,9 @@
         </aside>
     </div>
 
+    <script src="cytoscape.min.js"></script>
+    <script src="dagre.min.js"></script>
+    <script src="cytoscape-dagre.min.js"></script>
     <script type="module" src="app.js"></script>
     <script src="../../static/js/footer.js" defer></script>
 </body>
