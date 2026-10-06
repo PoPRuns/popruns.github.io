@@ -117,7 +117,12 @@ function unconfirmedBadge(node) {
 let cy = null;
 let currentMode = 'critical'; // 'critical' | 'unlock'
 let currentView = 'graph';    // 'graph' | 'tree'
-let currentScope = 'all';
+// 'connected' rather than 'all': with every disconnected side-content tree
+// sharing one dagre rank space, isolated/unrelated chains can land at the
+// same extreme rank as POP0_ROOT (see the rankDir comment in renderGraph),
+// so defaulting to literally everything works against "root at the top".
+// 'all' is still one click away in the dropdown.
+let currentScope = 'connected';
 
 function filterNodesByScope(scope) {
     return missionNodes.filter(node => {
@@ -299,7 +304,7 @@ const cyStyle = [
         }
     },
     {
-        selector: 'node[type = "MissionItemSequencer"]',
+        selector: 'node[type = "MissionItemSceneSequencer"]',
         style: {
             'border-color': '#38bdf8',
             'border-width': 2.5,
@@ -482,68 +487,113 @@ function clearHighlighting() {
     });
 }
 
-function renderGraph() {
-    const elements = getGraphElements(currentMode, currentScope);
+// ---------------------------------------------------------------------------
+// Layout caching
+//
+// dagre.layout() is the dominant cost of a graph redraw -- timed directly
+// against this project's data via plain Node (no browser needed, dagre has
+// no DOM dependency): ~840ms for the full 816-node "All Missions" scope vs
+// ~37ms for the ~50-node POP0_ROOT critical-path subgraph. Recomputing that
+// on every mode/scope switch is the main reason switching feels slow.
+//
+// Since the data is static for the life of the page, every (mode, scope)
+// pair's layout only needs to be computed once. We cache the resulting node
+// positions and, on a repeat visit to an already-seen combination, skip
+// dagre entirely and just restore the cached positions. We also stop
+// destroying and recreating the whole cytoscape instance on every redraw --
+// that rebinds event listeners and reinitializes the renderer for no
+// reason when only the element set is changing.
+// ---------------------------------------------------------------------------
+const layoutCache = new Map(); // `${mode}::${scope}` -> { elements, positions: Map<id,{x,y}> }
 
-    if (cy) {
-        cy.destroy();
-        cy = null;
-    }
-
-    // Determine layout: dagre if available, otherwise breadthfirst
-    const hasDagre = cytoscape('layout', 'dagre') !== undefined;
-    const layoutConfig = hasDagre ? {
-        name: 'dagre',
-        rankDir: 'LR',
-        nodeSep: 45,
-        rankSep: 85,
-        padding: 40,
-        spacingFactor: 1.1
-    } : {
-        name: 'breadthfirst',
-        directed: true,
-        padding: 40,
-        spacingFactor: 1.3
-    };
-
+function ensureCyInstance() {
+    if (cy) return;
     cy = cytoscape({
         container: cyContainer,
-        elements: elements,
+        elements: [],
         style: cyStyle,
-        layout: layoutConfig,
         wheelSensitivity: 0.25,
         minZoom: 0.02,
         maxZoom: 3.5
     });
 
     cy.on('tap', 'node', (evt) => {
-        const node = evt.target;
-        selectNode(node.id(), false, true);
+        selectNode(evt.target.id(), false, true);
     });
-
     cy.on('tap', (evt) => {
-        if (evt.target === cy) {
-            clearHighlighting();
+        if (evt.target === cy) clearHighlighting();
+    });
+}
+
+function centerAndSelectRoot(elements) {
+    let rootNode = cy.getElementById('POP0_ROOT');
+    if (!rootNode || rootNode.length === 0) {
+        if (elements.length > 0) rootNode = cy.getElementById(elements[0].data.id);
+    }
+    if (rootNode && rootNode.length > 0) {
+        cy.zoom(0.85);
+        cy.center(rootNode);
+        selectNode(rootNode.id(), false, false);
+    } else if (elements.length > 0) {
+        cy.fit(undefined, 40);
+    }
+}
+
+function renderGraph() {
+    const key = `${currentMode}::${currentScope}`;
+    const cached = layoutCache.get(key);
+    const elements = cached ? cached.elements : getGraphElements(currentMode, currentScope);
+
+    ensureCyInstance();
+
+    cy.batch(() => {
+        cy.elements().remove();
+        if (cached) {
+            // Reapply remembered positions directly -- no layout pass needed.
+            cy.add(elements.map(el => el.group === 'nodes'
+                ? { ...el, position: cached.positions.get(el.data.id) || { x: 0, y: 0 } }
+                : el));
+        } else {
+            cy.add(elements);
         }
     });
 
-    // On ready: center on POP0_ROOT (or first node) at readable scale without dimming other nodes
-    cy.ready(() => {
-        let rootNode = cy.getElementById('POP0_ROOT');
-        if (!rootNode || rootNode.length === 0) {
-            if (elements.length > 0) {
-                rootNode = cy.getElementById(elements[0].data.id);
-            }
-        }
+    if (!cached) {
+        // rankDir: 'BT' -- edges run prerequisite -> thing it unlocks, and
+        // POP0_ROOT (and every scope's own root) has no outgoing edges in
+        // this graph, so BT is what places it at rank 0 = the top, with
+        // arrows reading upward into it. (Confirmed directly against dagre:
+        // for a single connected component this puts the root's y exactly
+        // at the minimum y in the layout; TB puts it at the maximum
+        // instead.) nodeDimensionsIncludeLabels is required for dagre to
+        // size ranks against each node's actual label-fitted width -- the
+        // 'width':'label' style otherwise causes dagre to assume a tiny
+        // placeholder box and under-space same-rank nodes, which is a large
+        // part of what reads as "too many crossings" once labels overlap.
+        const hasDagre = cytoscape('layout', 'dagre') !== undefined;
+        const layoutConfig = hasDagre ? {
+            name: 'dagre',
+            rankDir: 'BT',
+            nodeSep: 45,
+            rankSep: 85,
+            padding: 40,
+            spacingFactor: 1.1,
+            nodeDimensionsIncludeLabels: true
+        } : {
+            name: 'breadthfirst',
+            directed: true,
+            padding: 40,
+            spacingFactor: 1.3
+        };
 
-        if (rootNode && rootNode.length > 0) {
-            cy.zoom(0.85);
-            cy.center(rootNode);
-            selectNode(rootNode.id(), false, false);
-        } else if (elements.length > 0) {
-            cy.fit(undefined, 40);
-        }
-    });
+        cy.layout(layoutConfig).run();
+
+        const positions = new Map();
+        cy.nodes().forEach(n => positions.set(n.id(), { x: n.position('x'), y: n.position('y') }));
+        layoutCache.set(key, { elements, positions });
+    }
+
+    centerAndSelectRoot(elements);
 }
 
 // ---------------------------------------------------------------------------
