@@ -99,6 +99,21 @@ function criticalPathChildren(node) {
     return out;
 }
 
+// Nodes that participate in at least one CRITICAL-mode edge (as either end).
+// Needed because "connected" scope otherwise checks raw `requirements`
+// (inverted included), while critical mode drops inverted edges entirely --
+// a node whose only requirement is inverted (e.g. AcrobaticTutorials, which
+// requires ACT2 NOT completed) passes the generic connectivity check but
+// renders with zero edges in critical mode, looking like a stray island.
+const criticalConnectedIds = new Set();
+missionNodes.forEach(node => {
+    const children = criticalPathChildren(node);
+    if (children.length > 0) {
+        criticalConnectedIds.add(node.id || node.name);
+        children.forEach(c => criticalConnectedIds.add(c.target.id || c.target.name));
+    }
+});
+
 function unconfirmedBadge(node) {
     if (node.kind !== 'item' || !node.completion) return '';
     const rule = node.completion.rule;
@@ -124,7 +139,7 @@ let currentView = 'graph';    // 'graph' | 'tree'
 // 'all' is still one click away in the dropdown.
 let currentScope = 'connected';
 
-function filterNodesByScope(scope) {
+function filterNodesByScope(scope, mode) {
     return missionNodes.filter(node => {
         const id = node.id || node.name;
         const parents = node.parents || [];
@@ -132,6 +147,12 @@ function filterNodesByScope(scope) {
 
         if (scope === 'all') return true;
         if (scope === 'connected') {
+            // Critical mode only ever draws non-inverted requirement edges
+            // and completion-trigger edges, so "connected" has to mean
+            // connected-within-that-edge-set here, or a node like
+            // AcrobaticTutorials (whose only requirement is inverted) would
+            // pass this check yet render with no edges at all.
+            if (mode === 'critical') return criticalConnectedIds.has(id);
             const hasIn = (node.requirements || []).some(r => nodeMap.has(r.source));
             const hasOut = (reverseDepsMap.get(id) || []).length > 0;
             return hasIn || hasOut;
@@ -148,18 +169,6 @@ function filterNodesByScope(scope) {
         if (scope === 'act2') {
             return id.startsWith('ACT2') || ['HighCastle', 'LavaRift', 'Observatory', 'RuinedCity', 'Desert'].some(r => id.startsWith(r) || parents.includes(r) || owner.startsWith(r));
         }
-        if (scope === 'rc') {
-            return id.startsWith('RC') || id.startsWith('R2') || id === 'RuinedCity' || parents.includes('RuinedCity') || owner.startsWith('RC');
-        }
-        if (scope === 'ob') {
-            return id.startsWith('OB') || id === 'Observatory' || parents.includes('Observatory') || owner.startsWith('OB');
-        }
-        if (scope === 'hc') {
-            return id.startsWith('HC') || id === 'HighCastle' || parents.includes('HighCastle') || owner.startsWith('HC');
-        }
-        if (scope === 'lr') {
-            return id.startsWith('LR') || id === 'LavaRift' || parents.includes('LavaRift') || owner.startsWith('LR');
-        }
         if (scope === 'act3') {
             return id.startsWith('ACT3') || parents.includes('ACT3') || id.includes('Ahriman') || owner.startsWith('ACT3');
         }
@@ -168,7 +177,7 @@ function filterNodesByScope(scope) {
 }
 
 function getGraphElements(mode, scope) {
-    const nodes = filterNodesByScope(scope);
+    const nodes = filterNodesByScope(scope, mode);
     const visibleIds = new Set(nodes.map(n => n.id || n.name));
     const elements = [];
 
@@ -290,7 +299,6 @@ const cyStyle = [
             'text-halign': 'center',
             'text-max-width': '260px',
             'text-wrap': 'ellipsis',
-            'cursor': 'pointer',
             'transition-property': 'background-color, border-color, opacity, border-width',
             'transition-duration': '0.15s'
         }
@@ -376,15 +384,6 @@ const cyStyle = [
         }
     },
     {
-        selector: 'edge.edge-completes.highlight-incoming, edge.edge-completes.highlight-outgoing',
-        style: {
-            'line-color': '#c084fc',
-            'target-arrow-color': '#c084fc',
-            'width': 4,
-            'z-index': 999
-        }
-    },
-    {
         selector: 'edge.edge-inverted',
         style: {
             'line-color': '#ef4444',
@@ -393,60 +392,91 @@ const cyStyle = [
             'width': 2.5
         }
     },
-    {
-        selector: 'edge.edge-inverted.highlight-incoming, edge.edge-inverted.highlight-outgoing',
-        style: {
-            'line-color': '#ef4444',
-            'target-arrow-color': '#ef4444',
-            'width': 4
-        }
-    },
+
+    // ------------------------------------------------------------------
+    // Selection highlighting
+    //
+    // Colors below are intentionally literal hex, matching styles.css's
+    // --accent-cyan/--accent-orange/--accent-white/--accent-rose one for
+    // one -- Cytoscape's style engine renders to canvas, not through the
+    // page's CSS cascade, so var(--...) isn't resolvable here. Keep these
+    // two in sync by hand if either changes.
+    //
+    // Node TYPE color (above) and EDGE TYPE color (above) are a separate
+    // visual channel from SELECTION STATE -- so selection state uses its
+    // own palette that doesn't reuse any type/edge hue, or the two
+    // meanings collide on screen (a highlighted FertileGround node and a
+    // highlighted "incoming" node looked identical when both used green,
+    // same for List/"outgoing" both using purple, and Sequencer/"focus"
+    // both using blue). Selection state here is always white/cyan/orange,
+    // which appear nowhere else in this stylesheet:
+    //   focus (the selected node itself)         -> white
+    //   incoming (upstream of selection)          -> cyan
+    //   outgoing (downstream of selection)        -> orange
+    // Edges keep their OWN type color when highlighted (just thicker),
+    // since an edge's type (required/alternative/completes/inverted) is
+    // what the person is actually trying to trace -- it should never
+    // switch color just because of which side of the selection it's on.
+    // ------------------------------------------------------------------
     {
         selector: 'node.highlight-focus',
         style: {
-            'border-color': '#38bdf8',
-            'border-width': 3.5,
-            'background-color': '#1a3c66',
-            'shadow-blur': 16,
-            'shadow-color': '#38bdf8',
-            'shadow-opacity': 0.85
+            'border-color': '#f8fafc',
+            'border-width': 4,
+            'shadow-blur': 18,
+            'shadow-color': '#f8fafc',
+            'shadow-opacity': 0.9
         }
     },
     {
         selector: 'node.highlight-incoming',
         style: {
-            'border-color': '#34d399',
+            'border-color': '#22d3ee',
             'border-width': 3,
             'shadow-blur': 12,
-            'shadow-color': '#34d399',
+            'shadow-color': '#22d3ee',
             'shadow-opacity': 0.75
         }
     },
     {
         selector: 'node.highlight-outgoing',
         style: {
-            'border-color': '#c084fc',
+            'border-color': '#fb923c',
             'border-width': 3,
             'shadow-blur': 12,
-            'shadow-color': '#c084fc',
+            'shadow-color': '#fb923c',
             'shadow-opacity': 0.75
         }
     },
+    // Every edge class gets its own highlight-combo rule so it keeps its
+    // own type color (just thicker + raised z-index) instead of falling
+    // through to a generic color that would misrepresent its type.
     {
-        selector: 'edge.highlight-incoming',
-        style: {
-            'width': 4,
-            'line-color': '#34d399',
-            'target-arrow-color': '#34d399',
-            'z-index': 999
-        }
+        selector: 'edge.edge-required.highlight-incoming, edge.edge-required.highlight-outgoing, edge.edge-direct.highlight-incoming, edge.edge-direct.highlight-outgoing',
+        style: { 'width': 4, 'z-index': 999 }
     },
     {
-        selector: 'edge.highlight-outgoing',
+        selector: 'edge.edge-alternative.highlight-incoming, edge.edge-alternative.highlight-outgoing',
+        style: { 'width': 3.5, 'z-index': 999 }
+    },
+    {
+        selector: 'edge.edge-completes.highlight-incoming, edge.edge-completes.highlight-outgoing',
+        style: { 'width': 4, 'z-index': 999 }
+    },
+    {
+        selector: 'edge.edge-inverted.highlight-incoming, edge.edge-inverted.highlight-outgoing',
+        style: { 'width': 4, 'z-index': 999 }
+    },
+    // Defensive fallback only -- every edge class actually in use above has
+    // its own rule now, so this should never be the one that fires. Kept
+    // neutral (not a type/edge hue) in case a future edge class is added
+    // without its own combo rule.
+    {
+        selector: 'edge.highlight-incoming, edge.highlight-outgoing',
         style: {
             'width': 4,
-            'line-color': '#c084fc',
-            'target-arrow-color': '#c084fc',
+            'line-color': '#f8fafc',
+            'target-arrow-color': '#f8fafc',
             'z-index': 999
         }
     },
@@ -457,6 +487,12 @@ const cyStyle = [
         }
     }
 ];
+
+// Only the currently-selected node should be draggable -- everything else
+// is ungrabified by default (see renderGraph) and stays that way until it
+// becomes the selection. We track the one grabbable node so we can revert
+// it when selection moves elsewhere.
+let grabbableNode = null;
 
 function highlightNodeNeighborhood(cyNode) {
     if (!cy) return;
@@ -477,6 +513,10 @@ function highlightNodeNeighborhood(cyNode) {
         inNodes.addClass('highlight-incoming');
         outEdges.addClass('highlight-outgoing');
         outNodes.addClass('highlight-outgoing');
+
+        if (grabbableNode && grabbableNode.id() !== cyNode.id()) grabbableNode.ungrabify();
+        cyNode.grabify();
+        grabbableNode = cyNode;
     });
 }
 
@@ -484,6 +524,7 @@ function clearHighlighting() {
     if (!cy) return;
     cy.batch(() => {
         cy.elements().removeClass('highlight-focus highlight-incoming highlight-outgoing dimmed');
+        if (grabbableNode) { grabbableNode.ungrabify(); grabbableNode = null; }
     });
 }
 
@@ -523,6 +564,32 @@ function ensureCyInstance() {
     cy.on('tap', (evt) => {
         if (evt.target === cy) clearHighlighting();
     });
+
+    // Cursor feedback: Cytoscape's own stylesheet has no real "cursor"
+    // property (the canvas is one DOM element, so per-shape CSS cursors
+    // aren't a thing) -- it has to be driven by hand from interaction
+    // events. 'grab' over the only-draggable (selected) node or empty
+    // canvas (pannable), 'pointer' over any other node (click to select),
+    // 'grabbing' while actually dragging or panning.
+    cyContainer.style.cursor = 'grab';
+    cy.on('mouseover', 'node', (evt) => {
+        cyContainer.style.cursor = evt.target.grabbable() ? 'grab' : 'pointer';
+    });
+    cy.on('mouseout', 'node', () => {
+        cyContainer.style.cursor = 'grab';
+    });
+    cy.on('grab', 'node', () => {
+        cyContainer.style.cursor = 'grabbing';
+    });
+    cy.on('free', 'node', () => {
+        cyContainer.style.cursor = 'grab';
+    });
+    cy.on('mousedown', (evt) => {
+        if (evt.target === cy) cyContainer.style.cursor = 'grabbing';
+    });
+    cy.on('mouseup', (evt) => {
+        if (evt.target === cy) cyContainer.style.cursor = 'grab';
+    });
 }
 
 function centerAndSelectRoot(elements) {
@@ -545,6 +612,9 @@ function renderGraph() {
     const elements = cached ? cached.elements : getGraphElements(currentMode, currentScope);
 
     ensureCyInstance();
+    // The old elements (including whichever one was grabbable) are about to
+    // be removed, so that reference is no longer valid.
+    grabbableNode = null;
 
     cy.batch(() => {
         cy.elements().remove();
@@ -556,6 +626,9 @@ function renderGraph() {
         } else {
             cy.add(elements);
         }
+        // Only the selected node should ever be draggable (see
+        // highlightNodeNeighborhood) -- everything starts locked.
+        cy.nodes().ungrabify();
     });
 
     if (!cached) {
@@ -773,18 +846,43 @@ function renderTree(mode) {
 // ---------------------------------------------------------------------------
 // Legends & UI Controls
 // ---------------------------------------------------------------------------
+// Shared across both graph-mode legends: node-type colors and selection-
+// state colors don't change between Critical Path / Unlock Logic, only the
+// edge-type colors (listed per-mode below) do. Kept as one definition each
+// so the two can never drift out of sync with each other or with cyStyle.
+const NODE_TYPE_LEGEND = `
+  <span class="legend-group-label">Node type</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-purple);"></span>List</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-blue);"></span>Sequencer</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-emerald);"></span>Fertile Ground</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-rose);"></span>DLC Addon</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px dashed var(--text-muted);"></span>AND/OR Gate</span>
+`;
+const SELECTION_LEGEND = `
+  <span class="legend-group-label">Selected node</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-white);"></span>Selected (draggable)</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-cyan);"></span>Upstream of it</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:transparent; border:2px solid var(--accent-orange);"></span>Downstream of it</span>
+  <span class="legend-item" style="opacity:0.6;">Unrelated (faded)</span>
+`;
+
 const LEGENDS = {
     graph_critical: `
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite (Green Line)</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Completes Target (Purple Line)</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (1 of N)</span>
-      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight connections</span>
+      <span class="legend-group-label" style="margin-left:0; padding-left:0; border-left:none;">Edges</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Completes this</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (pick 1 of N)</span>
+      ${NODE_TYPE_LEGEND}
+      ${SELECTION_LEGEND}
+      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click a node to highlight its connections</span>
     `,
     graph_unlock: `
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Unlock Requirement (Connects In)</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-red); border: 1px dashed var(--accent-red);"></span>Inverted Requirement (Requires Incomplete)</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Unlocks (Connects Out)</span>
-      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click node to highlight all connects</span>
+      <span class="legend-group-label" style="margin-left:0; padding-left:0; border-left:none;">Edges</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Requires completed</span>
+      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-red); border: 1px dashed var(--accent-red);"></span>Requires NOT completed (stay-active)</span>
+      ${NODE_TYPE_LEGEND}
+      ${SELECTION_LEGEND}
+      <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click a node to highlight its connections</span>
     `,
     tree_critical: `
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite</span>
@@ -816,6 +914,13 @@ function updateViewDisplay() {
     if (zoomInBtn) zoomInBtn.style.display = isGraph ? 'inline-block' : 'none';
     const zoomOutBtn = document.getElementById('zoomOutBtn');
     if (zoomOutBtn) zoomOutBtn.style.display = isGraph ? 'inline-block' : 'none';
+
+    // The scope filter only affects what Graph View draws -- Tree View
+    // always renders every root's full subtree regardless of scope, so the
+    // control has no effect there and should read as unavailable rather
+    // than silently doing nothing.
+    const scopeFilterEl = document.getElementById('scopeFilter');
+    if (scopeFilterEl) scopeFilterEl.disabled = !isGraph;
 
     document.getElementById('viewGraphBtn').classList.toggle('btn-active', isGraph);
     document.getElementById('viewTreeBtn').classList.toggle('btn-active', !isGraph);

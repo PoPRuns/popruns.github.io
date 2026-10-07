@@ -13,8 +13,11 @@
     --accent-purple: #c084fc;
     --accent-amber: #fbbf24;
     --accent-emerald: #34d399;
-    --accent-rose: #ef4444;
+    --accent-rose: #fb7185;
     --accent-red: #ef4444;
+    --accent-cyan: #22d3ee;
+    --accent-orange: #fb923c;
+    --accent-white: #f8fafc;
 }
 
 * {
@@ -360,6 +363,23 @@ input[type="text"]:focus {
     width: 10px;
     height: 10px;
     border-radius: 3px;
+}
+
+.tree-legend .legend-group-label {
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
+    margin-left: 6px;
+    padding-left: 14px;
+    border-left: 1px solid var(--border-color);
+}
+
+.tree-legend .legend-group-label:first-child {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
 }
 
 .collapsed>ul {
