@@ -494,15 +494,226 @@ const cyStyle = [
 // it when selection moves elsewhere.
 let grabbableNode = null;
 
+// ---------------------------------------------------------------------------
+// Offscreen indicators
+//
+// A selected node's highlighted neighborhood can run well outside the
+// current viewport -- some nodes have up to ~27 connections in Unlock
+// Logic mode -- so hunting for them by dragging doesn't scale. Every
+// highlighted node currently outside the visible canvas gets a small arrow
+// pinned to the nearest edge, pointing toward it and colored to match its
+// relationship (see the selection-state legend). Clicking one fits the
+// view to show the selected node and that target together.
+// ---------------------------------------------------------------------------
+let offscreenOverlay = null;
+let highlightedForIndicators = []; // [{ node: cyNode, relation: 'focus'|'incoming'|'outgoing' }]
+
+const OFFSCREEN_EDGE_INSET = 12;  // px from the container edge
+const OFFSCREEN_MAX_SHOWN = 9;    // individual arrows before collapsing into "+N more"
+
+// Indicators sharing an edge get pushed apart along it if they'd overlap.
+// If no indicators overlap, they remain exactly at their calculated connector line intersections.
+function declutterIndicators(list, w, h) {
+    const VERT_GAP = 32;
+    const HORIZ_GAP = 120;
+    const padY = 24;
+    const padX = 85;
+
+    ['left', 'right'].forEach(edge => {
+        const col = list.filter(i => i.edge === edge).sort((a, b) => a.screenY - b.screenY);
+        if (col.length <= 1) return;
+        let overlap = false;
+        for (let i = 1; i < col.length; i++) {
+            if (col[i].screenY - col[i - 1].screenY < VERT_GAP) {
+                overlap = true;
+                break;
+            }
+        }
+        if (!overlap) return;
+
+        for (let i = 1; i < col.length; i++) {
+            if (col[i].screenY - col[i - 1].screenY < VERT_GAP) {
+                col[i].screenY = col[i - 1].screenY + VERT_GAP;
+            }
+        }
+        const overflowBottom = col[col.length - 1].screenY - (h - padY);
+        if (overflowBottom > 0) {
+            for (let i = col.length - 1; i >= 0; i--) {
+                col[i].screenY -= overflowBottom;
+            }
+            for (let i = 0; i < col.length; i++) {
+                if (col[i].screenY < padY + i * VERT_GAP) {
+                    col[i].screenY = padY + i * VERT_GAP;
+                }
+            }
+        }
+    });
+
+    ['top', 'bottom'].forEach(edge => {
+        const row = list.filter(i => i.edge === edge).sort((a, b) => a.screenX - b.screenX);
+        if (row.length <= 1) return;
+        let overlap = false;
+        for (let i = 1; i < row.length; i++) {
+            if (row[i].screenX - row[i - 1].screenX < HORIZ_GAP) {
+                overlap = true;
+                break;
+            }
+        }
+        if (!overlap) return;
+
+        for (let i = 1; i < row.length; i++) {
+            if (row[i].screenX - row[i - 1].screenX < HORIZ_GAP) {
+                row[i].screenX = row[i - 1].screenX + HORIZ_GAP;
+            }
+        }
+        const overflowRight = row[row.length - 1].screenX - (w - padX);
+        if (overflowRight > 0) {
+            for (let i = row.length - 1; i >= 0; i--) {
+                row[i].screenX -= overflowRight;
+            }
+            for (let i = 0; i < row.length; i++) {
+                if (row[i].screenX < padX + i * HORIZ_GAP) {
+                    row[i].screenX = padX + i * HORIZ_GAP;
+                }
+            }
+        }
+    });
+}
+
+function updateOffscreenIndicators() {
+    if (!cy || !offscreenOverlay) return;
+    offscreenOverlay.innerHTML = '';
+    if (!highlightedForIndicators.length) return;
+
+    const w = cy.width();
+    const h = cy.height();
+    if (w <= 0 || h <= 0) return;
+
+    const minX = OFFSCREEN_EDGE_INSET;
+    const maxX = w - OFFSCREEN_EDGE_INSET;
+    const minY = OFFSCREEN_EDGE_INSET;
+    const maxY = h - OFFSCREEN_EDGE_INSET;
+    const cxp = w / 2;
+    const cyp = h / 2;
+
+    const focusEntry = highlightedForIndicators.find(h => h.relation === 'focus');
+    const focusNode = focusEntry ? focusEntry.node : null;
+    let focusPos = null;
+    let isFocusOnScreen = false;
+    if (focusNode) {
+        focusPos = focusNode.renderedPosition();
+        isFocusOnScreen = focusPos.x >= 0 && focusPos.x <= w && focusPos.y >= 0 && focusPos.y <= h;
+    }
+
+    const offscreen = [];
+    highlightedForIndicators.forEach(({ node, relation }) => {
+        const pos = node.renderedPosition();
+        // Node is already visible inside canvas viewport
+        if (pos.x >= 0 && pos.x <= w && pos.y >= 0 && pos.y <= h) return;
+
+        // Cast ray from focus node along connector line if focus node is on screen,
+        // otherwise cast ray from viewport center towards offscreen target.
+        let originX, originY;
+        if (relation !== 'focus' && isFocusOnScreen && focusPos) {
+            originX = Math.max(minX, Math.min(maxX, focusPos.x));
+            originY = Math.max(minY, Math.min(maxY, focusPos.y));
+        } else {
+            originX = cxp;
+            originY = cyp;
+        }
+
+        const dx = pos.x - originX;
+        const dy = pos.y - originY;
+        if (dx === 0 && dy === 0) return;
+
+        let tX = Infinity;
+        if (dx > 0) tX = (maxX - originX) / dx;
+        else if (dx < 0) tX = (minX - originX) / dx;
+
+        let tY = Infinity;
+        if (dy > 0) tY = (maxY - originY) / dy;
+        else if (dy < 0) tY = (minY - originY) / dy;
+
+        const t = Math.min(tX, tY);
+        let screenX, screenY, edge;
+        if (t === tX) {
+            edge = dx > 0 ? 'right' : 'left';
+            screenX = dx > 0 ? maxX : minX;
+            screenY = Math.max(minY, Math.min(maxY, originY + t * dy));
+        } else {
+            edge = dy > 0 ? 'bottom' : 'top';
+            screenX = Math.max(minX, Math.min(maxX, originX + t * dx));
+            screenY = dy > 0 ? maxY : minY;
+        }
+
+        // Clamp coordinates away from extreme container corners to prevent badge clipping
+        if (edge === 'left' || edge === 'right') {
+            screenY = Math.max(20, Math.min(h - 20, screenY));
+        } else {
+            screenX = Math.max(90, Math.min(w - 90, screenX));
+        }
+
+        offscreen.push({
+            node,
+            relation,
+            dist: Math.hypot(pos.x - (focusPos ? focusPos.x : cxp), pos.y - (focusPos ? focusPos.y : cyp)),
+            screenX,
+            screenY,
+            edge,
+            angle: Math.atan2(dy, dx) * 180 / Math.PI
+        });
+    });
+    if (!offscreen.length) return;
+
+    // Closest-first: the nodes nearest the viewport are shown first
+    offscreen.sort((a, b) => a.dist - b.dist);
+    const shown = offscreen.slice(0, OFFSCREEN_MAX_SHOWN);
+    const overflow = offscreen.slice(OFFSCREEN_MAX_SHOWN);
+    declutterIndicators(shown, w, h);
+
+    shown.forEach(ind => {
+        const el = document.createElement('div');
+        el.className = `offscreen-indicator offscreen-${ind.relation} offscreen-edge-${ind.edge}`;
+        el.style.left = `${ind.screenX}px`;
+        el.style.top = `${ind.screenY}px`;
+        el.title = ind.node.data('label') || ind.node.id();
+        el.innerHTML = `<span class="offscreen-arrow" style="--arrow-angle:${ind.angle}deg;"></span><span class="offscreen-label">${ind.node.data('label') || ind.node.id()}</span>`;
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectNode(ind.node.id(), true, true, false);
+        });
+        offscreenOverlay.appendChild(el);
+    });
+
+    if (overflow.length > 0) {
+        const el = document.createElement('div');
+        el.className = 'offscreen-indicator offscreen-more';
+        el.style.left = `${w - OFFSCREEN_EDGE_INSET}px`;
+        el.style.top = `${h - OFFSCREEN_EDGE_INSET}px`;
+        el.title = `${overflow.length} more offscreen -- click to fit all`;
+        el.innerText = `+${overflow.length}`;
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const all = highlightedForIndicators.reduce((col, h) => col.union(h.node), cy.collection());
+            cy.stop();
+            cy.animate({ fit: { eles: all, padding: 60 } }, { duration: 300 });
+        });
+        offscreenOverlay.appendChild(el);
+    }
+}
+
 function highlightNodeNeighborhood(cyNode) {
     if (!cy) return;
+    // Declared outside the batch() callback -- used again afterward to
+    // build the offscreen-indicator list, so they can't be block-scoped
+    // to just that callback.
+    const inEdges = cyNode.incomers('edge');
+    const inNodes = cyNode.incomers('node');
+    const outEdges = cyNode.outgoers('edge');
+    const outNodes = cyNode.outgoers('node');
+
     cy.batch(() => {
         cy.elements().removeClass('highlight-focus highlight-incoming highlight-outgoing dimmed');
-
-        const inEdges = cyNode.incomers('edge');
-        const inNodes = cyNode.incomers('node');
-        const outEdges = cyNode.outgoers('edge');
-        const outNodes = cyNode.outgoers('node');
 
         const connected = cyNode.union(inEdges).union(inNodes).union(outEdges).union(outNodes);
         const other = cy.elements().difference(connected);
@@ -518,6 +729,11 @@ function highlightNodeNeighborhood(cyNode) {
         cyNode.grabify();
         grabbableNode = cyNode;
     });
+
+    highlightedForIndicators = [{ node: cyNode, relation: 'focus' }];
+    inNodes.forEach(n => highlightedForIndicators.push({ node: n, relation: 'incoming' }));
+    outNodes.forEach(n => highlightedForIndicators.push({ node: n, relation: 'outgoing' }));
+    updateOffscreenIndicators();
 }
 
 function clearHighlighting() {
@@ -526,6 +742,8 @@ function clearHighlighting() {
         cy.elements().removeClass('highlight-focus highlight-incoming highlight-outgoing dimmed');
         if (grabbableNode) { grabbableNode.ungrabify(); grabbableNode = null; }
     });
+    highlightedForIndicators = [];
+    updateOffscreenIndicators();
 }
 
 // ---------------------------------------------------------------------------
@@ -590,6 +808,28 @@ function ensureCyInstance() {
     cy.on('mouseup', (evt) => {
         if (evt.target === cy) cyContainer.style.cursor = 'grab';
     });
+
+    offscreenOverlay = document.createElement('div');
+    offscreenOverlay.id = 'offscreenOverlay';
+    offscreenOverlay.className = 'offscreen-overlay';
+    ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click', 'dblclick'].forEach(evtName => {
+        offscreenOverlay.addEventListener(evtName, (e) => {
+            e.stopPropagation();
+        });
+    });
+    cyContainer.appendChild(offscreenOverlay);
+
+    // Pan, zoom, and container resize can all change which highlighted
+    // nodes are currently offscreen -- 'viewport' covers pan+zoom, and a
+    // window resize needs cy.resize() first so cy.width()/height() reflect
+    // the new container size before recomputing. Dragging or repositioning
+    // nodes also adjusts their rendered positions relative to the screen.
+    cy.on('viewport', updateOffscreenIndicators);
+    cy.on('drag position', 'node', updateOffscreenIndicators);
+    window.addEventListener('resize', () => {
+        cy.resize();
+        updateOffscreenIndicators();
+    });
 }
 
 function centerAndSelectRoot(elements) {
@@ -612,9 +852,12 @@ function renderGraph() {
     const elements = cached ? cached.elements : getGraphElements(currentMode, currentScope);
 
     ensureCyInstance();
-    // The old elements (including whichever one was grabbable) are about to
-    // be removed, so that reference is no longer valid.
+    // The old elements (including whichever one was grabbable, and whatever
+    // was tracked for offscreen indicators) are about to be removed, so
+    // those references are no longer valid.
     grabbableNode = null;
+    highlightedForIndicators = [];
+    if (offscreenOverlay) offscreenOverlay.innerHTML = '';
 
     cy.batch(() => {
         cy.elements().remove();
@@ -1089,7 +1332,7 @@ function describeCompletion(node) {
     }
 }
 
-function selectNode(nodeIdentifier, centerGraph = true, highlight = true) {
+function selectNode(nodeIdentifier, centerGraph = true, highlight = true, changeZoom = true) {
     const node = nodeMap.get(nodeIdentifier);
     if (!node) return;
     const nodeId = node.id || node.name;
@@ -1102,10 +1345,12 @@ function selectNode(nodeIdentifier, centerGraph = true, highlight = true) {
                 highlightNodeNeighborhood(cyNode);
             }
             if (centerGraph) {
-                cy.animate({
-                    center: { eles: cyNode },
-                    zoom: Math.max(cy.zoom(), 0.75)
-                }, { duration: 250 });
+                cy.stop();
+                const animProps = { center: { eles: cyNode } };
+                if (changeZoom) {
+                    animProps.zoom = Math.max(cy.zoom(), 0.75);
+                }
+                cy.animate(animProps, { duration: 250 });
             }
         }
     }
@@ -1140,15 +1385,9 @@ function selectNode(nodeIdentifier, centerGraph = true, highlight = true) {
         : node.hash;
     document.getElementById('metaType').innerText = node.kind === 'gate' ? typeLabelFor(node) : node.type;
     document.getElementById('metaSeqMode').innerText = node.seqModeName || 'None';
-    document.getElementById('metaParents').innerText = node.kind === 'gate'
-        ? (nodeMap.get(node.owner)?.displayName || node.owner || '-')
-        : (node.parents.map(p => nodeMap.get(p)?.displayName || p).join(', ') || 'Root Scope');
     document.getElementById('metaPorts').innerText = (node.requirements || []).length;
-
-    const childrenEl = document.getElementById('metaChildren');
-    if (childrenEl) {
-        childrenEl.innerText = node.kind === 'item' ? (node.children.map(c => nodeMap.get(c)?.displayName || c).join(', ') || 'None') : '—';
-    }
+    // Parents/children are already covered by the "Implicit: Parent Must Be
+    // Active" and "Contains" sections below -- no need to repeat them here.
 
     const flagsEl = document.getElementById('metaFlags');
     if (flagsEl) {
