@@ -16,38 +16,91 @@
             <i class="fa fa-arrow-left"></i>
             <span class="nav-link-text">PoP 2008</span>
         </a>
-        <button class="btn btn-active" id="modeCriticalBtn">Critical Path</button>
-        <button class="btn" id="modeUnlockBtn">Unlock Logic</button>
-        <button class="btn btn-active" id="viewGraphBtn">Graph View</button>
-        <button class="btn" id="viewTreeBtn">Tree View</button>
-        <select id="scopeFilter" class="btn" style="padding: 7px 10px; cursor: pointer;">
-            <option value="all">All Missions (816)</option>
-            <option value="connected" selected>Connected Only</option>
-            <option value="main">Main Game</option>
-            <option value="act1">Act 1: Temple Corruption</option>
-            <option value="act2">Act 2: The Fertile Grounds</option>
-            <option value="act3">Act 3: Epilogue & Final</option>
-            <option value="dlc">Epilogue DLC</option>
-        </select>
-        <button class="btn" id="fitBtn" title="Fit graph to view">Fit</button>
-        <button class="btn" id="zoomInBtn" title="Zoom in" style="font-weight: bold; padding: 7px 11px;">+</button>
-        <button class="btn" id="zoomOutBtn" title="Zoom out" style="font-weight: bold; padding: 7px 11px;">-</button>
-        <button class="btn" id="expandBtn" style="display: none;">Expand All</button>
-        <button class="btn" id="collapseBtn" style="display: none;">Collapse All</button>
-        <input type="text" id="nodeSearchInput" list="nodeSearchList" placeholder="Search name or ID..." autocomplete="off" />
-        <datalist id="nodeSearchList"></datalist>
     </popruns-navbar>
+
+    <div class="app-toolbar" id="appToolbar">
+        <div class="toolbar-section">
+            <div class="btn-group">
+                <button class="btn btn-active" id="modeCriticalBtn">Critical Path</button>
+                <button class="btn" id="modeUnlockBtn">Unlock Logic</button>
+            </div>
+        </div>
+        <div class="toolbar-section">
+            <select id="scopeFilter" class="btn toolbar-select" aria-label="Scope filter">
+                <option value="main" selected>Main Game</option>
+                <optgroup label="Story Acts">
+                    <option value="act1">Act 1: Temple Corruption</option>
+                    <option value="act2">Act 2: The Fertile Grounds</option>
+                    <option value="act3">Act 3: Epilogue & Final</option>
+                    <option value="dlc">Epilogue DLC</option>
+                </optgroup>
+                <optgroup label="Ruined Citadel">
+                    <option value="RC1_FertileGround">Windmills</option>
+                    <option value="RC2_FertileGround">Martyrs' Tower</option>
+                    <option value="RC5_SE_FertileGround">Sun Temple</option>
+                    <option value="RC4_FertileGround">Marshalling Ground</option>
+                </optgroup>
+                <optgroup label="The Vale">
+                    <option value="OB1_FertileGround">Machinery Ground</option>
+                    <option value="OB2_SCE_FertileGround_001">Heaven's Stair</option>
+                    <option value="OB5_FertileGround">The Reservoir</option>
+                    <option value="OB4_FertileGround">Construction Yard</option>
+                </optgroup>
+                <optgroup label="Royal Palace">
+                    <option value="HC1_FertileGround">Spire of Dreams</option>
+                    <option value="HC2_FertileGround_001">Royal Gardens</option>
+                    <option value="HC5_FertileGround">Royal Spire</option>
+                    <option value="HC4_FertileGround">Coronation Hall</option>
+                </optgroup>
+                <optgroup label="City of Light">
+                    <option value="LR1_FertileGround">Tower of Ormazd</option>
+                    <option value="LR4_FertileGround">Queen's Tower</option>
+                    <option value="LR2_004_FertileGround">Tower of Ahriman</option>
+                    <option value="LR5_FertileGround">City of Light</option>
+                </optgroup>
+                <option value="all">All Missions (816)</option>
+            </select>
+            <div class="btn-group">
+                <button class="btn" id="fitBtn" title="Fit graph to view">Fit</button>
+                <button class="btn btn-icon" id="zoomInBtn" title="Zoom in">+</button>
+                <button class="btn btn-icon" id="zoomOutBtn" title="Zoom out">-</button>
+            </div>
+            <div class="btn-group">
+                <button class="btn" id="copyPngBtn" title="Copy current view as PNG image to clipboard">Copy PNG</button>
+                <button class="btn" id="copySvgBtn" title="Copy current view as SVG to clipboard">Copy SVG</button>
+            </div>
+        </div>
+        <div class="toolbar-section search-section">
+            <input type="text" id="nodeSearchInput" list="nodeSearchList" placeholder="Search mission..." autocomplete="off" />
+            <datalist id="nodeSearchList"></datalist>
+            <button class="btn inspector-toggle-btn" id="inspectorToggleBtn" title="Toggle node details panel">
+                <i class="fa fa-circle-info"></i> <span id="inspectToggleLabel">Details</span>
+            </button>
+        </div>
+    </div>
 
     <div class="app-container">
         <div class="tree-viewport" id="treeViewport">
             <div id="treeLegend" class="tree-legend"></div>
             <div id="cy"></div>
-            <ul class="tree" id="treeRoot" style="display: none;"></ul>
+            <div class="mobile-peek-bar" id="mobilePeekBar" style="display: none;">
+                <div class="peek-content">
+                    <span class="peek-badge" id="peekBadge">Item</span>
+                    <strong class="peek-title" id="peekTitle">Select a node</strong>
+                </div>
+                <span class="peek-action">Inspect ▴</span>
+            </div>
         </div>
 
-        <aside>
+        <div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+        <aside id="inspectorAside">
+            <div class="sheet-drag-handle" id="sheetDragHandle"></div>
             <div class="inspector-header">
-                <h2 id="inspectName" style="font-size: 1.15rem; word-break: break-word;">Select a Node</h2>
+                <div class="inspector-header-top">
+                    <h2 id="inspectName" style="font-size: 1.15rem; word-break: break-word;">Select a Node</h2>
+                    <button class="sheet-close-btn" id="sheetCloseBtn" aria-label="Close details">✕</button>
+                </div>
                 <div style="display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; font-size: 0.78rem; align-items: baseline;">
                     <div><span style="color: var(--text-muted);">ID:</span> <code id="inspectId" class="meta-value" style="color: var(--accent-blue); word-break: break-all;">-</code></div>
                     <div><span style="color: var(--text-muted);">Hash:</span> <span id="inspectHash" class="meta-value" style="color: var(--text-muted);">-</span></div>
@@ -121,6 +174,7 @@
     <script src="cytoscape.min.js"></script>
     <script src="dagre.min.js"></script>
     <script src="cytoscape-dagre.min.js"></script>
+    <script src="cytoscape-svg.js"></script>
     <script type="module" src="app.js"></script>
     <script src="../../static/js/footer.js" defer></script>
 </body>

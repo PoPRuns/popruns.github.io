@@ -1,11 +1,12 @@
 import missionNodes from "./data.js";
 
-// Ensure cytoscape-dagre layout extension is registered
-if (window.cytoscape && window.cytoscapeDagre) {
-    try {
-        window.cytoscape.use(window.cytoscapeDagre);
-    } catch (e) {
-        // already registered
+// Ensure cytoscape-dagre layout extension and cytoscape-svg are registered
+if (window.cytoscape) {
+    if (window.cytoscapeDagre) {
+        try { window.cytoscape.use(window.cytoscapeDagre); } catch (e) {}
+    }
+    if (window.cytoscapeSvg) {
+        try { window.cytoscape.use(window.cytoscapeSvg); } catch (e) {}
     }
 }
 
@@ -36,12 +37,6 @@ missionNodes.forEach(node => {
 });
 
 const referencedAsSource = new Set();
-missionNodes.forEach(node => {
-    (node.requirements || []).forEach(req => referencedAsSource.add(req.source));
-});
-const roots = missionNodes.filter(node => node.kind === 'item' && !referencedAsSource.has(node.id || node.name));
-
-const treeRootUl = document.getElementById('treeRoot');
 const cyContainer = document.getElementById('cy');
 const treeViewport = document.getElementById('treeViewport');
 
@@ -131,49 +126,67 @@ function unconfirmedBadge(node) {
 // ---------------------------------------------------------------------------
 let cy = null;
 let currentMode = 'critical'; // 'critical' | 'unlock'
-let currentView = 'graph';    // 'graph' | 'tree'
-// 'connected' rather than 'all': with every disconnected side-content tree
-// sharing one dagre rank space, isolated/unrelated chains can land at the
-// same extreme rank as POP0_ROOT (see the rankDir comment in renderGraph),
-// so defaulting to literally everything works against "root at the top".
-// 'all' is still one click away in the dropdown.
-let currentScope = 'connected';
+let currentScope = 'main';    // 'main' (POP0_ROOT upstream) by default
+function getUpstreamNodeIds(startId, mode) {
+    const visited = new Set();
+    const queue = [startId];
+    if (nodeMap.has(startId)) visited.add(startId);
+
+    while (queue.length > 0) {
+        const currId = queue.shift();
+        const node = nodeMap.get(currId);
+        if (!node) continue;
+
+        if (mode === 'critical') {
+            if (node.kind === 'item') {
+                (node.requirements || []).forEach(r => {
+                    if (!r.inverted && nodeMap.has(r.source) && !visited.has(r.source)) {
+                        visited.add(r.source);
+                        queue.push(r.source);
+                    }
+                });
+                if (node.completion && node.completion.rule === 'internal-signal') {
+                    node.completion.triggers.forEach(t => {
+                        if (nodeMap.has(t) && !visited.has(t)) {
+                            visited.add(t);
+                            queue.push(t);
+                        }
+                    });
+                }
+            } else if (node.kind === 'gate') {
+                (node.requirements || []).forEach(r => {
+                    if (!r.inverted && nodeMap.has(r.source) && !visited.has(r.source)) {
+                        visited.add(r.source);
+                        queue.push(r.source);
+                    }
+                });
+            }
+        } else {
+            // Unlock Logic mode: all requirements
+            (node.requirements || []).forEach(r => {
+                if (nodeMap.has(r.source) && !visited.has(r.source)) {
+                    visited.add(r.source);
+                    queue.push(r.source);
+                }
+            });
+        }
+    }
+    return visited;
+}
 
 function filterNodesByScope(scope, mode) {
-    return missionNodes.filter(node => {
-        const id = node.id || node.name;
-        const parents = node.parents || [];
-        const owner = node.owner || '';
+    if (scope === 'all') return missionNodes;
 
-        if (scope === 'all') return true;
-        if (scope === 'connected') {
-            // Critical mode only ever draws non-inverted requirement edges
-            // and completion-trigger edges, so "connected" has to mean
-            // connected-within-that-edge-set here, or a node like
-            // AcrobaticTutorials (whose only requirement is inverted) would
-            // pass this check yet render with no edges at all.
-            if (mode === 'critical') return criticalConnectedIds.has(id);
-            const hasIn = (node.requirements || []).some(r => nodeMap.has(r.source));
-            const hasOut = (reverseDepsMap.get(id) || []).length > 0;
-            return hasIn || hasOut;
-        }
-        if (scope === 'dlc') {
-            return node.bundle === 'dlc' || id.startsWith('DLC') || (id.startsWith('0') && /^\d\d_/.test(id)) || id.startsWith('Ach_') || id === '0xd71a8526' || owner.startsWith('DLC');
-        }
-        if (scope === 'main') {
-            return !(node.bundle === 'dlc' || id.startsWith('DLC') || (id.startsWith('0') && /^\d\d_/.test(id)) || id.startsWith('Ach_') || id === '0xd71a8526' || owner.startsWith('DLC'));
-        }
-        if (scope === 'act1') {
-            return id.startsWith('ACT1') || parents.includes('ACT1') || owner.startsWith('ACT1');
-        }
-        if (scope === 'act2') {
-            return id.startsWith('ACT2') || ['HighCastle', 'LavaRift', 'Observatory', 'RuinedCity', 'Desert'].some(r => id.startsWith(r) || parents.includes(r) || owner.startsWith(r));
-        }
-        if (scope === 'act3') {
-            return id.startsWith('ACT3') || parents.includes('ACT3') || id.includes('Ahriman') || owner.startsWith('ACT3');
-        }
-        return true;
-    });
+    let targetRoot = 'POP0_ROOT';
+    if (scope === 'act1') targetRoot = 'ACT1';
+    else if (scope === 'act2') targetRoot = 'ACT2';
+    else if (scope === 'act3') targetRoot = 'ACT3';
+    else if (scope === 'dlc') targetRoot = 'DLC_Root';
+    else if (scope === 'main' || scope === 'connected') targetRoot = 'POP0_ROOT';
+    else if (nodeMap.has(scope)) targetRoot = scope; // Fertile Ground level or specific node
+
+    const allowedIds = getUpstreamNodeIds(targetRoot, mode);
+    return missionNodes.filter(node => allowedIds.has(node.id || node.name));
 }
 
 function getGraphElements(mode, scope) {
@@ -299,6 +312,7 @@ const cyStyle = [
             'text-halign': 'center',
             'text-max-width': '260px',
             'text-wrap': 'ellipsis',
+            'z-index': 20,
             'transition-property': 'background-color, border-color, opacity, border-width',
             'transition-duration': '0.15s'
         }
@@ -356,6 +370,8 @@ const cyStyle = [
             'arrow-scale': 1.1,
             'line-color': '#475569',
             'target-arrow-color': '#475569',
+            'opacity': 0.7,
+            'z-index': 1,
             'transition-property': 'line-color, target-arrow-color, width, opacity',
             'transition-duration': '0.15s'
         }
@@ -392,6 +408,12 @@ const cyStyle = [
             'width': 2.5
         }
     },
+    {
+        selector: 'edge.edge-hidden',
+        style: {
+            'display': 'none'
+        }
+    },
 
     // ------------------------------------------------------------------
     // Selection highlighting
@@ -425,7 +447,8 @@ const cyStyle = [
             'border-width': 4,
             'shadow-blur': 18,
             'shadow-color': '#f8fafc',
-            'shadow-opacity': 0.9
+            'shadow-opacity': 0.9,
+            'z-index': 100
         }
     },
     {
@@ -435,7 +458,8 @@ const cyStyle = [
             'border-width': 3,
             'shadow-blur': 12,
             'shadow-color': '#22d3ee',
-            'shadow-opacity': 0.75
+            'shadow-opacity': 0.75,
+            'z-index': 90
         }
     },
     {
@@ -445,7 +469,8 @@ const cyStyle = [
             'border-width': 3,
             'shadow-blur': 12,
             'shadow-color': '#fb923c',
-            'shadow-opacity': 0.75
+            'shadow-opacity': 0.75,
+            'z-index': 90
         }
     },
     // Every edge class gets its own highlight-combo rule so it keeps its
@@ -453,19 +478,19 @@ const cyStyle = [
     // through to a generic color that would misrepresent its type.
     {
         selector: 'edge.edge-required.highlight-incoming, edge.edge-required.highlight-outgoing, edge.edge-direct.highlight-incoming, edge.edge-direct.highlight-outgoing',
-        style: { 'width': 4, 'z-index': 999 }
+        style: { 'width': 4, 'z-index': 999, 'opacity': 1 }
     },
     {
         selector: 'edge.edge-alternative.highlight-incoming, edge.edge-alternative.highlight-outgoing',
-        style: { 'width': 3.5, 'z-index': 999 }
+        style: { 'width': 3.5, 'z-index': 999, 'opacity': 1 }
     },
     {
         selector: 'edge.edge-completes.highlight-incoming, edge.edge-completes.highlight-outgoing',
-        style: { 'width': 4, 'z-index': 999 }
+        style: { 'width': 4, 'z-index': 999, 'opacity': 1 }
     },
     {
         selector: 'edge.edge-inverted.highlight-incoming, edge.edge-inverted.highlight-outgoing',
-        style: { 'width': 4, 'z-index': 999 }
+        style: { 'width': 4, 'z-index': 999, 'opacity': 1 }
     },
     // Defensive fallback only -- every edge class actually in use above has
     // its own rule now, so this should never be the one that fires. Kept
@@ -477,13 +502,22 @@ const cyStyle = [
             'width': 4,
             'line-color': '#f8fafc',
             'target-arrow-color': '#f8fafc',
-            'z-index': 999
+            'z-index': 999,
+            'opacity': 1
         }
     },
     {
-        selector: '.dimmed',
+        selector: 'node.dimmed',
         style: {
-            'opacity': 0.55
+            'opacity': 0.35,
+            'z-index': 5
+        }
+    },
+    {
+        selector: 'edge.dimmed',
+        style: {
+            'opacity': 0.12,
+            'z-index': 0
         }
     }
 ];
@@ -833,7 +867,17 @@ function ensureCyInstance() {
 }
 
 function centerAndSelectRoot(elements) {
-    let rootNode = cy.getElementById('POP0_ROOT');
+    let targetRootId = 'POP0_ROOT';
+    if (currentScope === 'act1') targetRootId = 'ACT1';
+    else if (currentScope === 'act2') targetRootId = 'ACT2';
+    else if (currentScope === 'act3') targetRootId = 'ACT3';
+    else if (currentScope === 'dlc') targetRootId = 'DLC_Root';
+    else if (nodeMap.has(currentScope)) targetRootId = currentScope;
+
+    let rootNode = cy.getElementById(targetRootId);
+    if (!rootNode || rootNode.length === 0) {
+        rootNode = cy.getElementById('POP0_ROOT');
+    }
     if (!rootNode || rootNode.length === 0) {
         if (elements.length > 0) rootNode = cy.getElementById(elements[0].data.id);
     }
@@ -890,8 +934,12 @@ function renderGraph() {
         const layoutConfig = hasDagre ? {
             name: 'dagre',
             rankDir: 'BT',
-            nodeSep: 45,
-            rankSep: 85,
+            nodeSep: 75,
+            rankSep: 115,
+            edgeSep: 25,
+            ranker: 'network-simplex',
+            acyclicer: 'greedy',
+            edgeWeight: (edge) => edge.data('edgeType') === 'inverted' ? 1 : 4,
             padding: 40,
             spacingFactor: 1.1,
             nodeDimensionsIncludeLabels: true
@@ -909,181 +957,8 @@ function renderGraph() {
         layoutCache.set(key, { elements, positions });
     }
 
+    syncInvertedEdgesVisibility();
     centerAndSelectRoot(elements);
-}
-
-// ---------------------------------------------------------------------------
-// Deduplicated Tree View Builder (No Subtree Repetition)
-// ---------------------------------------------------------------------------
-let renderedInTree = new Set();
-
-function buildRequirementTree(node, visitedInBranch = new Set(), reqCondition = null) {
-    const li = document.createElement('li');
-    const nodeId = node.id || node.name;
-    const isCycle = visitedInBranch.has(nodeId);
-    const isAlreadyRendered = renderedInTree.has(nodeId);
-    renderedInTree.add(nodeId);
-
-    const hasRequirements = node.requirements && node.requirements.length > 0;
-    const canExpand = hasRequirements && !isCycle && !isAlreadyRendered;
-
-    const nodeItem = document.createElement('div');
-    nodeItem.className = 'tree-node-item';
-    nodeItem.dataset.id = nodeId;
-    nodeItem.dataset.name = nodeId;
-    nodeItem.title = `ID: ${nodeId}`;
-
-    let conditionHtml = '';
-    if (reqCondition !== null) {
-        conditionHtml = `
-          <span class="req-condition-tag ${reqCondition.inverted ? 'cond-inverted' : 'cond-direct'}">
-            ${reqCondition.inverted ? '[REQUIRES INCOMPLETE]' : '[REQUIRES COMPLETED]'}
-          </span>
-        `;
-    }
-
-    let refHtml = '';
-    if (isCycle) {
-        refHtml = '<span class="node-ref-tag">(cycle)</span>';
-    } else if (isAlreadyRendered) {
-        refHtml = '<span class="node-ref-tag" title="Connections already shown earlier in tree">(ref)</span>';
-    }
-
-    nodeItem.innerHTML = `
-        ${canExpand ? '<span class="toggle-btn">▶</span>' : '<span style="width:16px;"></span>'}
-        ${conditionHtml}
-        <span class="node-label" ${reqCondition?.inverted ? 'style="color: var(--accent-red, #ef4444);"' : ''}>${node.displayName || nodeId}</span>
-        <span class="badge-pill ${typeBadgeFor(node)}">${typeLabelFor(node)}</span>
-        ${refHtml}
-      `;
-
-    nodeItem.addEventListener('click', (e) => {
-        if (e.target.classList.contains('toggle-btn')) return;
-        selectNode(nodeId);
-    });
-
-    if (canExpand) {
-        const toggle = nodeItem.querySelector('.toggle-btn');
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            li.classList.toggle('collapsed');
-            toggle.innerText = li.classList.contains('collapsed') ? '▶' : '▼';
-        });
-    }
-
-    li.appendChild(nodeItem);
-
-    if (canExpand) {
-        const childUl = document.createElement('ul');
-        const nextVisited = new Set(visitedInBranch).add(nodeId);
-
-        node.requirements.forEach(req => {
-            const reqTargetNode = nodeMap.get(req.source);
-            if (reqTargetNode) {
-                childUl.appendChild(buildRequirementTree(reqTargetNode, nextVisited, req));
-            } else {
-                const missingLi = document.createElement('li');
-                missingLi.innerHTML = `
-                  <div class="tree-node-item" style="opacity: 0.6;">
-                    <span style="width:16px;"></span>
-                    <span class="req-condition-tag ${req.inverted ? 'cond-inverted' : 'cond-direct'}">
-                      ${req.inverted ? '[! NOT COMPLETED]' : '[COMPLETED]'}
-                    </span>
-                    <span class="node-label" ${req.inverted ? 'style="color: var(--accent-red, #ef4444);"' : ''}>${req.source}</span>
-                    <span class="badge-pill" style="background: rgba(255,255,255,0.1);">External</span>
-                  </div>
-                `;
-                childUl.appendChild(missingLi);
-            }
-        });
-        li.appendChild(childUl);
-        li.classList.add('collapsed');
-    }
-
-    return li;
-}
-
-function buildCriticalPathTree(node, visitedInBranch = new Set(), pathEdge = null) {
-    const li = document.createElement('li');
-    const nodeId = node.id || node.name;
-    const isCycle = visitedInBranch.has(nodeId);
-    const isAlreadyRendered = renderedInTree.has(nodeId);
-    renderedInTree.add(nodeId);
-
-    const children = criticalPathChildren(node);
-    const hasChildren = children.length > 0;
-    const canExpand = hasChildren && !isCycle && !isAlreadyRendered;
-
-    const nodeItem = document.createElement('div');
-    nodeItem.className = 'tree-node-item';
-    nodeItem.dataset.id = nodeId;
-    nodeItem.dataset.name = nodeId;
-    nodeItem.title = `ID: ${nodeId}`;
-
-    let conditionHtml = '';
-    if (pathEdge !== null) {
-        const tagClass = pathEdge.tag === 'completes'
-            ? 'cond-completes'
-            : (pathEdge.tag === 'alternative' ? 'cond-alternative' : 'cond-required');
-        conditionHtml = `
-          <span class="req-condition-tag ${tagClass}">
-            ${pathEdge.label}
-          </span>
-        `;
-    }
-
-    let refHtml = '';
-    if (isCycle) {
-        refHtml = '<span class="node-ref-tag">(cycle)</span>';
-    } else if (isAlreadyRendered) {
-        refHtml = '<span class="node-ref-tag" title="Connections already shown earlier in tree">(ref)</span>';
-    }
-
-    nodeItem.innerHTML = `
-        ${canExpand ? '<span class="toggle-btn">▶</span>' : '<span style="width:16px;"></span>'}
-        ${conditionHtml}
-        <span class="node-label" ${pathEdge?.tag === 'completes' ? 'style="color: var(--accent-purple);"' : ''}>${node.displayName || nodeId}</span>
-        <span class="badge-pill ${typeBadgeFor(node)}">${typeLabelFor(node)}</span>
-        ${unconfirmedBadge(node)}
-        ${refHtml}
-      `;
-
-    nodeItem.addEventListener('click', (e) => {
-        if (e.target.classList.contains('toggle-btn')) return;
-        selectNode(nodeId);
-    });
-
-    if (canExpand) {
-        const toggle = nodeItem.querySelector('.toggle-btn');
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            li.classList.toggle('collapsed');
-            toggle.innerText = li.classList.contains('collapsed') ? '▶' : '▼';
-        });
-    }
-
-    li.appendChild(nodeItem);
-
-    if (canExpand) {
-        const childUl = document.createElement('ul');
-        const nextVisited = new Set(visitedInBranch).add(nodeId);
-        children.forEach(edge => {
-            childUl.appendChild(buildCriticalPathTree(edge.target, nextVisited, edge));
-        });
-        li.appendChild(childUl);
-        li.classList.add('collapsed');
-    }
-
-    return li;
-}
-
-function renderTree(mode) {
-    renderedInTree.clear();
-    treeRootUl.innerHTML = '';
-    const builder = mode === 'critical' ? buildCriticalPathTree : buildRequirementTree;
-    roots.forEach(rootNode => {
-        treeRootUl.appendChild(builder(rootNode));
-    });
 }
 
 // ---------------------------------------------------------------------------
@@ -1109,8 +984,22 @@ const SELECTION_LEGEND = `
   <span class="legend-item" style="opacity:0.6;">Unrelated (faded)</span>
 `;
 
+let showInvertedEdges = true;
+
+function syncInvertedEdgesVisibility() {
+    if (!cy) return;
+    cy.batch(() => {
+        const invertedEdges = cy.edges('.edge-inverted');
+        if (showInvertedEdges) {
+            invertedEdges.removeClass('edge-hidden');
+        } else {
+            invertedEdges.addClass('edge-hidden');
+        }
+    });
+}
+
 const LEGENDS = {
-    graph_critical: `
+    critical: `
       <span class="legend-group-label" style="margin-left:0; padding-left:0; border-left:none;">Edges</span>
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite</span>
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Completes this</span>
@@ -1119,108 +1008,57 @@ const LEGENDS = {
       ${SELECTION_LEGEND}
       <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click a node to highlight its connections</span>
     `,
-    graph_unlock: `
+    unlock: `
       <span class="legend-group-label" style="margin-left:0; padding-left:0; border-left:none;">Edges</span>
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Requires completed</span>
       <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-red); border: 1px dashed var(--accent-red);"></span>Requires NOT completed (stay-active)</span>
+      <label class="legend-toggle-item" title="Toggle inverted stay-active requirement edges">
+        <input type="checkbox" id="toggleInvertedEdges" ${showInvertedEdges ? 'checked' : ''} />
+        <span>Show stay-active lines</span>
+      </label>
       ${NODE_TYPE_LEGEND}
       ${SELECTION_LEGEND}
       <span class="legend-item" style="color: var(--text-muted); font-size: 0.7rem;">Click a node to highlight its connections</span>
-    `,
-    tree_critical: `
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Prerequisite</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-purple);"></span>Completes This</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-amber); border: 1px dashed var(--accent-amber);"></span>Alternative (1 of N)</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: transparent; border: 1px dashed var(--border-color);"></span>Unconfirmed rule</span>
-    `,
-    tree_unlock: `
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-emerald);"></span>Requires Completed</span>
-      <span class="legend-item"><span class="legend-swatch" style="background: var(--accent-red);"></span>Inverted (Requires NOT Completed)</span>
     `
 };
 
 function updateLegend() {
-    const key = `${currentView}_${currentMode}`;
-    document.getElementById('treeLegend').innerHTML = LEGENDS[key] || '';
-}
+    const legendEl = document.getElementById('treeLegend');
+    legendEl.innerHTML = LEGENDS[currentMode] || '';
 
-function updateViewDisplay() {
-    const isGraph = currentView === 'graph';
-    cyContainer.style.display = isGraph ? 'block' : 'none';
-    treeRootUl.style.display = isGraph ? 'none' : 'block';
-    treeViewport.classList.toggle('tree-mode-active', !isGraph);
-
-    document.getElementById('expandBtn').style.display = isGraph ? 'none' : 'inline-block';
-    document.getElementById('collapseBtn').style.display = isGraph ? 'none' : 'inline-block';
-    document.getElementById('fitBtn').style.display = isGraph ? 'inline-block' : 'none';
-    const zoomInBtn = document.getElementById('zoomInBtn');
-    if (zoomInBtn) zoomInBtn.style.display = isGraph ? 'inline-block' : 'none';
-    const zoomOutBtn = document.getElementById('zoomOutBtn');
-    if (zoomOutBtn) zoomOutBtn.style.display = isGraph ? 'inline-block' : 'none';
-
-    // The scope filter only affects what Graph View draws -- Tree View
-    // always renders every root's full subtree regardless of scope, so the
-    // control has no effect there and should read as unavailable rather
-    // than silently doing nothing.
-    const scopeFilterEl = document.getElementById('scopeFilter');
-    if (scopeFilterEl) scopeFilterEl.disabled = !isGraph;
-
-    document.getElementById('viewGraphBtn').classList.toggle('btn-active', isGraph);
-    document.getElementById('viewTreeBtn').classList.toggle('btn-active', !isGraph);
-
-    updateLegend();
-
-    if (isGraph) {
-        renderGraph();
-    } else {
-        renderTree(currentMode);
+    const toggle = document.getElementById('toggleInvertedEdges');
+    if (toggle) {
+        toggle.checked = showInvertedEdges;
+        toggle.addEventListener('change', (e) => {
+            showInvertedEdges = e.target.checked;
+            syncInvertedEdgesVisibility();
+        });
     }
 }
 
 // Mode Buttons
 document.getElementById('modeCriticalBtn').addEventListener('click', () => {
+    if (currentMode === 'critical') return;
     currentMode = 'critical';
     document.getElementById('modeCriticalBtn').classList.add('btn-active');
     document.getElementById('modeUnlockBtn').classList.remove('btn-active');
     updateLegend();
-    if (currentView === 'graph') {
-        renderGraph();
-    } else {
-        renderTree('critical');
-    }
+    renderGraph();
 });
 
 document.getElementById('modeUnlockBtn').addEventListener('click', () => {
+    if (currentMode === 'unlock') return;
     currentMode = 'unlock';
     document.getElementById('modeUnlockBtn').classList.add('btn-active');
     document.getElementById('modeCriticalBtn').classList.remove('btn-active');
     updateLegend();
-    if (currentView === 'graph') {
-        renderGraph();
-    } else {
-        renderTree('unlock');
-    }
-});
-
-// View Switcher Buttons
-document.getElementById('viewGraphBtn').addEventListener('click', () => {
-    if (currentView === 'graph') return;
-    currentView = 'graph';
-    updateViewDisplay();
-});
-
-document.getElementById('viewTreeBtn').addEventListener('click', () => {
-    if (currentView === 'tree') return;
-    currentView = 'tree';
-    updateViewDisplay();
+    renderGraph();
 });
 
 // Scope Filter
 document.getElementById('scopeFilter').addEventListener('change', (e) => {
     currentScope = e.target.value;
-    if (currentView === 'graph') {
-        renderGraph();
-    }
+    renderGraph();
 });
 
 // Fit to screen
@@ -1253,25 +1091,6 @@ if (zoomOutBtn) {
         }
     });
 }
-
-// Tree Expand / Collapse controls
-document.getElementById('expandBtn').addEventListener('click', () => {
-    document.querySelectorAll('.tree li').forEach(li => {
-        li.classList.remove('collapsed');
-        const toggle = li.querySelector('.toggle-btn');
-        if (toggle) toggle.innerText = '▼';
-    });
-});
-
-document.getElementById('collapseBtn').addEventListener('click', () => {
-    document.querySelectorAll('.tree li').forEach(li => {
-        if (li.querySelector('ul')) {
-            li.classList.add('collapsed');
-            const toggle = li.querySelector('.toggle-btn');
-            if (toggle) toggle.innerText = '▶';
-        }
-    });
-});
 
 // ---------------------------------------------------------------------------
 // Inspector & Selection Handler
@@ -1355,30 +1174,27 @@ function selectNode(nodeIdentifier, centerGraph = true, highlight = true, change
         }
     }
 
-    // 2. In Tree View: highlight and expand parent list
-    document.querySelectorAll('.tree-node-item').forEach(el => el.classList.remove('selected'));
-    const matchedNodeElements = document.querySelectorAll(`.tree-node-item[data-id="${nodeId}"], .tree-node-item[data-name="${nodeId}"]`);
-
-    matchedNodeElements.forEach(el => {
-        el.classList.add('selected');
-        let parentLi = el.closest('li').parentElement?.closest('li');
-        while (parentLi) {
-            parentLi.classList.remove('collapsed');
-            const toggle = parentLi.querySelector(':scope > .tree-node-item > .toggle-btn');
-            if (toggle) toggle.innerText = '▼';
-            parentLi = parentLi.parentElement?.closest('li');
-        }
-    });
-
-    if (currentView === 'tree' && matchedNodeElements.length > 0) {
-        matchedNodeElements[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    // 3. Update Inspector Header and Metadata
+    // 2. Update Inspector Header and Metadata
     const inspectNameEl = document.getElementById('inspectName');
     if (inspectNameEl) inspectNameEl.innerText = node.displayName || nodeId;
     const inspectIdEl = document.getElementById('inspectId');
     if (inspectIdEl) inspectIdEl.innerText = nodeId;
+
+    // Update mobile peek bar and details button
+    const peekTitleEl = document.getElementById('peekTitle');
+    if (peekTitleEl) peekTitleEl.innerText = node.displayName || nodeId;
+    const peekBadgeEl = document.getElementById('peekBadge');
+    if (peekBadgeEl) peekBadgeEl.innerText = node.kind === 'gate' ? typeLabelFor(node) : typeLabelFor(node);
+    const mobilePeekBar = document.getElementById('mobilePeekBar');
+    if (mobilePeekBar) {
+        if (window.innerWidth <= 768) {
+            mobilePeekBar.style.display = 'flex';
+        } else {
+            mobilePeekBar.style.display = 'none';
+        }
+    }
+    const mobileInspectLabel = document.getElementById('inspectToggleLabel') || document.getElementById('mobileInspectLabel');
+    if (mobileInspectLabel) mobileInspectLabel.innerText = node.displayName || nodeId;
 
     document.getElementById('inspectHash').innerText = node.kind === 'gate'
         ? `${typeLabelFor(node)} owned by ${nodeMap.get(node.owner)?.displayName || node.owner}`
@@ -1566,18 +1382,308 @@ if (searchInput && searchDatalist) {
 }
 
 // Initial render
-updateViewDisplay();
+updateLegend();
+renderGraph();
 
-// Keep --navbar-height synced with rendered navbar dimensions
+// Keep --navbar-height synced with rendered navbar + toolbar dimensions
 function updateNavbarHeight() {
     const nav = document.querySelector('popruns-navbar, .header-nav');
-    if (nav && nav.offsetHeight) {
-        document.documentElement.style.setProperty('--navbar-height', `${nav.offsetHeight}px`);
+    const toolbar = document.getElementById('appToolbar');
+    const navH = (nav && nav.offsetHeight) ? nav.offsetHeight : 0;
+    const toolH = (toolbar && toolbar.offsetHeight) ? toolbar.offsetHeight : 0;
+    const totalH = navH + toolH;
+    if (totalH > 0) {
+        document.documentElement.style.setProperty('--navbar-height', `${totalH}px`);
     }
 }
-window.addEventListener('resize', updateNavbarHeight);
+window.addEventListener('resize', () => {
+    updateNavbarHeight();
+    if (window.innerWidth > 768) {
+        const peek = document.getElementById('mobilePeekBar');
+        if (peek) peek.style.display = 'none';
+    }
+});
 if (window.ResizeObserver) {
     const nav = document.querySelector('popruns-navbar, .header-nav');
-    if (nav) new ResizeObserver(updateNavbarHeight).observe(nav);
+    const toolbar = document.getElementById('appToolbar');
+    const ro = new ResizeObserver(updateNavbarHeight);
+    if (nav) ro.observe(nav);
+    if (toolbar) ro.observe(toolbar);
 }
 updateNavbarHeight();
+
+// ---------------------------------------------------------------------------
+// Inspector Aside Panel Handling (Collapsible on Desktop & Mobile Drawer)
+// ---------------------------------------------------------------------------
+function setupInspectorPanel() {
+    const aside = document.getElementById('inspectorAside');
+    const appContainer = document.querySelector('.app-container');
+    const backdrop = document.getElementById('sheetBackdrop');
+    const closeBtn = document.getElementById('sheetCloseBtn');
+    const peekBar = document.getElementById('mobilePeekBar');
+    const toggleBtn = document.getElementById('inspectorToggleBtn') || document.getElementById('mobileInspectorToggle');
+    const dragHandle = document.getElementById('sheetDragHandle');
+
+    if (!aside) return;
+
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    function openInspector() {
+        if (isMobile()) {
+            aside.classList.add('sheet-open');
+            if (backdrop) backdrop.classList.add('active');
+        } else {
+            if (appContainer) appContainer.classList.remove('aside-collapsed');
+        }
+        if (toggleBtn) toggleBtn.classList.add('active');
+        if (cy) {
+            setTimeout(() => cy.resize(), 260);
+        }
+    }
+
+    function closeInspector() {
+        if (isMobile()) {
+            aside.classList.remove('sheet-open');
+            if (backdrop) backdrop.classList.remove('active');
+        } else {
+            if (appContainer) appContainer.classList.add('aside-collapsed');
+        }
+        if (toggleBtn) toggleBtn.classList.remove('active');
+        if (cy) {
+            setTimeout(() => cy.resize(), 260);
+        }
+    }
+
+    function toggleInspector() {
+        if (isMobile()) {
+            if (aside.classList.contains('sheet-open')) {
+                closeInspector();
+            } else {
+                openInspector();
+            }
+        } else {
+            if (appContainer && appContainer.classList.contains('aside-collapsed')) {
+                openInspector();
+            } else {
+                closeInspector();
+            }
+        }
+    }
+
+    if (peekBar) {
+        peekBar.addEventListener('click', openInspector);
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleInspector();
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeInspector();
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', closeInspector);
+    }
+
+    if (dragHandle) {
+        dragHandle.addEventListener('click', closeInspector);
+    }
+}
+setupInspectorPanel();
+
+// ---------------------------------------------------------------------------
+// Copy PNG & SVG Canvas Handlers
+// ---------------------------------------------------------------------------
+function setupExportControls() {
+    const copyPngBtn = document.getElementById('copyPngBtn');
+    const copySvgBtn = document.getElementById('copySvgBtn');
+
+    function flashButtonSuccess(btn, text) {
+        const originalText = btn.innerText;
+        btn.innerText = text;
+        btn.classList.add('btn-active');
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.classList.remove('btn-active');
+        }, 1800);
+    }
+
+    function flashButtonError(btn, text) {
+        const originalText = btn.innerText;
+        btn.innerText = text;
+        setTimeout(() => {
+            btn.innerText = originalText;
+        }, 2200);
+    }
+
+    function getViewportCropBounds() {
+        const vw = cy.width();
+        const vh = cy.height();
+
+        // Identify nodes that intersect the current viewport
+        const visibleNodes = cy.nodes(':visible').filter(n => {
+            const bb = n.renderedBoundingBox();
+            return bb.x2 > 0 && bb.x1 < vw && bb.y2 > 0 && bb.y1 < vh;
+        });
+
+        if (visibleNodes.length === 0) {
+            return { cropX: 0, cropY: 0, cropW: vw, cropH: vh, vw, vh };
+        }
+
+        const visibleEdges = visibleNodes.edgesWith(visibleNodes);
+        const inViewEles = visibleNodes.union(visibleEdges);
+        const bb = inViewEles.renderedBoundingBox();
+
+        const margin = 28; // Margin in CSS viewport pixels
+        const minX = Math.max(0, bb.x1);
+        const minY = Math.max(0, bb.y1);
+        const maxX = Math.min(vw, bb.x2);
+        const maxY = Math.min(vh, bb.y2);
+
+        const cropX1 = Math.max(0, Math.floor(minX - margin));
+        const cropY1 = Math.max(0, Math.floor(minY - margin));
+        const cropX2 = Math.min(vw, Math.ceil(maxX + margin));
+        const cropY2 = Math.min(vh, Math.ceil(maxY + margin));
+
+        return {
+            cropX: cropX1,
+            cropY: cropY1,
+            cropW: Math.max(10, cropX2 - cropX1),
+            cropH: Math.max(10, cropY2 - cropY1),
+            vw,
+            vh
+        };
+    }
+
+    async function generateCroppedPngBlob() {
+        const { cropX, cropY, cropW, cropH, vw, vh } = getViewportCropBounds();
+        const zoom = cy.zoom();
+
+        // Dynamically scale with zoom for ultra-clear output (minimum 3.0x, scaling up with zoom to 6.0x)
+        const exportScale = Math.min(6.0, Math.max(3.0, zoom * 3.5));
+
+        const rawDataUrl = cy.png({
+            full: false,
+            scale: exportScale,
+            bg: '#0b111e'
+        });
+
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = rawDataUrl;
+        });
+
+        const imgW = img.naturalWidth || img.width;
+        const imgH = img.naturalHeight || img.height;
+        const ratioX = imgW / vw;
+        const ratioY = imgH / vh;
+
+        const sx = Math.max(0, Math.round(cropX * ratioX));
+        const sy = Math.max(0, Math.round(cropY * ratioY));
+        const sw = Math.min(imgW - sx, Math.round(cropW * ratioX));
+        const sh = Math.min(imgH - sy, Math.round(cropH * ratioY));
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = sw;
+        cropCanvas.height = sh;
+        const ctx = cropCanvas.getContext('2d');
+        ctx.fillStyle = '#0b111e';
+        ctx.fillRect(0, 0, sw, sh);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+
+        return new Promise((resolve, reject) => {
+            cropCanvas.toBlob(blob => {
+                if (blob) resolve(blob);
+                else reject(new Error('Failed to generate PNG blob'));
+            }, 'image/png');
+        });
+    }
+
+    if (copyPngBtn) {
+        copyPngBtn.addEventListener('click', async () => {
+            if (!cy) return;
+            try {
+                const blob = await generateCroppedPngBlob();
+
+                if (navigator.clipboard && window.ClipboardItem) {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                    flashButtonSuccess(copyPngBtn, 'Copied PNG!');
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `pop2008_graph_${currentScope}_${currentMode}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    flashButtonSuccess(copyPngBtn, 'Downloaded PNG');
+                }
+            } catch (err) {
+                console.error('Failed to copy PNG:', err);
+                flashButtonError(copyPngBtn, 'Failed');
+            }
+        });
+    }
+
+    if (copySvgBtn) {
+        copySvgBtn.addEventListener('click', async () => {
+            if (!cy) return;
+            try {
+                let svgString = '';
+                if (typeof cy.svg === 'function') {
+                    svgString = cy.svg({
+                        full: false,
+                        bg: '#0b111e'
+                    });
+                }
+
+                if (!svgString) {
+                    throw new Error('SVG generation returned empty');
+                }
+
+                const { cropX, cropY, cropW, cropH } = getViewportCropBounds();
+                if (typeof DOMParser !== 'undefined') {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgString, 'image/svg+xml');
+                    const svgEl = doc.querySelector('svg');
+                    if (svgEl) {
+                        svgEl.setAttribute('viewBox', `${cropX} ${cropY} ${cropW} ${cropH}`);
+                        svgEl.setAttribute('width', cropW);
+                        svgEl.setAttribute('height', cropH);
+                        svgString = new XMLSerializer().serializeToString(doc);
+                    }
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(svgString);
+                    flashButtonSuccess(copySvgBtn, 'Copied SVG!');
+                } else {
+                    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `pop2008_graph_${currentScope}_${currentMode}.svg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    flashButtonSuccess(copySvgBtn, 'Downloaded SVG');
+                }
+            } catch (err) {
+                console.error('Failed to copy SVG:', err);
+                flashButtonError(copySvgBtn, 'Failed');
+            }
+        });
+    }
+}
+setupExportControls();
