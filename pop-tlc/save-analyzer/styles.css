@@ -1,3 +1,5 @@
+@import url('../../static/theme.css');
+
 @font-face {
 	font-family: 'Trajan Pro Regular';
 	font-style: normal;
@@ -19,7 +21,7 @@ html {
 }
 
 body {
-	color: #ffdcaa;
+	color: var(--gold);
 	min-height: 100vh;
 	margin: 0;
 	font-weight: 300;
@@ -133,7 +135,7 @@ body {
 	top: 1px;
 	left: 0;
 	transform: scale(1, 0.9) skew(-6deg) translateZ(-1px);
-	border: 1px solid #ffdcaa;
+	border: 1px solid var(--gold-bright);
 	color: white;
 	position: absolute;
 }
@@ -191,7 +193,7 @@ body {
 /* Custom Scrollbars matching PoPRuns theme */
 html, * {
 	scrollbar-width: thin;
-	scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+	scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar {
@@ -200,25 +202,25 @@ html, * {
 }
 
 ::-webkit-scrollbar-track {
-	background: rgba(3, 10, 16, 0.35);
+	background: var(--scrollbar-track);
 	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(211, 156, 10, 0.4);
+	background: var(--scrollbar-thumb);
 	border-radius: 4px;
-	border: 1px solid rgba(211, 156, 10, 0.2);
+	border: 1px solid var(--scrollbar-thumb-border);
 	transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(252, 208, 120, 0.7);
-	border-color: rgba(252, 208, 120, 0.4);
-	box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+	background: var(--scrollbar-thumb-hover);
+	border-color: var(--scrollbar-thumb-hover-border);
+	box-shadow: 0 0 6px var(--gold-glow);
 }
 
 ::-webkit-scrollbar-thumb:active {
-	background: #fcd078;
+	background: var(--scrollbar-thumb-active);
 }
 
 ::-webkit-scrollbar-corner {

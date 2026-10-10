@@ -1,3 +1,4 @@
+@import url('../static/theme.css');
 @import url('https://fonts.googleapis.com/css2?family=Istok+Web:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @font-face {
@@ -15,25 +16,11 @@
 }
 
 :root {
-    --bg-dark: #050b10;
-    --card-bg: rgba(11, 25, 36, 0.92);
-    --card-bg-light: rgba(19, 41, 58, 0.95);
-    --card-bg-subtle: rgba(15, 33, 48, 0.7);
-    
     /* Subtle borders */
     --border-color: rgba(255, 255, 255, 0.08);
     --border-dim: rgba(255, 255, 255, 0.05);
-    --border-highlight: #d39c0a;
+    --border-highlight: var(--gold-dim);
     --border-gold: rgba(211, 156, 10, 0.35);
-
-    --gold: #ffdcaa;
-    --gold-bright: #fcd078;
-    --gold-dim: #d39c0a;
-    --gold-glow: rgba(211, 156, 10, 0.4);
-
-    --text-main: #f0f4f8;
-    --text-muted: #95a8b6;
-    --text-dim: #6c7f8f;
 
     /* Theme accents */
     --accent-blue: #19c8c3;
@@ -75,7 +62,7 @@ html {
     scroll-behavior: smooth;
     color-scheme: dark;
     scrollbar-width: thin;
-    scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* Custom Scrollbars matching PoPRuns theme */
@@ -85,25 +72,25 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(3, 10, 16, 0.35);
+    background: var(--scrollbar-track);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(211, 156, 10, 0.4);
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
-    border: 1px solid rgba(211, 156, 10, 0.2);
+    border: 1px solid var(--scrollbar-thumb-border);
     transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(252, 208, 120, 0.7);
-    border-color: rgba(252, 208, 120, 0.4);
-    box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+    background: var(--scrollbar-thumb-hover);
+    border-color: var(--scrollbar-thumb-hover-border);
+    box-shadow: 0 0 6px var(--gold-glow);
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background: #fcd078;
+    background: var(--scrollbar-thumb-active);
 }
 
 ::-webkit-scrollbar-corner {

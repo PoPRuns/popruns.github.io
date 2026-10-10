@@ -166,8 +166,8 @@
                 display: flex !important;
                 justify-content: space-between !important;
                 align-items: center !important;
-                background: rgba(3, 10, 16, 0.95) !important;
-                border-bottom: 1px solid rgba(211, 156, 10, 0.3) !important;
+                background: var(--bg-navbar, rgba(3, 10, 16, 0.95)) !important;
+                border-bottom: 1px solid var(--gold-border, rgba(211, 156, 10, 0.3)) !important;
                 backdrop-filter: blur(10px) !important;
                 -webkit-backdrop-filter: blur(10px) !important;
                 position: sticky !important;
@@ -207,7 +207,7 @@
 
             .header-nav .nav-tagline, popruns-navbar .nav-tagline {
                 font-family: 'Trajan Pro Regular', serif !important;
-                color: #ffdcaa !important;
+                color: var(--gold, #ffdcaa) !important;
                 font-size: 1.1rem !important;
                 letter-spacing: 1px !important;
                 white-space: nowrap !important;
@@ -233,7 +233,7 @@
             }
 
             .header-nav .nav-link, popruns-navbar .nav-link {
-                color: #ffdcaa !important;
+                color: var(--gold, #ffdcaa) !important;
                 text-decoration: none !important;
                 font-size: 0.95rem !important;
                 font-family: 'PortLligat Sans', sans-serif !important;
@@ -253,30 +253,30 @@
 
             .header-nav .nav-link:hover, popruns-navbar .nav-link:hover {
                 color: #fff !important;
-                background: rgba(211, 156, 10, 0.18) !important;
-                text-shadow: 0 0 8px rgba(252, 208, 120, 0.5) !important;
+                background: var(--gold-bg-hover, rgba(211, 156, 10, 0.18)) !important;
+                text-shadow: 0 0 8px var(--gold-glow, rgba(252, 208, 120, 0.5)) !important;
             }
 
             .header-nav .nav-link.active, popruns-navbar .nav-link.active {
-                color: #fcd078 !important;
-                background: rgba(211, 156, 10, 0.25) !important;
-                border-bottom: 2px solid #d39c0a !important;
+                color: var(--gold-bright, #fcd078) !important;
+                background: var(--gold-bg-active, rgba(211, 156, 10, 0.25)) !important;
+                border-bottom: 2px solid var(--gold-dim, #d39c0a) !important;
                 font-weight: 600 !important;
-                text-shadow: 0 0 10px rgba(252, 208, 120, 0.5) !important;
+                text-shadow: 0 0 10px var(--gold-glow, rgba(252, 208, 120, 0.5)) !important;
             }
 
             .header-nav .nav-link-highlight, popruns-navbar .nav-link-highlight {
-                background: linear-gradient(135deg, #d39c0a 0%, #b88204 100%) !important;
+                background: linear-gradient(135deg, var(--gold-dim, #d39c0a) 0%, #b88204 100%) !important;
                 color: #050b10 !important;
                 font-weight: bold !important;
-                box-shadow: 0 0 10px rgba(211, 156, 10, 0.4) !important;
+                box-shadow: 0 0 10px var(--gold-glow-dim, rgba(211, 156, 10, 0.4)) !important;
                 border-bottom: none !important;
             }
 
             .header-nav .nav-link-highlight:hover, popruns-navbar .nav-link-highlight:hover {
                 color: #000 !important;
-                background: linear-gradient(135deg, #fcd078 0%, #d39c0a 100%) !important;
-                box-shadow: 0 0 14px rgba(252, 208, 120, 0.6) !important;
+                background: linear-gradient(135deg, var(--gold-bright, #fcd078) 0%, var(--gold-dim, #d39c0a) 100%) !important;
+                box-shadow: 0 0 14px var(--gold-glow, rgba(252, 208, 120, 0.6)) !important;
             }
 
             .header-nav .nav-link i, popruns-navbar .nav-link i {
@@ -343,10 +343,10 @@
                 left: 0 !important;
                 min-width: 190px !important;
                 background: rgba(6, 16, 24, 0.98) !important;
-                border: 1px solid rgba(211, 156, 10, 0.35) !important;
+                border: 1px solid var(--gold-border, rgba(211, 156, 10, 0.35)) !important;
                 border-radius: 8px !important;
                 padding: 0.4rem 0 !important;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(211, 156, 10, 0.15) !important;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px var(--gold-glow-dim, rgba(211, 156, 10, 0.15)) !important;
                 backdrop-filter: blur(12px) !important;
                 -webkit-backdrop-filter: blur(12px) !important;
                 z-index: 1050 !important;
@@ -363,14 +363,14 @@
                 width: 6px !important;
             }
             .header-nav .nav-dropdown-menu::-webkit-scrollbar-track, popruns-navbar .nav-dropdown-menu::-webkit-scrollbar-track {
-                background: rgba(3, 10, 16, 0.6) !important;
+                background: var(--scrollbar-track, rgba(3, 10, 16, 0.6)) !important;
             }
             .header-nav .nav-dropdown-menu::-webkit-scrollbar-thumb, popruns-navbar .nav-dropdown-menu::-webkit-scrollbar-thumb {
-                background: rgba(211, 156, 10, 0.4) !important;
+                background: var(--scrollbar-thumb, rgba(211, 156, 10, 0.4)) !important;
                 border-radius: 3px !important;
             }
             .header-nav .nav-dropdown-menu::-webkit-scrollbar-thumb:hover, popruns-navbar .nav-dropdown-menu::-webkit-scrollbar-thumb:hover {
-                background: rgba(211, 156, 10, 0.7) !important;
+                background: var(--scrollbar-thumb-hover, rgba(252, 208, 120, 0.7)) !important;
             }
 
             .header-nav .nav-actions .nav-dropdown-menu, popruns-navbar .nav-actions .nav-dropdown-menu {
@@ -388,7 +388,7 @@
 
             .header-nav .nav-dropdown-header, popruns-navbar .nav-dropdown-header {
                 font-family: 'Trajan Pro Regular', serif !important;
-                color: #ffdcaa !important;
+                color: var(--gold, #ffdcaa) !important;
                 font-size: 0.74rem !important;
                 letter-spacing: 1px !important;
                 padding: 0.4rem 0.85rem 0.2rem !important;
@@ -407,7 +407,7 @@
 
             .header-nav .nav-dropdown-divider, popruns-navbar .nav-dropdown-divider {
                 height: 1px !important;
-                background: rgba(211, 156, 10, 0.2) !important;
+                background: var(--gold-border, rgba(211, 156, 10, 0.2)) !important;
                 margin: 0.35rem 0 !important;
             }
 
@@ -426,16 +426,16 @@
             }
 
             .header-nav a.nav-dropdown-item:hover, popruns-navbar a.nav-dropdown-item:hover {
-                background: rgba(211, 156, 10, 0.2) !important;
-                color: #ffdcaa !important;
+                background: var(--gold-bg-hover, rgba(211, 156, 10, 0.2)) !important;
+                color: var(--gold-bright, #ffdcaa) !important;
                 padding-left: 1.05rem !important;
             }
 
             .header-nav a.nav-dropdown-item.active, popruns-navbar a.nav-dropdown-item.active {
-                background: rgba(211, 156, 10, 0.15) !important;
-                color: #fcd078 !important;
+                background: var(--gold-bg-subtle, rgba(211, 156, 10, 0.15)) !important;
+                color: var(--gold-bright, #fcd078) !important;
                 font-weight: 700 !important;
-                border-left: 3px solid #d39c0a !important;
+                border-left: 3px solid var(--gold-bright, #d39c0a) !important;
             }
 
             .header-nav .nav-dropdown-item.disabled, popruns-navbar .nav-dropdown-item.disabled {

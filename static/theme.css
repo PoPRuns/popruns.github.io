@@ -1,0 +1,89 @@
+/**
+ * PoPRuns Shared Theme Stylesheet
+ * Single place to configure the global color scheme, gold tones, and shared visual tokens.
+ *
+ * Preferred gold palette:
+ *   --gold-bright: #fcd078 (prominent highlights, hover states, active badges, headings)
+ *   --gold:        #ffdcaa (primary gold text, brand titles, borders, accents)
+ *   --gold-dim:    #d39c0a (subtle gold borders, dividers, dark accents, muted badges)
+ */
+
+:root {
+    /* === Primary Gold Color Scheme === */
+    --gold: #ffdcaa;
+    --gold-bright: #fcd078;
+    --gold-dim: #d39c0a;
+
+    /* Alpha variations for shadows, borders, glows, and overlays */
+    --gold-glow: rgba(252, 208, 120, 0.45);
+    --gold-glow-dim: rgba(211, 156, 10, 0.35);
+    --gold-border: rgba(211, 156, 10, 0.3);
+    --gold-border-bright: rgba(252, 208, 120, 0.5);
+    --gold-bg-subtle: rgba(211, 156, 10, 0.12);
+    --gold-bg-hover: rgba(211, 156, 10, 0.2);
+    --gold-bg-active: rgba(211, 156, 10, 0.28);
+
+    /* === Dark Base & Surfaces === */
+    --bg-dark: #050b10;
+    --bg-navbar: rgba(3, 10, 16, 0.95);
+    --bg-footer: rgba(3, 10, 16, 0.95);
+    --card-bg: rgba(11, 25, 36, 0.92);
+    --card-bg-light: rgba(19, 41, 58, 0.95);
+    --card-bg-subtle: rgba(15, 33, 48, 0.7);
+
+    /* === Typography & Neutrals === */
+    --text-main: #f0f4f8;
+    --text-muted: #95a8b6;
+    --text-dim: #6c7f8f;
+
+    /* === Accents === */
+    --accent-blue: #19c8c3;
+    --accent-red: #e74c3c;
+    --accent-green: #2ecc71;
+    --accent-purple: #9b59b6;
+
+    /* === Scrollbar Tokens === */
+    --scrollbar-track: rgba(3, 10, 16, 0.5);
+    --scrollbar-thumb: var(--gold-bright);
+    --scrollbar-thumb-border: rgba(252, 208, 120, 0.4);
+    --scrollbar-thumb-hover: #ffffff;
+    --scrollbar-thumb-hover-border: rgba(255, 255, 255, 0.6);
+    --scrollbar-thumb-active: #ffffff;
+}
+
+/* Global scrollbars matching PoPRuns theme */
+html, * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+    border: 1px solid var(--scrollbar-thumb-border);
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    border-color: var(--scrollbar-thumb-hover-border);
+    box-shadow: 0 0 6px var(--gold-glow);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-thumb-active);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}

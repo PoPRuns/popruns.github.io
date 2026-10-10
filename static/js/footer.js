@@ -45,8 +45,8 @@
 
             .site-footer, popruns-footer {
                 display: block !important;
-                background: rgba(3, 10, 16, 0.95) !important;
-                border-top: 1px solid rgba(211, 156, 10, 0.3) !important;
+                background: var(--bg-footer, rgba(3, 10, 16, 0.95)) !important;
+                border-top: 1px solid var(--gold-border, rgba(211, 156, 10, 0.3)) !important;
                 padding: 24px 0 32px !important;
                 margin-top: auto !important;
                 width: 100% !important;
@@ -105,7 +105,7 @@
             }
 
             .site-footer .footer-links a, popruns-footer .footer-links a {
-                color: #ffdcaa !important;
+                color: var(--gold, #ffdcaa) !important;
                 text-decoration: none !important;
                 display: inline-flex !important;
                 align-items: center !important;
@@ -114,8 +114,8 @@
             }
 
             .site-footer .footer-links a:hover, popruns-footer .footer-links a:hover {
-                color: #fcd078 !important;
-                text-shadow: 0 0 8px rgba(252, 208, 120, 0.5) !important;
+                color: var(--gold-bright, #fcd078) !important;
+                text-shadow: 0 0 8px var(--gold-glow, rgba(252, 208, 120, 0.5)) !important;
                 text-decoration: none !important;
             }
 
@@ -123,12 +123,12 @@
                 display: inline-block !important;
                 width: 16px !important;
                 text-align: center !important;
-                color: #d39c0a !important;
+                color: var(--gold-dim, #d39c0a) !important;
                 transition: color 0.2s ease !important;
             }
 
             .site-footer .footer-links a:hover i, popruns-footer .footer-links a:hover i {
-                color: #fcd078 !important;
+                color: var(--gold-bright, #fcd078) !important;
             }
         `;
         document.head.appendChild(style);

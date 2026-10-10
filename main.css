@@ -1,3 +1,5 @@
+@import url('static/theme.css');
+
 @font-face {
 	font-family: 'Trajan Pro Regular';
 	font-style: normal;
@@ -20,7 +22,7 @@ html {
 	line-height: 1.4em;
 	color-scheme: dark;
 	scrollbar-width: thin;
-	scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+	scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
@@ -34,25 +36,25 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-	background: rgba(3, 10, 16, 0.35);
+	background: var(--scrollbar-track);
 	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(211, 156, 10, 0.4);
+	background: var(--scrollbar-thumb);
 	border-radius: 4px;
-	border: 1px solid rgba(211, 156, 10, 0.2);
+	border: 1px solid var(--scrollbar-thumb-border);
 	transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(252, 208, 120, 0.7);
-	border-color: rgba(252, 208, 120, 0.4);
-	box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+	background: var(--scrollbar-thumb-hover);
+	border-color: var(--scrollbar-thumb-hover-border);
+	box-shadow: 0 0 6px var(--gold-glow);
 }
 
 ::-webkit-scrollbar-thumb:active {
-	background: #fcd078;
+	background: var(--scrollbar-thumb-active);
 }
 
 ::-webkit-scrollbar-corner {
@@ -60,7 +62,7 @@ html {
 }
 
 body {
-	color: #ffdcaa;
+	color: var(--gold);
 	min-height: 100vh;
 	margin: 0;
 	font-weight: 300;
@@ -168,7 +170,6 @@ a:focus {
 	max-height: 15em;
 	display: block;
 	text-decoration: inherit;
-	/* no underline */
 
 	background-size: cover;
 	background-repeat: no-repeat;
@@ -226,10 +227,9 @@ a:focus {
 
 .window-popout-link {
 	background-color: black;
-	color: #ffdcaa;
+	color: var(--gold);
 	display: block;
 	text-decoration: inherit;
-	/* no underline */
 	flex: 1 1 auto;
 	line-height: 4em;
 	-webkit-transition: background-color 0.25s, color 0.25s;
@@ -244,7 +244,7 @@ a:focus {
 }
 
 .main-item:hover .window {
-	box-shadow: 0 0 1em 0.2em #fadc64;
+	box-shadow: 0 0 1em 0.2em var(--gold-bright);
 	-webkit-transform: translate(-50%, -40%) scale(1, 1);
 	transform: translate(-50%, -40%) scale(1, 1);
 	z-index: 10;
@@ -281,7 +281,7 @@ a:focus {
 
 .window-popout-link:not(.disabled):hover {
 	background-color: rgb(25, 25, 25);
-	color: #fadc64;
+	color: var(--gold-bright);
 }
 
 

@@ -6,6 +6,7 @@
     <link rel="icon" type="image/x-icon" href="https://cdn.discordapp.com/emojis/629434960285270017.webp?size=80&quality=lossless">
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/theme.css">
 
     <!-- Latest compiled Bootstrap js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -40,14 +41,14 @@
             justify-content: center;
             flex: 1 0 auto;
             background: rgba(6, 16, 24, 0.85);
-            border: 1px solid rgba(211, 156, 10, 0.35);
+            border: 1px solid var(--gold-border);
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
             color: #f0f4f8;
         }
 
         h2, h4 {
-            color: #ffdcaa;
+            color: var(--gold-bright);
             font-weight: 700;
             letter-spacing: 0.5px;
         }
@@ -68,15 +69,15 @@
 
         .form-control, .form-select {
             background-color: rgba(9, 13, 22, 0.85) !important;
-            border: 1px solid rgba(211, 156, 10, 0.35) !important;
-            color: #ffdcaa !important;
+            border: 1px solid var(--gold-border) !important;
+            color: var(--gold) !important;
             box-shadow: none !important;
         }
 
         .form-control:focus, .form-select:focus {
             background-color: rgba(14, 20, 32, 0.95) !important;
-            border-color: #fcd078 !important;
-            box-shadow: 0 0 8px rgba(252, 208, 120, 0.4) !important;
+            border-color: var(--gold-bright) !important;
+            box-shadow: 0 0 8px var(--gold-glow) !important;
             color: #fff !important;
         }
 
@@ -86,35 +87,35 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #d39c0a 0%, #b88204 100%) !important;
-            border: 1px solid #d39c0a !important;
+            background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-dim) 100%) !important;
+            border: 1px solid var(--gold-bright) !important;
             color: #050b10 !important;
             font-weight: 700 !important;
             padding: 8px 26px !important;
-            box-shadow: 0 0 10px rgba(211, 156, 10, 0.4) !important;
+            box-shadow: 0 0 10px var(--gold-glow) !important;
             transition: all 0.2s ease !important;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #fcd078 0%, #d39c0a 100%) !important;
-            box-shadow: 0 0 14px rgba(252, 208, 120, 0.6) !important;
+            background: linear-gradient(135deg, #ffffff 0%, var(--gold-bright) 100%) !important;
+            box-shadow: 0 0 14px var(--gold-glow) !important;
             color: #000 !important;
         }
 
         .btn-dark {
             background: rgba(24, 24, 28, 0.9) !important;
-            border: 1px solid rgba(211, 156, 10, 0.35) !important;
-            color: #ffdcaa !important;
+            border: 1px solid var(--gold-border) !important;
+            color: var(--gold) !important;
         }
 
         .btn-dark:hover:not(:disabled) {
-            background: rgba(211, 156, 10, 0.2) !important;
+            background: var(--gold-bg-hover) !important;
             color: #fff !important;
         }
 
         .frames-visual {
             background-color: rgba(255, 255, 255, 0.1);
-            outline: 1px solid rgba(211, 156, 10, 0.3);
+            outline: 1px solid var(--gold-border);
             height: 10px;
             border-radius: 2px;
         }
@@ -122,7 +123,7 @@
         /* Custom Scrollbars matching PoPRuns theme */
         html, * {
             scrollbar-width: thin;
-            scrollbar-color: rgba(211, 156, 10, 0.45) rgba(3, 10, 16, 0.35);
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
         }
 
         ::-webkit-scrollbar {
@@ -131,25 +132,25 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(3, 10, 16, 0.35);
+            background: var(--scrollbar-track);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(211, 156, 10, 0.4);
+            background: var(--scrollbar-thumb);
             border-radius: 4px;
-            border: 1px solid rgba(211, 156, 10, 0.2);
+            border: 1px solid var(--scrollbar-thumb-border);
             transition: background 0.2s ease;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(252, 208, 120, 0.7);
-            border-color: rgba(252, 208, 120, 0.4);
-            box-shadow: 0 0 6px rgba(252, 208, 120, 0.35);
+            background: var(--scrollbar-thumb-hover);
+            border-color: var(--scrollbar-thumb-hover-border);
+            box-shadow: 0 0 6px var(--gold-glow);
         }
 
         ::-webkit-scrollbar-thumb:active {
-            background: #fcd078;
+            background: var(--scrollbar-thumb-active);
         }
 
         ::-webkit-scrollbar-corner {
